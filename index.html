@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced OLS Diagnostics Studio</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.2.1/math.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #000000;
+            --bg-card: #0a0a0a;
+            --bg-card-hover: #111111;
+            --text-primary: #D4AF37;
+            --text-secondary: #AA8C2C;
+            --accent: #FFD700;
+            --accent-hover: #FFF000;
+            --danger: #FF3333;
+            --success: #00FF00;
+            --warning: #FFA500;
+            --grid-line: #333333;
+            --border-gold: 1px solid #332b00;
+            --shadow-sm: 0 2px 12px rgba(212, 175, 55, 0.05);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 1);
+            --radius: 4px;
+            --font-stack: 'Times New Roman', Times, serif;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--text-secondary);
+        }
+
+        header h1 {
+            font-size: 48px;
+            font-weight: 400;
+            margin-bottom: 12px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            font-style: italic;
+        }
+
+        /* Navigation */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--text-secondary);
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-family: var(--font-stack);
+            font-size: 16px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-btn.active {
+            background: var(--text-secondary);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        .nav-btn:hover:not(.active) {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Module Layout */
+        .module {
+            display: none;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .module.active {
+            display: grid;
+        }
+
+        /* Controls Panel */
+        .controls {
+            background: var(--bg-card);
+            padding: 32px;
+            border: 1px solid var(--text-secondary);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .controls h3 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: var(--accent);
+            border-bottom: 1px solid var(--grid-line);
+            padding-bottom: 10px;
+            font-weight: 400;
+        }
+
+        .control-group {
+            margin-bottom: 28px;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .value-display {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 2px;
+            background: var(--text-secondary);
+            outline: none;
+            margin: 10px 0;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            cursor: pointer;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .formula-box {
+            background: #0f0f0f;
+            border: 1px solid var(--text-secondary);
+            padding: 16px;
+            margin: 20px 0;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        .explanation {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--grid-line);
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .explanation strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        /* Visualization Panel */
+        .vis-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border: 1px solid var(--text-secondary);
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .stat-card .value.bad {
+            color: var(--danger);
+        }
+
+        .stat-card .value.good {
+            color: var(--success);
+        }
+
+        .stat-card .value.neutral {
+            color: var(--accent);
+        }
+
+        .stat-card .value.warning {
+            color: var(--warning);
+        }
+
+        .stat-card .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .chart-container {
+            background: var(--bg-card);
+            padding: 20px;
+            border: 1px solid var(--text-secondary);
+            min-height: 400px;
+        }
+
+        .diagnostic-panel {
+            background: var(--bg-card);
+            padding: 24px;
+            border: 1px solid var(--text-secondary);
+        }
+
+        .diagnostic-panel h4 {
+            color: var(--accent);
+            margin-bottom: 16px;
+            font-size: 18px;
+            border-bottom: 1px solid var(--grid-line);
+            padding-bottom: 8px;
+        }
+
+        .test-result {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 2px solid var(--text-secondary);
+        }
+
+        .test-result.reject {
+            border-left-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .test-result.accept {
+            border-left-color: var(--success);
+            color: var(--success);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: var(--font-stack);
+            text-transform: uppercase;
+            flex: 1;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .module {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                position: relative;
+                top: 0;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* KaTeX styling */
+        .katex {
+            font-size: 1.1em;
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Advanced OLS Diagnostics Studio</h1>
+            <p>Econometric simulations exploring bias, inconsistency, and inference under violated assumptions</p>
+        </header>
+
+        <div class="nav-container">
+            <button class="nav-btn active" onclick="switchTab('omitted')">Omitted Variable Bias</button>
+            <button class="nav-btn" onclick="switchTab('endogeneity')">Endogeneity & IV</button>
+            <button class="nav-btn" onclick="switchTab('measurement')">Measurement Error</button>
+            <button class="nav-btn" onclick="switchTab('autocorr')">Autocorrelation</button>
+            <button class="nav-btn" onclick="switchTab('weak-iv')">Weak Instruments</button>
+            <button class="nav-btn" onclick="switchTab('robust-se')">Robust Inference</button>
+        </div>
+
+        <div id="module-omitted" class="module active">
+            <div class="controls">
+                <h3>Parameters</h3>
+
+                <div class="formula-box">
+                    True DGP: \(Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \varepsilon\)
+                    <br>Est. Model: \(Y = \beta_0 + \beta_1 X_1 + u\)
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Corr(X₁, X₂)</span>
+                        <span id="ovb-corr-val" class="value-display">0.50</span>
+                    </div>
+                    <input type="range" id="ovb-corr" min="0" max="0.95" step="0.05" value="0.5" oninput="updateOVB()">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>True β₂ (Omitted)</span>
+                        <span id="ovb-beta2-val" class="value-display">2.0</span>
+                    </div>
+                    <input type="range" id="ovb-beta2" min="-3" max="3" step="0.5" value="2" oninput="updateOVB()">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Sample Size</span>
+                        <span id="ovb-n-val" class="value-display">100</span>
+                    </div>
+                    <input type="range" id="ovb-n" min="50" max="500" step="50" value="100" oninput="updateOVB()">
+                </div>
+
+                <div class="explanation">
+                    <strong>Asymptotic Bias Formula</strong>
+                    <p>When \(X_2\) is omitted:</p>
+                    <div class="formula-box">
+                        \[\text{plim}\,\hat{\beta}_1 = \beta_1 + \beta_2 \cdot
+                        \frac{\text{Cov}(X_1,X_2)}{\text{Var}(X_1)}\]
+                    </div>
+                    <p>The OLS estimator is biased and inconsistent. The bias direction depends on
+                        \(\text{sign}(\beta_2)\) and \(\text{sign}(\rho_{12})\).</p>
+                    <p>Bias = 0 only if \(\beta_2 = 0\) or \(\text{Cov}(X_1, X_2) = 0\).</p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn" onclick="updateOVB()">Re-simulate</button>
+                    <button class="btn btn-secondary" onclick="resetOVB()">Reset</button>
+                </div>
+            </div>
+
+            <div class="vis-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>True β₁</h4>
+                        <div class="value good">1.00</div>
+                        <div class="subtitle">Population parameter</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Est. β₁ (Omitted Model)</h4>
+                        <div class="value bad" id="ovb-est-beta1">—</div>
+                        <div class="subtitle">Biased estimate</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Theoretical Bias</h4>
+                        <div class="value warning" id="ovb-theory-bias">—</div>
+                        <div class="subtitle">E[β̂₁] - β₁</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Est. β₁ (Full Model)</h4>
+                        <div class="value good" id="ovb-full-beta1">—</div>
+                        <div class="subtitle">Unbiased (includes X₂)</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="ovb-chart-main"></div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="ovb-chart-dist"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="module-endogeneity" class="module">
+            <div class="controls">
+                <h3>Parameters</h3>
+
+                <div class="formula-box">
+                    Structural: \(Y = \beta_0 + \beta_1 X + \varepsilon\)
+                    <br>First Stage: \(X = \gamma_0 + \gamma_1 Z + \nu\)
+                    <br>\(\text{Cov}(X, \varepsilon) \neq 0\) (Endogeneity)
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Endogeneity Level</span>
+                        <span id="endo-level-val" class="value-display">0.50</span>
+                    </div>
+                    <input type="range" id="endo-level" min="0" max="0.95" step="0.05" value="0.5"
+                        oninput="updateEndo()">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>IV Strength (γ₁)</span>
+                        <span id="endo-gamma-val" class="value-display">1.0</span>
+                    </div>
+                    <input type="range" id="endo-gamma" min="0.1" max="2" step="0.1" value="1" oninput="updateEndo()">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Sample Size</span>
+                        <span id="endo-n-val" class="value-display">200</span>
+                    </div>
+                    <input type="range" id="endo-n" min="100" max="1000" step="100" value="200" oninput="updateEndo()">
+                </div>
+
+                <div class="explanation">
+                    <strong>Two-Stage Least Squares (2SLS)</strong>
+                    <p>Stage 1: Regress \(X\) on \(Z\) to get \(\hat{X}\)</p>
+                    <p>Stage 2: Regress \(Y\) on \(\hat{X}\)</p>
+                    <div class="formula-box">
+                        \[\hat{\beta}_{2SLS} = (X'P_Z X)^{-1} X'P_Z Y\]
+                    </div>
+                    <p>OLS is inconsistent under endogeneity. 2SLS is consistent if Relevance \(\text{Cov}(Z, X) \neq
+                        0\) and Exogeneity \(\text{Cov}(Z, \varepsilon) = 0\).</p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn" onclick="updateEndo()">Re-simulate</button>
+                </div>
+            </div>
+
+            <div class="vis-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>True β₁</h4>
+                        <div class="value good">2.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>OLS Est. β₁</h4>
+                        <div class="value bad" id="endo-ols-beta">—</div>
+                        <div class="subtitle">Inconsistent</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>2SLS Est. β₁</h4>
+                        <div class="value good" id="endo-2sls-beta">—</div>
+                        <div class="subtitle">Consistent</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>First-Stage F-stat</h4>
+                        <div class="value neutral" id="endo-f-stat">—</div>
+                        <div class="subtitle">IV relevance test</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="endo-chart-comparison"></div>
+                </div>
+
+                <div class="diagnostic-panel">
+                    <h4>Diagnostic Tests</h4>
+                    <div id="endo-tests"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="module-measurement" class="module">
+            <div class="controls">
+                <h3>Parameters</h3>
+
+                <div class="formula-box">
+                    True: \(Y = \beta_0 + \beta_1 X^* + \varepsilon\)
+                    <br>Observed: \(X = X^* + u\)
+                    <br>where \(u \sim N(0, \sigma_u^2)\)
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Signal-to-Noise Ratio</span>
+                        <span id="me-snr-val" class="value-display">5.0</span>
+                    </div>
+                    <input type="range" id="me-snr" min="0.5" max="10" step="0.5" value="5" oninput="updateME()">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Sample Size</span>
+                        <span id="me-n-val" class="value-display">200</span>
+                    </div>
+                    <input type="range" id="me-n" min="50" max="500" step="50" value="200" oninput="updateME()">
+                </div>
+
+                <div class="explanation">
+                    <strong>Attenuation Bias</strong>
+                    <p>Classical measurement error in \(X\) causes attenuation bias toward zero.</p>
+                    <div class="formula-box">
+                        \[\text{plim}\,\hat{\beta}_1 = \beta_1 \cdot \frac{\sigma_{X^*}^2}{\sigma_{X^*}^2 + \sigma_u^2}
+                        = \beta_1 \cdot \lambda\]
+                    </div>
+                    <p>where \(\lambda \in (0,1)\) is the reliability ratio.</p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn" onclick="updateME()">Re-simulate</button>
+                </div>
+            </div>
+
+            <div class="vis-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>True β₁</h4>
+                        <div class="value good">1.50</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Est. β₁ (with error)</h4>
+                        <div class="value bad" id="me-est-beta">—</div>
+                        <div class="subtitle">Attenuated</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Attenuation Factor (λ)</h4>
+                        <div class="value warning" id="me-lambda">—</div>
+                        <div class="subtitle">Reliability ratio</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Theoretical plim(β̂₁)</h4>
+                        <div class="value neutral" id="me-plim">—</div>
+                        <div class="subtitle">= β₁ · λ</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="me-chart-scatter"></div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="me-chart-dist"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="module-autocorr" class="module">
+            <div class="controls">
+                <h3>Parameters</h3>
+
+                <div class="formula-box">
+                    Model: \(Y_t = \beta_0 + \beta_1 X_t + \varepsilon_t\)
+                    <br>AR(1) Errors: \(\varepsilon_t = \rho \varepsilon_{t-1} + u_t\)
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Autocorrelation (ρ)</span>
+                        <span id="ac-rho-val" class="value-display">0.70</span>
+                    </div>
+                    <input type="range" id="ac-rho" min="0" max="0.95" step="0.05" value="0.7" oninput="updateAC()">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Time Series Length</span>
+                        <span id="ac-n-val" class="value-display">200</span>
+                    </div>
+                    <input type="range" id="ac-n" min="100" max="500" step="50" value="200" oninput="updateAC()">
+                </div>
+
+                <div class="explanation">
+                    <strong>Consequences</strong>
+                    <p>With autocorrelated errors:</p>
+                    <p>OLS coefficients remain unbiased</p>
+                    <p>Standard errors are biased (usually downward)</p>
+                    <p>t-tests and p-values are invalid</p>
+                    <div class="formula-box">
+                        \[\text{Var}(\hat{\beta}_{OLS}) \neq \sigma^2(X'X)^{-1}\]
+                    </div>
+                    <p>Solutions: Newey-West HAC standard errors, Cochrane-Orcutt, FGLS, or Prais-Winsten
+                        transformation.</p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn" onclick="updateAC()">Re-simulate</button>
+                </div>
+            </div>
+
+            <div class="vis-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>True β₁</h4>
+                        <div class="value good">1.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>OLS Est. β₁</h4>
+                        <div class="value neutral" id="ac-ols-beta">—</div>
+                        <div class="subtitle">Still unbiased</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Durbin-Watson</h4>
+                        <div class="value warning" id="ac-dw">—</div>
+                        <div class="subtitle">≈ 2(1-ρ)</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>ACF(1) of Residuals</h4>
+                        <div class="value bad" id="ac-acf1">—</div>
+                        <div class="subtitle">Should be ≈ 0</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="ac-chart-residuals"></div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="ac-chart-acf"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="module-weak-iv" class="module">
+            <div class="controls">
+                <h3>Parameters</h3>
+
+                <div class="formula-box">
+                    Structural: \(Y = \beta X + \varepsilon\)
+                    <br>First Stage: \(X = \pi Z + \nu\)
+                    <br>Weak IV: \(|\pi| \approx 0\)
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>First-Stage Coef. (π)</span>
+                        <span id="wiv-pi-val" class="value-display">0.30</span>
+                    </div>
+                    <input type="range" id="wiv-pi" min="0.05" max="1.5" step="0.05" value="0.3" oninput="updateWIV()">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Sample Size</span>
+                        <span id="wiv-n-val" class="value-display">100</span>
+                    </div>
+                    <input type="range" id="wiv-n" min="50" max="500" step="50" value="100" oninput="updateWIV()">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Simulations</span>
+                        <span id="wiv-sims-val" class="value-display">500</span>
+                    </div>
+                    <input type="range" id="wiv-sims" min="100" max="1000" step="100" value="500" oninput="updateWIV()">
+                </div>
+
+                <div class="explanation">
+                    <strong>Weak IV Problem</strong>
+                    <p>When instruments are weakly correlated with the endogenous regressor:</p>
+                    <p>2SLS is biased in finite samples</p>
+                    <p>Standard errors are unreliable</p>
+                    <p>Wald tests have severe size distortions</p>
+                    <div class="formula-box">
+                        \[F_{\text{first-stage}} = \frac{\hat{\pi}^2/\text{se}(\hat{\pi})^2}{1} > 10\]
+                    </div>
+                    <p>Rule of thumb: First-stage F-stat should exceed 10 (Stock-Yogo).</p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn" onclick="updateWIV()">Re-simulate</button>
+                </div>
+            </div>
+
+            <div class="vis-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>True β</h4>
+                        <div class="value good">1.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Avg. 2SLS Est.</h4>
+                        <div class="value bad" id="wiv-avg-2sls">—</div>
+                        <div class="subtitle">Biased when π ≈ 0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Median F-stat</h4>
+                        <div class="value warning" id="wiv-median-f">—</div>
+                        <div class="subtitle">Want > 10</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Std. Dev. of Est.</h4>
+                        <div class="value neutral" id="wiv-std">—</div>
+                        <div class="subtitle">High variance</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="wiv-chart-dist"></div>
+                </div>
+
+                <div class="diagnostic-panel">
+                    <h4>Weak IV Diagnostics</h4>
+                    <div id="wiv-diagnostics"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="module-robust-se" class="module">
+            <div class="controls">
+                <h3>Parameters</h3>
+
+                <div class="formula-box">
+                    \(Y = \beta_0 + \beta_1 X + \varepsilon\)
+                    <br>Heteroskedastic: \(\text{Var}(\varepsilon|X) = \sigma^2 X^{2\alpha}\)
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Heteroskedasticity (α)</span>
+                        <span id="rse-alpha-val" class="value-display">1.0</span>
+                    </div>
+                    <input type="range" id="rse-alpha" min="0" max="2" step="0.1" value="1" oninput="updateRSE()">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Sample Size</span>
+                        <span id="rse-n-val" class="value-display">100</span>
+                    </div>
+                    <input type="range" id="rse-n" min="50" max="500" step="50" value="100" oninput="updateRSE()">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Simulations</span>
+                        <span id="rse-sims-val" class="value-display">500</span>
+                    </div>
+                    <input type="range" id="rse-sims" min="100" max="1000" step="100" value="500" oninput="updateRSE()">
+                </div>
+
+                <div class="explanation">
+                    <strong>Robust Inference</strong>
+                    <p>Classical SE: Assumes homoskedasticity</p>
+                    <div class="formula-box">
+                        \[\widehat{\text{Var}}(\hat{\beta}) = s^2(X'X)^{-1}\]
+                    </div>
+                    <p>HC (White) SE: Robust to heteroskedasticity</p>
+                    <div class="formula-box">
+                        \[\widehat{\text{Var}}_{HC}(\hat{\beta}) = (X'X)^{-1} X' \text{diag}(\hat{u}_i^2) X (X'X)^{-1}\]
+                    </div>
+                    <p>Compare rejection rates at 5% significance level.</p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn" onclick="updateRSE()">Re-simulate</button>
+                </div>
+            </div>
+
+            <div class="vis-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>True β₁</h4>
+                        <div class="value good">0.00</div>
+                        <div class="subtitle">H₀: β₁ = 0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Classical SE Rejection Rate</h4>
+                        <div class="value bad" id="rse-classical-reject">—</div>
+                        <div class="subtitle">Should be 5%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Robust SE Rejection Rate</h4>
+                        <div class="value good" id="rse-robust-reject">—</div>
+                        <div class="subtitle">Should be 5%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Avg. SE Ratio</h4>
+                        <div class="value neutral" id="rse-ratio">—</div>
+                        <div class="subtitle">Robust / Classical</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="rse-chart-comparison"></div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="rse-chart-dist"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: "\\[", right: "\\]", display: true },
+                    { left: "\\(", right: "\\)", display: false }
+                ],
+                throwOnError: false
+            });
+            updateOVB();
+        });
+
+        // UTILITY FUNCTIONS
+        function generateNormal(mean = 0, std = 1) {
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random();
+            while (v === 0) v = Math.random();
+            return mean + std * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+
+        function generateAR1(n, rho, sigma = 1) {
+            const eps = [generateNormal(0, sigma)];
+            for (let i = 1; i < n; i++) {
+                eps.push(rho * eps[i - 1] + generateNormal(0, sigma));
+            }
+            return eps;
+        }
+
+        function simpleOLS(x, y) {
+            const n = x.length;
+            const xMean = x.reduce((a, b) => a + b, 0) / n;
+            const yMean = y.reduce((a, b) => a + b, 0) / n;
+            let num = 0, den = 0;
+            for (let i = 0; i < n; i++) {
+                num += (x[i] - xMean) * (y[i] - yMean);
+                den += (x[i] - xMean) ** 2;
+            }
+            const slope = num / den;
+            const intercept = yMean - slope * xMean;
+            const resid = y.map((yi, i) => yi - (intercept + slope * x[i]));
+            const ssr = resid.reduce((a, b) => a + b * b, 0);
+            const se_slope = Math.sqrt(ssr / (n - 2) / den);
+            return { slope, intercept, residuals: resid, se_slope };
+        }
+
+        function multipleOLS(X_mat, Y_vec) {
+            try {
+                const X = math.matrix(X_mat);
+                const Y = math.matrix(Y_vec);
+                const Xt = math.transpose(X);
+                const XtX = math.multiply(Xt, X);
+                const XtX_inv = math.inv(XtX);
+                const XtY = math.multiply(Xt, Y);
+                const Beta = math.multiply(XtX_inv, XtY);
+                const Y_pred = math.multiply(X, Beta);
+                const resid = math.subtract(Y, Y_pred);
+                return { coeffs: Beta.toArray() };
+            } catch (e) {
+                return { coeffs: [0, 0, 0] };
+            }
+        }
+
+        function correlation(x, y) {
+            const n = x.length;
+            const xMean = x.reduce((a, b) => a + b, 0) / n;
+            const yMean = y.reduce((a, b) => a + b, 0) / n;
+            let num = 0, denX = 0, denY = 0;
+            for (let i = 0; i < n; i++) {
+                num += (x[i] - xMean) * (y[i] - yMean);
+                denX += (x[i] - xMean) ** 2;
+                denY += (y[i] - yMean) ** 2;
+            }
+            return num / Math.sqrt(denX * denY);
+        }
+
+        // Plotly dark theme config
+        const plotConfig = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: '#0a0a0a',
+            font: { color: '#D4AF37', family: 'Times New Roman' },
+            xaxis: { gridcolor: '#333333', zerolinecolor: '#444444' },
+            yaxis: { gridcolor: '#333333', zerolinecolor: '#444444' }
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.module').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`module-${tabId}`).classList.add('active');
+            event.target.classList.add('active');
+            window.dispatchEvent(new Event('resize'));
+            const initFuncs = {
+                'omitted': updateOVB,
+                'endogeneity': updateEndo,
+                'measurement': updateME,
+                'autocorr': updateAC,
+                'weak-iv': updateWIV,
+                'robust-se': updateRSE
+            };
+            if (initFuncs[tabId]) initFuncs[tabId]();
+        }
+
+        // MODULE 1: OMITTED VARIABLE BIAS
+        function updateOVB() {
+            const rho = parseFloat(document.getElementById('ovb-corr').value);
+            const beta2 = parseFloat(document.getElementById('ovb-beta2').value);
+            const n = parseInt(document.getElementById('ovb-n').value);
+            document.getElementById('ovb-corr-val').textContent = rho.toFixed(2);
+            document.getElementById('ovb-beta2-val').textContent = beta2.toFixed(1);
+            document.getElementById('ovb-n-val').textContent = n;
+
+            const beta0 = 1, beta1 = 1;
+            const x1 = [], x2 = [], y = [];
+            for (let i = 0; i < n; i++) {
+                const z1 = generateNormal(0, 1);
+                const z2 = generateNormal(0, 1);
+                const x1i = z1;
+                const x2i = rho * z1 + Math.sqrt(1 - rho * rho) * z2;
+                const yi = beta0 + beta1 * x1i + beta2 * x2i + generateNormal(0, 1);
+                x1.push(x1i); x2.push(x2i); y.push(yi);
+            }
+
+            const omitted = simpleOLS(x1, y);
+            const X_full = x1.map((x, i) => [1, x1[i], x2[i]]);
+            const full = multipleOLS(X_full, y);
+
+            const varX1 = x1.reduce((a, b) => a + b * b, 0) / n;
+            const covX1X2 = x1.reduce((a, b, i) => a + b * x2[i], 0) / n;
+            const theorBias = beta2 * covX1X2 / varX1;
+
+            document.getElementById('ovb-est-beta1').textContent = omitted.slope.toFixed(3);
+            document.getElementById('ovb-theory-bias').textContent = theorBias.toFixed(3);
+            document.getElementById('ovb-full-beta1').textContent = full.coeffs[1].toFixed(3);
+
+            const biasEl = document.getElementById('ovb-est-beta1');
+            if (Math.abs(omitted.slope - beta1) > 0.5) biasEl.className = "value bad";
+            else if (Math.abs(omitted.slope - beta1) > 0.2) biasEl.className = "value warning";
+            else biasEl.className = "value neutral";
+
+            const trace1 = { x: x1, y: y, mode: 'markers', name: 'Data', marker: { color: '#D4AF37', opacity: 0.6, size: 6 } };
+            const x1_range = [Math.min(...x1), Math.max(...x1)];
+            const trace2 = {
+                x: x1_range,
+                y: x1_range.map(x => omitted.intercept + omitted.slope * x),
+                mode: 'lines',
+                name: `Omitted Fit`,
+                line: { color: '#FF3333', width: 3 }
+            };
+
+            const layout1 = { ...plotConfig, title: 'Biased Regression', xaxis: { title: 'X1', ...plotConfig.xaxis }, yaxis: { title: 'Y', ...plotConfig.yaxis } };
+            Plotly.newPlot('ovb-chart-main', [trace1, trace2], layout1, { displayModeBar: false });
+
+            const trials = 500;
+            const estimates = [];
+            for (let t = 0; t < trials; t++) {
+                const x1t = [], yt = [];
+                for (let i = 0; i < n; i++) {
+                    const z1 = generateNormal(0, 1);
+                    const z2 = generateNormal(0, 1);
+                    const x1i = z1;
+                    const x2i = rho * z1 + Math.sqrt(1 - rho * rho) * z2;
+                    const yi = beta0 + beta1 * x1i + beta2 * x2i + generateNormal(0, 1);
+                    x1t.push(x1i); yt.push(yi);
+                }
+                estimates.push(simpleOLS(x1t, yt).slope);
+            }
+
+            const traceHist = { x: estimates, type: 'histogram', name: 'Estimated Beta1', marker: { color: '#D4AF37', opacity: 0.7 } };
+            const traceTrue = { x: [beta1, beta1], y: [0, 50], mode: 'lines', name: 'True Beta1', line: { color: '#00FF00', dash: 'dash', width: 3 } };
+            const tracePlim = { x: [beta1 + theorBias, beta1 + theorBias], y: [0, 50], mode: 'lines', name: 'plim', line: { color: '#FF3333', dash: 'dot', width: 3 } };
+
+            const layout2 = { ...plotConfig, title: 'Distribution of Estimator', xaxis: { title: 'Estimated Beta1', ...plotConfig.xaxis }, yaxis: { title: 'Frequency', ...plotConfig.yaxis } };
+            Plotly.newPlot('ovb-chart-dist', [traceHist, traceTrue, tracePlim], layout2, { displayModeBar: false });
+        }
+
+        function resetOVB() {
+            document.getElementById('ovb-corr').value = 0.5;
+            document.getElementById('ovb-beta2').value = 2;
+            document.getElementById('ovb-n').value = 100;
+            updateOVB();
+        }
+
+        // MODULE 2: ENDOGENEITY
+        function updateEndo() {
+            const endoLevel = parseFloat(document.getElementById('endo-level').value);
+            const gamma1 = parseFloat(document.getElementById('endo-gamma').value);
+            const n = parseInt(document.getElementById('endo-n').value);
+            document.getElementById('endo-level-val').textContent = endoLevel.toFixed(2);
+            document.getElementById('endo-gamma-val').textContent = gamma1.toFixed(1);
+            document.getElementById('endo-n-val').textContent = n;
+
+            const beta_true = 2;
+            const z = [], x = [], y = [];
+            for (let i = 0; i < n; i++) {
+                const zi = generateNormal(0, 1);
+                const u_common = generateNormal(0, 1);
+                const nu = endoLevel * u_common + Math.sqrt(1 - endoLevel * endoLevel) * generateNormal(0, 1);
+                const eps = endoLevel * u_common + Math.sqrt(1 - endoLevel * endoLevel) * generateNormal(0, 1);
+                const xi = gamma1 * zi + nu;
+                const yi = beta_true * xi + eps;
+                z.push(zi); x.push(xi); y.push(yi);
+            }
+
+            const ols = simpleOLS(x, y);
+            const stage1 = simpleOLS(z, x);
+            const x_hat = z.map(zi => stage1.intercept + stage1.slope * zi);
+            const stage2 = simpleOLS(x_hat, y);
+            const f_stat = (stage1.slope / stage1.se_slope) ** 2;
+
+            document.getElementById('endo-ols-beta').textContent = ols.slope.toFixed(3);
+            document.getElementById('endo-2sls-beta').textContent = stage2.slope.toFixed(3);
+            document.getElementById('endo-f-stat').textContent = f_stat.toFixed(2);
+
+            const fEl = document.getElementById('endo-f-stat');
+            if (f_stat < 10) fEl.className = "value bad"; else if (f_stat < 20) fEl.className = "value warning"; else fEl.className = "value good";
+
+            const corrZeps = correlation(z, ols.residuals);
+            document.getElementById('endo-tests').innerHTML = `
+                <div class="test-result ${f_stat > 10 ? 'accept' : 'reject'}"><span>First-Stage F > 10</span><span><strong>${f_stat.toFixed(2)}</strong></span></div>
+                <div class="test-result ${Math.abs(corrZeps) < 0.1 ? 'accept' : 'reject'}"><span>Corr(Z, e) approx 0</span><span><strong>${corrZeps.toFixed(3)}</strong></span></div>`;
+
+            const trace1 = { x: x, y: y, mode: 'markers', name: 'Data', marker: { color: '#D4AF37', opacity: 0.5, size: 6 } };
+            const x_range = [Math.min(...x), Math.max(...x)];
+            const trace_ols = { x: x_range, y: x_range.map(xi => ols.intercept + ols.slope * xi), mode: 'lines', name: 'OLS', line: { color: '#FF3333', width: 3 } };
+            const trace_2sls = { x: x_range, y: x_range.map(xi => stage2.intercept + stage2.slope * xi), mode: 'lines', name: '2SLS', line: { color: '#00FF00', width: 3, dash: 'dash' } };
+
+            const layout = { ...plotConfig, title: 'OLS vs 2SLS', xaxis: { title: 'X', ...plotConfig.xaxis }, yaxis: { title: 'Y', ...plotConfig.yaxis } };
+            Plotly.newPlot('endo-chart-comparison', [trace1, trace_ols, trace_2sls], layout, { displayModeBar: false });
+        }
+
+        // MODULE 3: MEASUREMENT ERROR
+        function updateME() {
+            const snr = parseFloat(document.getElementById('me-snr').value);
+            const n = parseInt(document.getElementById('me-n').value);
+            document.getElementById('me-snr-val').textContent = snr.toFixed(1);
+            document.getElementById('me-n-val').textContent = n;
+
+            const beta0 = 0.5, beta1 = 1.5, sigma_xstar = 1;
+            const sigma_u = sigma_xstar / Math.sqrt(snr);
+            const xstar = [], x = [], y = [];
+
+            for (let i = 0; i < n; i++) {
+                const xstar_i = generateNormal(0, sigma_xstar);
+                const x_i = xstar_i + generateNormal(0, sigma_u);
+                const y_i = beta0 + beta1 * xstar_i + generateNormal(0, 0.5);
+                xstar.push(xstar_i); x.push(x_i); y.push(y_i);
+            }
+
+            const measured = simpleOLS(x, y);
+            const var_xstar = xstar.reduce((a, b) => a + b * b, 0) / n;
+            const lambda = var_xstar / (var_xstar + sigma_u ** 2);
+
+            document.getElementById('me-est-beta').textContent = measured.slope.toFixed(3);
+            document.getElementById('me-lambda').textContent = lambda.toFixed(3);
+            document.getElementById('me-plim').textContent = (beta1 * lambda).toFixed(3);
+
+            const trace_measured = { x: x, y: y, mode: 'markers', name: 'Measured', marker: { color: '#FF3333', opacity: 0.5, size: 6 } };
+            const trace_true = { x: xstar, y: y, mode: 'markers', name: 'True X', marker: { color: '#00FF00', opacity: 0.5, size: 6 } };
+            const x_range = [Math.min(...x, ...xstar), Math.max(...x, ...xstar)];
+            const trace_fit = { x: x_range, y: x_range.map(xi => measured.intercept + measured.slope * xi), mode: 'lines', name: 'Fit', line: { color: '#D4AF37', width: 3 } };
+
+            const layout1 = { ...plotConfig, title: 'Attenuation Bias', xaxis: { title: 'X', ...plotConfig.xaxis }, yaxis: { title: 'Y', ...plotConfig.yaxis } };
+            Plotly.newPlot('me-chart-scatter', [trace_measured, trace_true, trace_fit], layout1, { displayModeBar: false });
+
+            const trials = 500, estimates = [];
+            for (let t = 0; t < trials; t++) {
+                const xt = [], yt = [];
+                for (let i = 0; i < n; i++) {
+                    const xstar_i = generateNormal(0, sigma_xstar);
+                    const x_i = xstar_i + generateNormal(0, sigma_u);
+                    const y_i = beta0 + beta1 * xstar_i + generateNormal(0, 0.5);
+                    xt.push(x_i); yt.push(y_i);
+                }
+                estimates.push(simpleOLS(xt, yt).slope);
+            }
+
+            const traceHist = { x: estimates, type: 'histogram', marker: { color: '#D4AF37', opacity: 0.7 } };
+            const traceTrueLine = { x: [beta1, beta1], y: [0, 50], mode: 'lines', name: 'True', line: { color: '#00FF00', dash: 'dash', width: 3 } };
+
+            const layout2 = { ...plotConfig, title: 'Distribution', xaxis: { title: 'Est. Beta1', ...plotConfig.xaxis }, yaxis: { title: 'Freq', ...plotConfig.yaxis } };
+            Plotly.newPlot('me-chart-dist', [traceHist, traceTrueLine], layout2, { displayModeBar: false });
+        }
+
+        // MODULE 4: AUTOCORRELATION
+        function updateAC() {
+            const rho = parseFloat(document.getElementById('ac-rho').value);
+            const n = parseInt(document.getElementById('ac-n').value);
+            document.getElementById('ac-rho-val').textContent = rho.toFixed(2);
+            document.getElementById('ac-n-val').textContent = n;
+
+            const beta0 = 1, beta1 = 1;
+            const x = [], y = [];
+            const eps = generateAR1(n, rho, 1);
+            for (let i = 0; i < n; i++) {
+                const xi = i / 50 + generateNormal(0, 0.5);
+                x.push(xi); y.push(beta0 + beta1 * xi + eps[i]);
+            }
+
+            const ols = simpleOLS(x, y);
+            const resid = ols.residuals;
+            let dw_num = 0, dw_den = resid.reduce((a, b) => a + b * b, 0);
+            for (let i = 1; i < n; i++) dw_num += (resid[i] - resid[i - 1]) ** 2;
+            const dw = dw_num / dw_den;
+
+            const resid_mean = resid.reduce((a, b) => a + b, 0) / n;
+            let acf1_num = 0, acf1_den = 0;
+            for (let i = 1; i < n; i++) acf1_num += (resid[i] - resid_mean) * (resid[i - 1] - resid_mean);
+            for (let i = 0; i < n; i++) acf1_den += (resid[i] - resid_mean) ** 2;
+            const acf1 = acf1_num / acf1_den;
+
+            document.getElementById('ac-ols-beta').textContent = ols.slope.toFixed(3);
+            document.getElementById('ac-dw').textContent = dw.toFixed(3);
+            document.getElementById('ac-acf1').textContent = acf1.toFixed(3);
+
+            const acfEl = document.getElementById('ac-acf1');
+            if (Math.abs(acf1) > 0.3) acfEl.className = "value bad"; else if (Math.abs(acf1) > 0.1) acfEl.className = "value warning"; else acfEl.className = "value good";
+
+            const trace_resid = { x: Array.from({ length: n }, (_, i) => i), y: resid, mode: 'lines+markers', line: { color: '#D4AF37' }, marker: { size: 4 } };
+            Plotly.newPlot('ac-chart-residuals', [trace_resid], { ...plotConfig, title: 'Residuals over Time' }, { displayModeBar: false });
+
+            const acf = [1];
+            for (let lag = 1; lag <= 20; lag++) {
+                let num = 0;
+                for (let i = lag; i < n; i++) num += (resid[i] - resid_mean) * (resid[i - lag] - resid_mean);
+                acf.push(num / acf1_den);
+            }
+            const trace_acf = { x: Array.from({ length: 21 }, (_, i) => i), y: acf, type: 'bar', marker: { color: '#D4AF37' } };
+            Plotly.newPlot('ac-chart-acf', [trace_acf], { ...plotConfig, title: 'ACF' }, { displayModeBar: false });
+        }
+
+        // MODULE 5: WEAK IV
+        function updateWIV() {
+            const pi = parseFloat(document.getElementById('wiv-pi').value);
+            const n = parseInt(document.getElementById('wiv-n').value);
+            const sims = parseInt(document.getElementById('wiv-sims').value);
+            document.getElementById('wiv-pi-val').textContent = pi.toFixed(2);
+            document.getElementById('wiv-n-val').textContent = n;
+            document.getElementById('wiv-sims-val').textContent = sims;
+
+            const beta_true = 1, estimates_2sls = [], f_stats = [];
+            for (let s = 0; s < sims; s++) {
+                const z = [], x = [], y = [];
+                for (let i = 0; i < n; i++) {
+                    const zi = generateNormal(0, 1);
+                    const u_common = generateNormal(0, 1);
+                    const nu = 0.5 * u_common + Math.sqrt(0.75) * generateNormal(0, 1);
+                    const eps = 0.5 * u_common + Math.sqrt(0.75) * generateNormal(0, 1);
+                    const xi = pi * zi + nu;
+                    const yi = beta_true * xi + eps;
+                    z.push(zi); x.push(xi); y.push(yi);
+                }
+                const stage1 = simpleOLS(z, x);
+                f_stats.push((stage1.slope / stage1.se_slope) ** 2);
+                const x_hat = z.map(zi => stage1.intercept + stage1.slope * zi);
+                estimates_2sls.push(simpleOLS(x_hat, y).slope);
+            }
+
+            const avg_2sls = estimates_2sls.reduce((a, b) => a + b, 0) / sims;
+            const std_2sls = Math.sqrt(estimates_2sls.map(x => (x - avg_2sls) ** 2).reduce((a, b) => a + b, 0) / sims);
+            const median_f = f_stats.sort((a, b) => a - b)[Math.floor(sims / 2)];
+
+            document.getElementById('wiv-avg-2sls').textContent = avg_2sls.toFixed(3);
+            document.getElementById('wiv-std').textContent = std_2sls.toFixed(3);
+            document.getElementById('wiv-median-f').textContent = median_f.toFixed(2);
+
+            const traceHist = { x: estimates_2sls, type: 'histogram', marker: { color: '#D4AF37', opacity: 0.7 } };
+            const traceTrue = { x: [beta_true, beta_true], y: [0, 50], mode: 'lines', line: { color: '#00FF00', dash: 'dash' } };
+            Plotly.newPlot('wiv-chart-dist', [traceHist, traceTrue], { ...plotConfig, title: '2SLS Distribution' }, { displayModeBar: false });
+
+            const pct_weak = (f_stats.filter(f => f < 10).length / sims * 100).toFixed(1);
+            document.getElementById('wiv-diagnostics').innerHTML = `<div class="test-result ${pct_weak < 20 ? 'accept' : 'reject'}"><span>% Weak IV (F < 10)</span><span><strong>${pct_weak}%</strong></span></div>`;
+        }
+
+        // MODULE 6: ROBUST SE
+        function updateRSE() {
+            const alpha = parseFloat(document.getElementById('rse-alpha').value);
+            const n = parseInt(document.getElementById('rse-n').value);
+            const sims = parseInt(document.getElementById('rse-sims').value);
+            document.getElementById('rse-alpha-val').textContent = alpha.toFixed(1);
+            document.getElementById('rse-n-val').textContent = n;
+            document.getElementById('rse-sims-val').textContent = sims;
+
+            let classical_reject = 0, robust_reject = 0;
+            const se_ratios = [], classical_t_stats = [], robust_t_stats = [];
+
+            for (let s = 0; s < sims; s++) {
+                const x = [], y = [];
+                for (let i = 0; i < n; i++) {
+                    const xi = 1 + i / n * 3;
+                    const yi = generateNormal(0, Math.pow(xi, alpha));
+                    x.push(xi); y.push(yi);
+                }
+                const ols = simpleOLS(x, y);
+                const classical_se = ols.se_slope;
+                const classical_t = ols.slope / classical_se;
+                if (Math.abs(classical_t) > 1.96) classical_reject++;
+                classical_t_stats.push(classical_t);
+
+                const xMean = x.reduce((a, b) => a + b, 0) / n;
+                const resid_sq = ols.residuals.map(r => r * r);
+                let hc_var = 0, sum_x_sq = 0;
+                for (let i = 0; i < n; i++) {
+                    const diff = x[i] - xMean;
+                    hc_var += diff * diff * resid_sq[i];
+                    sum_x_sq += diff * diff;
+                }
+                const robust_se = Math.sqrt(hc_var / (sum_x_sq ** 2));
+                const robust_t = ols.slope / robust_se;
+                if (Math.abs(robust_t) > 1.96) robust_reject++;
+                robust_t_stats.push(robust_t);
+                se_ratios.push(robust_se / classical_se);
+            }
+
+            document.getElementById('rse-classical-reject').textContent = (classical_reject / sims * 100).toFixed(1) + '%';
+            document.getElementById('rse-robust-reject').textContent = (robust_reject / sims * 100).toFixed(1) + '%';
+            document.getElementById('rse-ratio').textContent = (se_ratios.reduce((a, b) => a + b, 0) / sims).toFixed(2);
+
+            const trace_class = { x: classical_t_stats, y: robust_t_stats, mode: 'markers', marker: { color: '#D4AF37', opacity: 0.4, size: 4 } };
+            const trace_diag = { x: [-4, 4], y: [-4, 4], mode: 'lines', line: { color: '#FF3333', dash: 'dash' } };
+            Plotly.newPlot('rse-chart-comparison', [trace_class, trace_diag], { ...plotConfig, title: 't-stat Comparison', xaxis: { title: 'Classical t' }, yaxis: { title: 'Robust t' } }, { displayModeBar: false });
+
+            const traceRatio = { x: se_ratios, type: 'histogram', marker: { color: '#D4AF37', opacity: 0.7 } };
+            Plotly.newPlot('rse-chart-dist', [traceRatio], { ...plotConfig, title: 'SE Ratio Dist', xaxis: { title: 'Ratio' } }, { displayModeBar: false });
+        }
+    </script>
+</body>
+
+</html>
