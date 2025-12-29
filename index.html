@@ -4,1316 +4,1242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced OLS Diagnostics Studio</title>
+    <title>Bayesian Vector Autoregression: A Complete Take | Anıl Kaya</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.2.1/math.js"></script>
+    <!-- MathJax Configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            },
+            chtml: {
+                displayAlign: 'center'
+            }
+        };
+    </script>
+    <!-- MathJax Loader -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <style>
-        :root {
-            --bg-body: #000000;
-            --bg-card: #0a0a0a;
-            --bg-card-hover: #111111;
-            --text-primary: #D4AF37;
-            --text-secondary: #AA8C2C;
-            --accent: #FFD700;
-            --accent-hover: #FFF000;
-            --danger: #FF3333;
-            --success: #00FF00;
-            --warning: #FFA500;
-            --grid-line: #333333;
-            --border-gold: 1px solid #332b00;
-            --shadow-sm: 0 2px 12px rgba(212, 175, 55, 0.05);
-            --shadow-md: 0 8px 32px rgba(0, 0, 0, 1);
-            --radius: 4px;
-            --font-stack: 'Times New Roman', Times, serif;
-            --font-mono: 'Courier New', Courier, monospace;
-        }
-
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-font-smoothing: antialiased;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Black and Gold Scheme */
+            --bg-color: #000000;
+            --text-color: #D4AF37;
+            /* Metallic Gold */
+            --accent-color: #FFD700;
+            /* Brighter Gold for highlights */
+            --border-color: #333333;
+            --secondary-bg: #0a0a0a;
         }
 
         body {
-            font-family: var(--font-stack);
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            line-height: 1.6;
-            padding: 40px 20px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* Header */
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 30px 0;
-            border-bottom: 1px solid var(--text-secondary);
-        }
-
-        header h1 {
-            font-size: 48px;
-            font-weight: 400;
-            margin-bottom: 12px;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        header p {
-            font-size: 18px;
-            color: var(--text-secondary);
-            max-width: 700px;
-            margin: 0 auto;
-            font-style: italic;
-        }
-
-        /* Navigation */
-        .nav-container {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--text-secondary);
-            padding: 12px 24px;
-            border-radius: var(--radius);
-            font-family: var(--font-stack);
-            font-size: 16px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .nav-btn.active {
-            background: var(--text-secondary);
-            color: #000;
-            border-color: var(--accent);
-            font-weight: bold;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
-        }
-
-        .nav-btn:hover:not(.active) {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        /* Module Layout */
-        .module {
-            display: none;
-            grid-template-columns: 350px 1fr;
-            gap: 30px;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        .module.active {
-            display: grid;
-        }
-
-        /* Controls Panel */
-        .controls {
-            background: var(--bg-card);
-            padding: 32px;
-            border: 1px solid var(--text-secondary);
-            height: fit-content;
-            position: sticky;
-            top: 20px;
-        }
-
-        .controls h3 {
-            font-size: 24px;
-            margin-bottom: 24px;
-            color: var(--accent);
-            border-bottom: 1px solid var(--grid-line);
-            padding-bottom: 10px;
-            font-weight: 400;
-        }
-
-        .control-group {
-            margin-bottom: 28px;
-        }
-
-        .control-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-        }
-
-        .value-display {
-            font-family: var(--font-mono);
-            color: var(--accent);
-            font-weight: bold;
-        }
-
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 2px;
-            background: var(--text-secondary);
-            outline: none;
-            margin: 10px 0;
-        }
-
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            background: var(--accent);
-            cursor: pointer;
-            border-radius: 50%;
-            transition: transform 0.2s;
-        }
-
-        input[type=range]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        .formula-box {
-            background: #0f0f0f;
-            border: 1px solid var(--text-secondary);
-            padding: 16px;
-            margin: 20px 0;
-            font-size: 15px;
-            color: var(--text-primary);
-        }
-
-        .explanation {
-            margin-top: 24px;
-            padding-top: 24px;
-            border-top: 1px solid var(--grid-line);
-            font-size: 15px;
-            color: var(--text-secondary);
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 19px;
             line-height: 1.8;
+            color: var(--text-color);
+            background-color: var(--bg-color);
         }
 
-        .explanation strong {
-            color: var(--accent);
-            display: block;
-            margin-bottom: 10px;
-            font-size: 16px;
-            text-transform: uppercase;
+        /* Header & Navigation */
+        header {
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--text-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
-        /* Visualization Panel */
-        .vis-panel {
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
             display: flex;
-            flex-direction: column;
-            gap: 24px;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-        }
-
-        .stat-card {
-            background: var(--bg-card);
-            padding: 20px;
-            border: 1px solid var(--text-secondary);
-            text-align: center;
-        }
-
-        .stat-card h4 {
-            font-size: 12px;
-            color: var(--text-secondary);
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-color);
+            text-decoration: none;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 10px;
         }
 
-        .stat-card .value {
-            font-size: 24px;
-            font-family: var(--font-mono);
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 1rem;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: opacity 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.7;
+            text-decoration: underline;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 800px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Article Header */
+        .article-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Category label removed as requested */
+
+        h1 {
+            font-size: 2.8rem;
             font-weight: bold;
-            color: var(--accent);
+            line-height: 1.2;
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
         }
 
-        .stat-card .value.bad {
-            color: var(--danger);
-        }
-
-        .stat-card .value.good {
-            color: var(--success);
-        }
-
-        .stat-card .value.neutral {
-            color: var(--accent);
-        }
-
-        .stat-card .value.warning {
-            color: var(--warning);
-        }
-
-        .stat-card .subtitle {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 6px;
+        .article-meta {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            font-size: 0.95rem;
+            color: var(--text-color);
+            opacity: 0.8;
             font-style: italic;
         }
 
-        .chart-container {
-            background: var(--bg-card);
-            padding: 20px;
-            border: 1px solid var(--text-secondary);
-            min-height: 400px;
-        }
-
-        .diagnostic-panel {
-            background: var(--bg-card);
-            padding: 24px;
-            border: 1px solid var(--text-secondary);
-        }
-
-        .diagnostic-panel h4 {
-            color: var(--accent);
-            margin-bottom: 16px;
-            font-size: 18px;
-            border-bottom: 1px solid var(--grid-line);
-            padding-bottom: 8px;
-        }
-
-        .test-result {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px;
-            margin-bottom: 8px;
-            background: rgba(255, 255, 255, 0.03);
-            border-left: 2px solid var(--text-secondary);
-        }
-
-        .test-result.reject {
-            border-left-color: var(--danger);
-            color: var(--danger);
-        }
-
-        .test-result.accept {
-            border-left-color: var(--success);
-            color: var(--success);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .btn {
-            background: var(--accent);
-            color: #000;
-            border: none;
-            padding: 12px 24px;
-            border-radius: var(--radius);
+        /* Typography */
+        h2 {
+            font-size: 2rem;
             font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: var(--font-stack);
+            margin-top: 3.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+            border-bottom: 1px solid #333;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+        }
+
+        /* Links */
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        a:hover {
+            border-bottom-color: var(--accent-color);
+        }
+
+        /* Lists */
+        ul,
+        ol {
+            margin-left: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2.5rem 0;
+            border: 1px solid var(--text-color);
+        }
+
+        table caption {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: left;
+            font-style: italic;
+        }
+
+        th {
+            border-bottom: 1px solid var(--text-color);
+            padding: 1rem;
+            text-align: left;
+            font-weight: bold;
             text-transform: uppercase;
-            flex: 1;
+            font-size: 0.9rem;
         }
 
-        .btn:hover {
-            background: var(--accent-hover);
-            box-shadow: 0 0 10px var(--accent);
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
+        tr:last-child td {
+            border-bottom: none;
         }
 
-        .btn-secondary:hover {
-            background: var(--accent);
-            color: #000;
+        /* Math equations */
+        .equation {
+            margin: 2rem 0;
+            padding: 1rem 0;
+            overflow-x: auto;
+            text-align: center;
+        }
+
+        /* Force MathJax Color to Gold */
+        mjx-container {
+            color: var(--text-color) !important;
+        }
+
+        .mjx-content {
+            color: var(--text-color) !important;
+        }
+
+        /* SVG paths in MathJax (CommonHTML) rely on current color, but explicitly setting fill helps */
+        mjx-container svg path {
+            fill: var(--text-color) !important;
+        }
+
+        /* Code-like sections / Emphasis Box */
+        .emphasis-box {
+            border: 1px solid var(--text-color);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+        }
+
+        /* References */
+        .references {
+            margin-top: 5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--text-color);
+        }
+
+        .reference-item {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            text-indent: -2rem;
+        }
+
+        /* Footer */
+        footer {
+            max-width: 1200px;
+            margin: 5rem auto 2rem;
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Table of Contents */
+        .toc {
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            border-bottom: none;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .toc li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc a {
+            color: var(--text-color);
+            border-bottom: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
         }
 
         /* Responsive */
-        @media (max-width: 1100px) {
-            .module {
-                grid-template-columns: 1fr;
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1.5rem;
             }
 
-            .controls {
-                position: relative;
-                top: 0;
+            h1 {
+                font-size: 2rem;
             }
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* KaTeX styling */
-        .katex {
-            font-size: 1.1em;
-            color: var(--accent);
         }
     </style>
 </head>
 
 <body>
 
+    <header>
+        <nav>
+            <a href="#" class="logo">Anıl Kaya</a>
+            <ul class="nav-links">
+                <li><a href="#articles">Articles</a></li>
+            </ul>
+        </nav>
+    </header>
+
     <div class="container">
-        <header>
-            <h1>Advanced OLS Diagnostics Studio</h1>
-            <p>Econometric simulations exploring bias, inconsistency, and inference under violated assumptions</p>
-        </header>
-
-        <div class="nav-container">
-            <button class="nav-btn active" onclick="switchTab('omitted')">Omitted Variable Bias</button>
-            <button class="nav-btn" onclick="switchTab('endogeneity')">Endogeneity & IV</button>
-            <button class="nav-btn" onclick="switchTab('measurement')">Measurement Error</button>
-            <button class="nav-btn" onclick="switchTab('autocorr')">Autocorrelation</button>
-            <button class="nav-btn" onclick="switchTab('weak-iv')">Weak Instruments</button>
-            <button class="nav-btn" onclick="switchTab('robust-se')">Robust Inference</button>
-        </div>
-
-        <div id="module-omitted" class="module active">
-            <div class="controls">
-                <h3>Parameters</h3>
-
-                <div class="formula-box">
-                    True DGP: \(Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \varepsilon\)
-                    <br>Est. Model: \(Y = \beta_0 + \beta_1 X_1 + u\)
-                </div>
-
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Corr(X₁, X₂)</span>
-                        <span id="ovb-corr-val" class="value-display">0.50</span>
-                    </div>
-                    <input type="range" id="ovb-corr" min="0" max="0.95" step="0.05" value="0.5" oninput="updateOVB()">
-                </div>
-
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>True β₂ (Omitted)</span>
-                        <span id="ovb-beta2-val" class="value-display">2.0</span>
-                    </div>
-                    <input type="range" id="ovb-beta2" min="-3" max="3" step="0.5" value="2" oninput="updateOVB()">
-                </div>
-
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Sample Size</span>
-                        <span id="ovb-n-val" class="value-display">100</span>
-                    </div>
-                    <input type="range" id="ovb-n" min="50" max="500" step="50" value="100" oninput="updateOVB()">
-                </div>
-
-                <div class="explanation">
-                    <strong>Asymptotic Bias Formula</strong>
-                    <p>When \(X_2\) is omitted:</p>
-                    <div class="formula-box">
-                        \[\text{plim}\,\hat{\beta}_1 = \beta_1 + \beta_2 \cdot
-                        \frac{\text{Cov}(X_1,X_2)}{\text{Var}(X_1)}\]
-                    </div>
-                    <p>The OLS estimator is biased and inconsistent. The bias direction depends on
-                        \(\text{sign}(\beta_2)\) and \(\text{sign}(\rho_{12})\).</p>
-                    <p>Bias = 0 only if \(\beta_2 = 0\) or \(\text{Cov}(X_1, X_2) = 0\).</p>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn" onclick="updateOVB()">Re-simulate</button>
-                    <button class="btn btn-secondary" onclick="resetOVB()">Reset</button>
+        <article>
+            <div class="article-header">
+                <!-- Removed Category Label -->
+                <h1>Bayesian Vector Autoregression: A Complete Guide to Modern Implementation</h1>
+                <div class="article-meta">
+                    <span>December 29, 2025</span>
+                    <span>&bull;</span>
+                    <span>Anıl Kaya</span>
                 </div>
             </div>
 
-            <div class="vis-panel">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h4>True β₁</h4>
-                        <div class="value good">1.00</div>
-                        <div class="subtitle">Population parameter</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Est. β₁ (Omitted Model)</h4>
-                        <div class="value bad" id="ovb-est-beta1">—</div>
-                        <div class="subtitle">Biased estimate</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Theoretical Bias</h4>
-                        <div class="value warning" id="ovb-theory-bias">—</div>
-                        <div class="subtitle">E[β̂₁] - β₁</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Est. β₁ (Full Model)</h4>
-                        <div class="value good" id="ovb-full-beta1">—</div>
-                        <div class="subtitle">Unbiased (includes X₂)</div>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <div id="ovb-chart-main"></div>
-                </div>
-
-                <div class="chart-container">
-                    <div id="ovb-chart-dist"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="module-endogeneity" class="module">
-            <div class="controls">
-                <h3>Parameters</h3>
-
-                <div class="formula-box">
-                    Structural: \(Y = \beta_0 + \beta_1 X + \varepsilon\)
-                    <br>First Stage: \(X = \gamma_0 + \gamma_1 Z + \nu\)
-                    <br>\(\text{Cov}(X, \varepsilon) \neq 0\) (Endogeneity)
-                </div>
-
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Endogeneity Level</span>
-                        <span id="endo-level-val" class="value-display">0.50</span>
-                    </div>
-                    <input type="range" id="endo-level" min="0" max="0.95" step="0.05" value="0.5"
-                        oninput="updateEndo()">
-                </div>
-
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>IV Strength (γ₁)</span>
-                        <span id="endo-gamma-val" class="value-display">1.0</span>
-                    </div>
-                    <input type="range" id="endo-gamma" min="0.1" max="2" step="0.1" value="1" oninput="updateEndo()">
-                </div>
-
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Sample Size</span>
-                        <span id="endo-n-val" class="value-display">200</span>
-                    </div>
-                    <input type="range" id="endo-n" min="100" max="1000" step="100" value="200" oninput="updateEndo()">
-                </div>
-
-                <div class="explanation">
-                    <strong>Two-Stage Least Squares (2SLS)</strong>
-                    <p>Stage 1: Regress \(X\) on \(Z\) to get \(\hat{X}\)</p>
-                    <p>Stage 2: Regress \(Y\) on \(\hat{X}\)</p>
-                    <div class="formula-box">
-                        \[\hat{\beta}_{2SLS} = (X'P_Z X)^{-1} X'P_Z Y\]
-                    </div>
-                    <p>OLS is inconsistent under endogeneity. 2SLS is consistent if Relevance \(\text{Cov}(Z, X) \neq
-                        0\) and Exogeneity \(\text{Cov}(Z, \varepsilon) = 0\).</p>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn" onclick="updateEndo()">Re-simulate</button>
-                </div>
+            <div class="toc">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#introduction">1. Introduction: Why I Need Shrinkage</a></li>
+                    <li><a href="#literature">2. Literature: Competing Visions of Shrinkage</a></li>
+                    <li><a href="#mathematical">3. The Mathematical Framework</a></li>
+                    <li><a href="#pitfalls">4. Pitfalls in Practice</a></li>
+                    <li><a href="#extensions">5. Extensions and Modern Developments</a></li>
+                    <li><a href="#implementation">6. Practical Implementation Steps</a></li>
+                    <li><a href="#conclusion">7. Conclusion and Open Questions</a></li>
+                </ul>
             </div>
 
-            <div class="vis-panel">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h4>True β₁</h4>
-                        <div class="value good">2.00</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>OLS Est. β₁</h4>
-                        <div class="value bad" id="endo-ols-beta">—</div>
-                        <div class="subtitle">Inconsistent</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>2SLS Est. β₁</h4>
-                        <div class="value good" id="endo-2sls-beta">—</div>
-                        <div class="subtitle">Consistent</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>First-Stage F-stat</h4>
-                        <div class="value neutral" id="endo-f-stat">—</div>
-                        <div class="subtitle">IV relevance test</div>
-                    </div>
-                </div>
+            <h2 id="introduction">1. Introduction: Why I Need Shrinkage</h2>
 
-                <div class="chart-container">
-                    <div id="endo-chart-comparison"></div>
-                </div>
+            <p>When Sims (1980) introduced Vector Autoregressions to macroeconomics, he made a powerful argument against
+                the structural models that dominated the field. Those models, he showed, imposed "incredible
+                restrictions" that had little basis in economic theory but were necessary to make estimation possible.
+                The VAR offered an alternative: let the data speak freely by estimating a reduced-form system where each
+                variable depends on its own past values and the past values of all other variables in the system.</p>
 
-                <div class="diagnostic-panel">
-                    <h4>Diagnostic Tests</h4>
-                    <div id="endo-tests"></div>
-                </div>
-            </div>
-        </div>
+            <p>The problem emerged quickly. A VAR with \(N\) variables and \(p\) lags requires estimating \(N^2 p + N\)
+                coefficients in each equation. With typical macroeconomic datasets containing perhaps 200 quarterly
+                observations, a modest 5-variable VAR with 4 lags already uses 105 parameters. This leaves very few
+                degrees of freedom for precise estimation. The situation worsens dramatically as \(N\) increases. A
+                20-variable system with 4 lags requires 1,620 parameters. No amount of historical data can estimate this
+                many free parameters reliably.</p>
 
-        <div id="module-measurement" class="module">
-            <div class="controls">
-                <h3>Parameters</h3>
+            <p>Bayesian methods provided the solution. Rather than leaving all coefficients completely free, I can
+                impose prior beliefs that push coefficients toward sensible values. The key insight came from the
+                observation that most macroeconomic time series behave roughly like random walks. If I believe that GDP
+                today is probably close to GDP yesterday plus a small random shock, then I can encode this belief
+                mathematically. Coefficients on a variable's own first lag should be near one, while coefficients on
+                other variables and higher lags should be near zero.</p>
 
-                <div class="formula-box">
-                    True: \(Y = \beta_0 + \beta_1 X^* + \varepsilon\)
-                    <br>Observed: \(X = X^* + u\)
-                    <br>where \(u \sim N(0, \sigma_u^2)\)
-                </div>
+            <p>This approach, developed by Litterman (1986) at the Federal Reserve Bank of Minneapolis, became known as
+                the Minnesota prior. The name stuck, and the method revolutionized macroeconomic forecasting. What made
+                it work was not just the prior itself but the careful tuning of how strongly the prior pulled
+                coefficients toward these values. Too much shrinkage and the model cannot learn from the data. Too
+                little shrinkage and I return to the original over-parameterization problem.</p>
 
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Signal-to-Noise Ratio</span>
-                        <span id="me-snr-val" class="value-display">5.0</span>
-                    </div>
-                    <input type="range" id="me-snr" min="0.5" max="10" step="0.5" value="5" oninput="updateME()">
-                </div>
+            <p>The decades since Litterman's work have seen continuous refinement of this basic idea. Researchers have
+                developed priors that respect cointegration relationships (Doan et al., 1984). They have extended the
+                framework to systems with hundreds of variables (Bańbura et al., 2010). They have allowed coefficients
+                to drift over time (Primiceri, 2005) and variances to change (Cogley & Sargent, 2005). Each innovation
+                addressed a specific limitation of earlier approaches.</p>
 
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Sample Size</span>
-                        <span id="me-n-val" class="value-display">200</span>
-                    </div>
-                    <input type="range" id="me-n" min="50" max="500" step="50" value="200" oninput="updateME()">
-                </div>
+            <p>This monograph focuses on what I call the "perfected" BVAR, though perfection in econometrics is always
+                provisional. By this term I mean a specification that makes defensible choices at each decision point in
+                model construction. It uses dummy observations to implement priors efficiently. It treats
+                hyperparameters as unknowns to be estimated rather than fixed arbitrarily. It acknowledges the Kronecker
+                restriction in conjugate priors and considers when this restriction matters. Most importantly, it
+                recognizes that shrinkage is not a magic solution but a tool with specific properties and limitations.
+            </p>
 
-                <div class="explanation">
-                    <strong>Attenuation Bias</strong>
-                    <p>Classical measurement error in \(X\) causes attenuation bias toward zero.</p>
-                    <div class="formula-box">
-                        \[\text{plim}\,\hat{\beta}_1 = \beta_1 \cdot \frac{\sigma_{X^*}^2}{\sigma_{X^*}^2 + \sigma_u^2}
-                        = \beta_1 \cdot \lambda\]
-                    </div>
-                    <p>where \(\lambda \in (0,1)\) is the reliability ratio.</p>
-                </div>
+            <p>The structure proceeds as follows. Section 2 synthesizes the literature, organizing it around key
+                tensions rather than chronology. Section 3 develops the mathematics of the hierarchical BVAR, providing
+                complete derivations. Section 4 catalogs implementation pitfalls that textbooks often ignore. I conclude
+                with observations about the frontier of current research and persistent open questions.</p>
 
-                <div class="button-group">
-                    <button class="btn" onclick="updateME()">Re-simulate</button>
-                </div>
-            </div>
+            <h2 id="literature">2. Literature: Competing Visions of Shrinkage</h2>
 
-            <div class="vis-panel">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h4>True β₁</h4>
-                        <div class="value good">1.50</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Est. β₁ (with error)</h4>
-                        <div class="value bad" id="me-est-beta">—</div>
-                        <div class="subtitle">Attenuated</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Attenuation Factor (λ)</h4>
-                        <div class="value warning" id="me-lambda">—</div>
-                        <div class="subtitle">Reliability ratio</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Theoretical plim(β̂₁)</h4>
-                        <div class="value neutral" id="me-plim">—</div>
-                        <div class="subtitle">= β₁ · λ</div>
-                    </div>
-                </div>
+            <p>Understanding BVAR literature requires recognizing that researchers have pursued different goals. Some
+                prioritize computational speed. Others want maximum flexibility to fit the data. Still others seek
+                interpretability and theoretical coherence. These goals often conflict, and the history of BVAR
+                development is largely a history of these conflicts playing out.</p>
 
-                <div class="chart-container">
-                    <div id="me-chart-scatter"></div>
-                </div>
+            <h3>2.1 The Conjugacy Question</h3>
 
-                <div class="chart-container">
-                    <div id="me-chart-dist"></div>
-                </div>
-            </div>
-        </div>
+            <p>The earliest BVAR implementations used conjugate priors because the mathematics worked out cleanly. A
+                conjugate prior is one where the posterior distribution has the same functional form as the prior. For
+                the Normal linear regression model, if I place a Normal prior on coefficients and an Inverse-Wishart
+                prior on the residual covariance matrix, the posterior is also Normal-Inverse-Wishart. This means I can
+                write down the posterior in closed form without numerical integration.</p>
 
-        <div id="module-autocorr" class="module">
-            <div class="controls">
-                <h3>Parameters</h3>
+            <p>Litterman (1986) originally fixed the covariance matrix \(\Sigma\) at its ordinary least squares
+                estimate. This choice avoided dealing with priors on \(\Sigma\) entirely but created an obvious
+                inconsistency. I claim to be Bayesian, incorporating prior uncertainty, yet I treat \(\Sigma\) as
+                perfectly known. Kadiyala and Karlsson (1997) corrected this by developing the full
+                Normal-Inverse-Wishart prior. Their work showed how to sample from the posterior using Gibbs sampling,
+                where I alternately draw coefficients conditional on the covariance and the covariance conditional on
+                coefficients.</p>
 
-                <div class="formula-box">
-                    Model: \(Y_t = \beta_0 + \beta_1 X_t + \varepsilon_t\)
-                    <br>AR(1) Errors: \(\varepsilon_t = \rho \varepsilon_{t-1} + u_t\)
-                </div>
+            <p>The Natural Conjugate Prior went further, specifying that the prior covariance matrix for coefficients
+                has a Kronecker structure: \(\underline{\Omega} = \Sigma \otimes \underline{\Omega}_0\), where
+                \(\underline{\Omega}_0\) is a prior covariance that does not depend on \(\Sigma\). This structure has a
+                huge computational advantage. The posterior mean can be computed using simple matrix operations. No
+                Markov Chain Monte Carlo is needed.</p>
 
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Autocorrelation (ρ)</span>
-                        <span id="ac-rho-val" class="value-display">0.70</span>
-                    </div>
-                    <input type="range" id="ac-rho" min="0" max="0.95" step="0.05" value="0.7" oninput="updateAC()">
-                </div>
+            <p>But this convenience has a cost. The Kronecker structure forces a specific relationship between the
+                residual covariance and the prior uncertainty about coefficients. If variable \(i\) has very volatile
+                shocks, the prior automatically becomes more diffuse for all coefficients in equation \(i\). This might
+                seem reasonable at first glance. More volatile variables are harder to predict, so I should be less
+                confident about their coefficients.</p>
 
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Time Series Length</span>
-                        <span id="ac-n-val" class="value-display">200</span>
-                    </div>
-                    <input type="range" id="ac-n" min="100" max="500" step="50" value="200" oninput="updateAC()">
-                </div>
+            <p>The problem appears when I think about economic structure. Consider a VAR with output growth and
+                inflation. Suppose inflation is very volatile because of transitory price shocks. The Kronecker
+                structure implies I should be uncertain about how past output affects inflation. But economic theory
+                might tell me this relationship is stable even though inflation itself is volatile. Carriero et al.
+                (2019) make this point forcefully, showing that independent Normal-Wishart priors forecast better in
+                several applications despite requiring computationally expensive MCMC.</p>
 
-                <div class="explanation">
-                    <strong>Consequences</strong>
-                    <p>With autocorrelated errors:</p>
-                    <p>OLS coefficients remain unbiased</p>
-                    <p>Standard errors are biased (usually downward)</p>
-                    <p>t-tests and p-values are invalid</p>
-                    <div class="formula-box">
-                        \[\text{Var}(\hat{\beta}_{OLS}) \neq \sigma^2(X'X)^{-1}\]
-                    </div>
-                    <p>Solutions: Newey-West HAC standard errors, Cochrane-Orcutt, FGLS, or Prais-Winsten
-                        transformation.</p>
-                </div>
+            <p>The debate continues. Conjugate priors dominate when speed matters. Central banks running large models in
+                real-time often choose conjugacy. Academic researchers with more computational resources increasingly
+                reject it. Neither side is obviously wrong. The choice depends on the specific application and the
+                importance of the Kronecker restriction in that context.</p>
 
-                <div class="button-group">
-                    <button class="btn" onclick="updateAC()">Re-simulate</button>
-                </div>
-            </div>
+            <h3>2.2 The Scale Question: How Large is Large?</h3>
 
-            <div class="vis-panel">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h4>True β₁</h4>
-                        <div class="value good">1.00</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>OLS Est. β₁</h4>
-                        <div class="value neutral" id="ac-ols-beta">—</div>
-                        <div class="subtitle">Still unbiased</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Durbin-Watson</h4>
-                        <div class="value warning" id="ac-dw">—</div>
-                        <div class="subtitle">≈ 2(1-ρ)</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>ACF(1) of Residuals</h4>
-                        <div class="value bad" id="ac-acf1">—</div>
-                        <div class="subtitle">Should be ≈ 0</div>
-                    </div>
-                </div>
+            <p>A major shift occurred when Bańbura et al. (2010) demonstrated that BVARs could handle 100+ variables.
+                Previous implementations rarely exceeded 10 variables. The key insight was that shrinkage intensity must
+                increase with dimensionality. As \(N\) grows, most cross-variable relationships become weak. I need more
+                aggressive shrinkage toward zero for most coefficients.</p>
 
-                <div class="chart-container">
-                    <div id="ac-chart-residuals"></div>
-                </div>
+            <p>Bańbura et al. showed that with proper tuning, a BVAR with over 100 variables outperformed factor models
+                that first reduced dimensionality and then forecasted. This seemed to contradict the principle that
+                models should be parsimonious. How can a model with thousands of parameters outperform a model with
+                dozens?</p>
 
-                <div class="chart-container">
-                    <div id="ac-chart-acf"></div>
-                </div>
-            </div>
-        </div>
+            <p>The answer relates to how I count parameters. The BVAR has thousands of nominal parameters, but extreme
+                shrinkage means most are effectively zero. The prior, not the data, determines most coefficient values.
+                In this sense, the large BVAR is not really estimating thousands of parameters. It is using the prior to
+                smooth a high-dimensional space, with the data making small adjustments.</p>
 
-        <div id="module-weak-iv" class="module">
-            <div class="controls">
-                <h3>Parameters</h3>
+            <p>Critics argued this was just a complicated way to do factor analysis. If the prior dominates, why not
+                extract factors explicitly? Stock and Watson (2002) had shown that factor models work well for
+                forecasting with many predictors. The BVAR advantage, proponents responded, is that I do not have to
+                choose which combinations of variables form factors. The model discovers these combinations through the
+                pattern of which coefficients escape shrinkage.</p>
 
-                <div class="formula-box">
-                    Structural: \(Y = \beta X + \varepsilon\)
-                    <br>First Stage: \(X = \pi Z + \nu\)
-                    <br>Weak IV: \(|\pi| \approx 0\)
-                </div>
+            <p>Koop and Korobilis (2013) advanced the debate by introducing time-varying parameter BVARs (TVP-BVAR) at
+                large scale. Their work suggested that variable importance changes over time. During financial crises,
+                financial variables matter more. During stable periods, real variables dominate. A fixed-coefficient
+                BVAR, even a large one, cannot capture these shifts. Time-varying coefficients address this but at
+                enormous computational cost.</p>
 
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>First-Stage Coef. (π)</span>
-                        <span id="wiv-pi-val" class="value-display">0.30</span>
-                    </div>
-                    <input type="range" id="wiv-pi" min="0.05" max="1.5" step="0.05" value="0.3" oninput="updateWIV()">
-                </div>
+            <p>The current consensus, if one exists, is that large BVARs work well for forecasting but are less useful
+                for structural analysis. To understand policy effects or shock transmission, I still need smaller, more
+                carefully identified models. The large BVAR is a forecasting machine, not a tool for causal inference.
+                This division of labor makes sense given the different goals.</p>
 
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Sample Size</span>
-                        <span id="wiv-n-val" class="value-display">100</span>
-                    </div>
-                    <input type="range" id="wiv-n" min="50" max="500" step="50" value="100" oninput="updateWIV()">
-                </div>
+            <h3>2.3 Hierarchical Estimation: Who Chooses the Shrinkage?</h3>
 
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Simulations</span>
-                        <span id="wiv-sims-val" class="value-display">500</span>
-                    </div>
-                    <input type="range" id="wiv-sims" min="100" max="1000" step="100" value="500" oninput="updateWIV()">
-                </div>
+            <p>Perhaps the most important recent development is the move toward hierarchical priors. Traditional BVAR
+                implementation required choosing hyperparameters like the overall tightness \(\lambda\) and the lag
+                decay rate. Practitioners typically tried several values and picked the one that forecasted best in a
+                validation sample. This process invited data mining. I claim to have prior beliefs, but I am really
+                choosing them to fit the data.</p>
 
-                <div class="explanation">
-                    <strong>Weak IV Problem</strong>
-                    <p>When instruments are weakly correlated with the endogenous regressor:</p>
-                    <p>2SLS is biased in finite samples</p>
-                    <p>Standard errors are unreliable</p>
-                    <p>Wald tests have severe size distortions</p>
-                    <div class="formula-box">
-                        \[F_{\text{first-stage}} = \frac{\hat{\pi}^2/\text{se}(\hat{\pi})^2}{1} > 10\]
-                    </div>
-                    <p>Rule of thumb: First-stage F-stat should exceed 10 (Stock-Yogo).</p>
-                </div>
+            <p>Giannone et al. (2015) formalized an alternative. Place a prior distribution on the hyperparameters
+                themselves. For example, instead of fixing \(\lambda = 0.2\), I say \(\lambda \sim \text{Gamma}(a, b)\)
+                where \(a\) and \(b\) are fixed. Then I estimate \(\lambda\) along with the other parameters by
+                maximizing the marginal likelihood, integrating out the coefficients and covariance matrix.</p>
 
-                <div class="button-group">
-                    <button class="btn" onclick="updateWIV()">Re-simulate</button>
-                </div>
+            <p>This approach is sometimes called empirical Bayes because I am using the data to learn about the prior.
+                Strict Bayesians object that this violates the principle of separating prior beliefs from data. If I use
+                the data to choose the prior, I am not really being Bayesian. I am doing something closer to maximum
+                likelihood with a penalty function.</p>
+
+            <p>The empirical Bayes response is pragmatic. Yes, this is not purely subjective Bayesian inference. But it
+                provides a principled way to avoid arbitrary choices. The marginal likelihood gives an objective
+                function that balances fit against complexity. Models with very tight priors fit poorly. Models with
+                very loose priors are too complex. The marginal likelihood peaks at an intermediate point.</p>
+
+            <p>In practice, hierarchical estimation produces reasonable hyperparameter values. For quarterly U.S.
+                macroeconomic data, the optimal \(\lambda\) typically falls between 0.1 and 0.5, roughly where
+                practitioners would set it by hand. This suggests the approach is not wildly data-driven. For monthly
+                data or different countries, optimal values differ, which makes sense given different signal-to-noise
+                ratios.</p>
+
+            <p>One limitation of this approach is that it assumes the model class is correct. I am maximizing the
+                marginal likelihood within the family of Minnesota-type priors. If the true data generating process
+                requires a different prior structure, I might choose the best from a set of bad models. This is an
+                unavoidable problem in applied work. I must choose some model class, and hierarchical estimation does so
+                in a transparent, replicable way.</p>
+
+            <table>
+                <caption><strong>Table 1:</strong> Development of BVAR Methods Over Time</caption>
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>Main Method</th>
+                        <th>Key Advance</th>
+                        <th>Main Problem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1980s: Minnesota</strong><br><em>Litterman (1986)</em></td>
+                        <td>Fixed \(\Sigma\) prior<br>\(\beta \sim N(\mu_0, \Omega_0)\)</td>
+                        <td>Made VAR estimation practical with shrinkage toward random walk</td>
+                        <td>Treated covariance as known; hyperparameters chosen arbitrarily</td>
+                    </tr>
+                    <tr>
+                        <td><strong>1990s: Conjugate</strong><br><em>Kadiyala & Karlsson (1997)</em></td>
+                        <td>Normal-Wishart<br>\(p(\beta, \Sigma)\) closed form</td>
+                        <td>Estimated both coefficients and covariance jointly</td>
+                        <td>Kronecker structure ties shrinkage to residual volatility unrealistically</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2000s: Time-Varying</strong><br><em>Primiceri (2005)</em></td>
+                        <td>TVP-BVAR<br>\(\beta_t = \beta_{t-1} + u_t\)</td>
+                        <td>Coefficients drift over time following random walk</td>
+                        <td>Huge parameter count; MCMC very slow; hard to interpret changes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2010s: Large Scale</strong><br><em>Bańbura et al. (2010)</em></td>
+                        <td>Dummy observations<br>\(Y^* = [Y; Y_{\text{dum}}]\)</td>
+                        <td>Extended to 100+ variables while maintaining speed</td>
+                        <td>Prior dominates in high dimensions; resembles implicit factor model</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2015+: Hierarchical</strong><br><em>Giannone et al. (2015)</em></td>
+                        <td>Marginal likelihood<br>\(\max_\lambda p(Y|\lambda)\)</td>
+                        <td>Estimate hyperparameters from data automatically</td>
+                        <td>Computational cost high; assumes model class is correct</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2 id="mathematical">3. The Mathematical Framework</h2>
+
+            <p>I now develop the mathematics of the hierarchical BVAR in detail. The exposition assumes familiarity with
+                Bayesian inference at the graduate level but provides complete derivations to make the guide
+                self-contained.</p>
+
+            <h3>3.1 The Reduced-Form VAR</h3>
+
+            <p>Start with the standard VAR(\(p\)) model in structural form:</p>
+            <div class="equation">
+                \[\mathbf{y}_t = \mathbf{c} + \mathbf{B}_1 \mathbf{y}_{t-1} + \mathbf{B}_2 \mathbf{y}_{t-2} + \cdots +
+                \mathbf{B}_p \mathbf{y}_{t-p} + \varepsilon_t\]
             </div>
 
-            <div class="vis-panel">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h4>True β</h4>
-                        <div class="value good">1.00</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Avg. 2SLS Est.</h4>
-                        <div class="value bad" id="wiv-avg-2sls">—</div>
-                        <div class="subtitle">Biased when π ≈ 0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Median F-stat</h4>
-                        <div class="value warning" id="wiv-median-f">—</div>
-                        <div class="subtitle">Want > 10</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Std. Dev. of Est.</h4>
-                        <div class="value neutral" id="wiv-std">—</div>
-                        <div class="subtitle">High variance</div>
-                    </div>
-                </div>
+            <p>where \(\mathbf{y}_t\) is an \(N \times 1\) vector of endogenous variables at time \(t\), \(\mathbf{c}\)
+                is an \(N \times 1\) vector of intercepts, \(\mathbf{B}_j\) for \(j=1,\ldots,p\) are \(N \times N\)
+                coefficient matrices, and \(\varepsilon_t \sim N(0, \Sigma)\) is a vector of reduced-form shocks.</p>
 
-                <div class="chart-container">
-                    <div id="wiv-chart-dist"></div>
-                </div>
-
-                <div class="diagnostic-panel">
-                    <h4>Weak IV Diagnostics</h4>
-                    <div id="wiv-diagnostics"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="module-robust-se" class="module">
-            <div class="controls">
-                <h3>Parameters</h3>
-
-                <div class="formula-box">
-                    \(Y = \beta_0 + \beta_1 X + \varepsilon\)
-                    <br>Heteroskedastic: \(\text{Var}(\varepsilon|X) = \sigma^2 X^{2\alpha}\)
-                </div>
-
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Heteroskedasticity (α)</span>
-                        <span id="rse-alpha-val" class="value-display">1.0</span>
-                    </div>
-                    <input type="range" id="rse-alpha" min="0" max="2" step="0.1" value="1" oninput="updateRSE()">
-                </div>
-
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Sample Size</span>
-                        <span id="rse-n-val" class="value-display">100</span>
-                    </div>
-                    <input type="range" id="rse-n" min="50" max="500" step="50" value="100" oninput="updateRSE()">
-                </div>
-
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Simulations</span>
-                        <span id="rse-sims-val" class="value-display">500</span>
-                    </div>
-                    <input type="range" id="rse-sims" min="100" max="1000" step="100" value="500" oninput="updateRSE()">
-                </div>
-
-                <div class="explanation">
-                    <strong>Robust Inference</strong>
-                    <p>Classical SE: Assumes homoskedasticity</p>
-                    <div class="formula-box">
-                        \[\widehat{\text{Var}}(\hat{\beta}) = s^2(X'X)^{-1}\]
-                    </div>
-                    <p>HC (White) SE: Robust to heteroskedasticity</p>
-                    <div class="formula-box">
-                        \[\widehat{\text{Var}}_{HC}(\hat{\beta}) = (X'X)^{-1} X' \text{diag}(\hat{u}_i^2) X (X'X)^{-1}\]
-                    </div>
-                    <p>Compare rejection rates at 5% significance level.</p>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn" onclick="updateRSE()">Re-simulate</button>
-                </div>
+            <p>I can stack this into matrix notation. Define:</p>
+            <div class="equation">
+                \[\mathbf{Y} = [\mathbf{y}_1, \mathbf{y}_2, \ldots, \mathbf{y}_T]' \quad (T \times N)\]
+                \[\mathbf{X} = [\mathbf{x}_0, \mathbf{x}_1, \ldots, \mathbf{x}_{T-1}]' \quad (T \times K)\]
             </div>
 
-            <div class="vis-panel">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h4>True β₁</h4>
-                        <div class="value good">0.00</div>
-                        <div class="subtitle">H₀: β₁ = 0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Classical SE Rejection Rate</h4>
-                        <div class="value bad" id="rse-classical-reject">—</div>
-                        <div class="subtitle">Should be 5%</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Robust SE Rejection Rate</h4>
-                        <div class="value good" id="rse-robust-reject">—</div>
-                        <div class="subtitle">Should be 5%</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Avg. SE Ratio</h4>
-                        <div class="value neutral" id="rse-ratio">—</div>
-                        <div class="subtitle">Robust / Classical</div>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <div id="rse-chart-comparison"></div>
-                </div>
-
-                <div class="chart-container">
-                    <div id="rse-chart-dist"></div>
-                </div>
+            <p>where \(\mathbf{x}_t = [1, \mathbf{y}_t', \mathbf{y}_{t-1}', \ldots, \mathbf{y}_{t-p+1}']'\) is the \(K
+                \times 1\) vector of regressors with \(K = 1 + Np\). Stack the coefficients as:</p>
+            <div class="equation">
+                \[\mathbf{B} = [\mathbf{c}, \mathbf{B}_1, \mathbf{B}_2, \ldots, \mathbf{B}_p]' \quad (K \times N)\]
             </div>
-        </div>
 
+            <p>Then the VAR can be written compactly as:</p>
+            <div class="equation">
+                \[\mathbf{Y} = \mathbf{X} \mathbf{B} + \mathbf{E}\]
+            </div>
+
+            <p>where \(\mathbf{E}\) is \(T \times N\) with rows independently distributed as \(N(0, \Sigma)\).</p>
+
+            <p>The likelihood function is:</p>
+            <div class="equation">
+                \[p(\mathbf{Y} | \mathbf{B}, \Sigma, \mathbf{X}) = (2\pi)^{-TN/2} |\Sigma|^{-T/2} \exp\left(-\frac{1}{2}
+                \text{tr}[(\mathbf{Y} - \mathbf{X}\mathbf{B})'\Sigma^{-1}(\mathbf{Y} - \mathbf{X}\mathbf{B})] \right)\]
+            </div>
+
+            <p>Without any prior, the maximum likelihood estimator is:</p>
+            <div class="equation">
+                \[\hat{\mathbf{B}} = (\mathbf{X}'\mathbf{X})^{-1} \mathbf{X}'\mathbf{Y}\]
+                \[\hat{\Sigma} = \frac{1}{T}(\mathbf{Y} - \mathbf{X}\hat{\mathbf{B}})'(\mathbf{Y} -
+                \mathbf{X}\hat{\mathbf{B}})\]
+            </div>
+
+            <p>These are just OLS estimators equation by equation. The problem, as discussed, is that when \(K\) is
+                large relative to \(T\), these estimators are very imprecise. The sampling variance of
+                \(\hat{\mathbf{B}}\) is proportional to \((\mathbf{X}'\mathbf{X})^{-1}\), which becomes large when
+                multicollinearity is high or when I have many predictors.</p>
+
+            <h3>3.2 The Minnesota Prior</h3>
+
+            <p>The Minnesota prior encodes the belief that each variable follows approximately a random walk.
+                Specifically, the prior mean is:</p>
+            <div class="equation">
+                \[\mathbb{E}[\beta_{i,j,\ell}] = \begin{cases}
+                1 & \text{if } i=j \text{ and } \ell = 1 \\
+                0 & \text{otherwise}
+                \end{cases}\]
+            </div>
+
+            <p>where \(\beta_{i,j,\ell}\) is the coefficient on lag \(\ell\) of variable \(j\) in the equation for
+                variable \(i\).</p>
+
+            <p>The prior variance is structured to reflect different levels of confidence:</p>
+            <div class="equation">
+                \[\text{Var}[\beta_{i,j,\ell}] = \begin{cases}
+                \lambda^2 / \ell^2 & \text{if } i = j \\
+                (\lambda \theta \sigma_i / \sigma_j)^2 / \ell^2 & \text{if } i \neq j
+                \end{cases}\]
+            </div>
+
+            <p>Here \(\lambda\) controls overall tightness, \(\theta\) controls relative tightness on other variables'
+                lags compared to own lags (typically \(\theta < 1\)), \(\ell^2\) in the denominator imposes faster
+                    shrinkage on higher lags, and \(\sigma_i/\sigma_j\) scales for different units.</p>
+
+                    <p>This structure embeds several judgments. Own lags are most important, so they get the largest
+                        prior variance (least shrinkage). Cross lags matter less, controlled by \(\theta\). Higher lags
+                        decay in importance quadratically. Variables with higher variance get less shrinkage because
+                        their signal-to-noise ratio is lower.</p>
+
+                    <h3>3.3 Dummy Observation Implementation</h3>
+
+                    <p>Rather than specifying the prior covariance matrix \(\underline{\Omega}\) directly, which is \(K
+                        \times K\) and enormous when \(K = 1 + Np\) is large, I use dummy observations. This is
+                        computationally much faster.</p>
+
+                    <p>The idea is to create artificial data \(\mathbf{Y}_d\) and \(\mathbf{X}_d\) such that OLS on the
+                        augmented system gives the Bayesian posterior mean. I need two sets of dummy observations.</p>
+
+                    <p><strong>Dummy 1: Sum of Coefficients (SIMS)</strong></p>
+
+                    <p>This implements the belief in unit roots. Define:</p>
+                    <div class="equation">
+                        \[\mathbf{Y}_{d1} = \frac{1}{\lambda} \text{diag}(\bar{\mathbf{y}})\]
+                        \[\mathbf{X}_{d1} = \frac{1}{\lambda} [0, \bar{\mathbf{y}}', \bar{\mathbf{y}}', \ldots,
+                        \bar{\mathbf{y}}']\]
+                    </div>
+
+                    <p>where \(\bar{\mathbf{y}}\) is a vector of means or initial values. This dummy observation says
+                        that if I regress \(\mathbf{Y}_{d1}\) on \(\mathbf{X}_{d1}\), the sum of coefficients on each
+                        variable should be close to one.</p>
+
+                    <p><strong>Dummy 2: Single Unit Root (LITT)</strong></p>
+
+                    <p>This shrinks the intercept:</p>
+                    <div class="equation">
+                        \[\mathbf{Y}_{d2} = \frac{1}{\lambda \tau} \text{diag}(\bar{\mathbf{y}})\]
+                        \[\mathbf{X}_{d2} = \frac{1}{\lambda \tau} [1, 0, \ldots, 0]\]
+                    </div>
+
+                    <p>where \(\tau\) controls how much I shrink the intercept relative to slope coefficients.</p>
+
+                    <p><strong>Augmented System</strong></p>
+
+                    <p>Stack the dummy observations:</p>
+                    <div class="equation">
+                        \[\mathbf{Y}^* = \begin{bmatrix} \mathbf{Y} \\ \mathbf{Y}_{d1} \\ \mathbf{Y}_{d2} \end{bmatrix},
+                        \quad
+                        \mathbf{X}^* = \begin{bmatrix} \mathbf{X} \\ \mathbf{X}_{d1} \\ \mathbf{X}_{d2} \end{bmatrix}\]
+                    </div>
+
+                    <p>The posterior mean under the Normal-Inverse-Wishart prior is:</p>
+                    <div class="equation">
+                        \[\tilde{\mathbf{B}} = (\mathbf{X}^{*'}\mathbf{X}^*)^{-1} \mathbf{X}^{*'}\mathbf{Y}^*\]
+                    </div>
+
+                    <p>This is just OLS on the augmented data. The beauty of this formulation is that I never have to
+                        invert the \(K \times K\) prior covariance matrix. I only invert
+                        \(\mathbf{X}^{*'}\mathbf{X}^*\), which is the same size but much better conditioned because the
+                        dummy observations add information.</p>
+
+                    <h3>3.4 Posterior Sampling</h3>
+
+                    <p>To get the full posterior distribution, not just the mean, I need to sample from the
+                        Normal-Inverse-Wishart posterior. The algorithm is:</p>
+
+                    <ol>
+                        <li>Compute OLS estimates from the augmented system:
+                            <div class="equation">
+                                \[\tilde{\mathbf{B}} = (\mathbf{X}^{*'}\mathbf{X}^*)^{-1} \mathbf{X}^{*'}\mathbf{Y}^*\]
+                                \[\tilde{\mathbf{S}} = (\mathbf{Y}^* - \mathbf{X}^* \tilde{\mathbf{B}})'(\mathbf{Y}^* -
+                                \mathbf{X}^* \tilde{\mathbf{B}})\]
+                            </div>
+                        </li>
+                        <li>The posterior for \(\Sigma\) is Inverse-Wishart:
+                            <div class="equation">
+                                \[\Sigma | \mathbf{Y} \sim \text{IW}(\tilde{\mathbf{S}}, T + p_0)\]
+                            </div>
+                            where \(p_0\) is the prior degrees of freedom. Draw \(\Sigma^{(s)}\) from this distribution.
+                        </li>
+                        <li>The posterior for \(\mathbf{B}\) conditional on \(\Sigma\) is Normal:
+                            <div class="equation">
+                                \[\text{vec}(\mathbf{B}) | \Sigma, \mathbf{Y} \sim
+                                N\left(\text{vec}(\tilde{\mathbf{B}}), \Sigma \otimes
+                                (\mathbf{X}^{*'}\mathbf{X}^*)^{-1}\right)\]
+                            </div>
+                            Draw \(\mathbf{B}^{(s)}\) from this distribution using \(\Sigma^{(s)}\).
+                        </li>
+                        <li>Repeat steps 2-3 for \(s = 1, \ldots, S\) to get posterior draws \(\{(\mathbf{B}^{(s)},
+                            \Sigma^{(s)})\}\).</li>
+                    </ol>
+
+                    <p>These draws can be used for forecasting, impulse response analysis, or any other posterior
+                        inference.</p>
+
+                    <h3>3.5 Hierarchical Prior and Hyperparameter Optimization</h3>
+
+                    <p>The "perfected" BVAR does not fix \(\lambda\) but estimates it. Following Giannone et al. (2015),
+                        I place a prior on \(\lambda\):</p>
+                    <div class="equation">
+                        \[\lambda \sim \text{Gamma}(a_0, b_0)\]
+                    </div>
+
+                    <p>The marginal likelihood, integrating out \(\mathbf{B}\) and \(\Sigma\), is available in closed
+                        form for the conjugate prior:</p>
+                    <div class="equation">
+                        \[p(\mathbf{Y} | \lambda) =
+                        \frac{|\mathbf{X}^{*'}\mathbf{X}^*|^{-N/2}|\tilde{\mathbf{S}}|^{-(T+p_0)/2}}{\pi^{TN/2}
+                        \prod_{i=1}^N \Gamma((T+p_0-i+1)/2)}\]
+                    </div>
+
+                    <p>I maximize this with respect to \(\lambda\) (and possibly other hyperparameters like \(\theta\)):
+                    </p>
+                    <div class="equation">
+                        \[\lambda^* = \underset{\lambda}{\arg\max}\, p(\mathbf{Y} | \lambda) p(\lambda)\]
+                    </div>
+
+                    <p>This can be done numerically using standard optimization routines. The optimal \(\lambda^*\) is
+                        then used to construct the final posterior.</p>
+
+                    <p>This approach has several advantages. First, it removes arbitrariness in hyperparameter choice.
+                        Second, it provides a principled way to adapt shrinkage to different datasets. Third, the
+                        marginal likelihood automatically penalizes overfitting, balancing fit against complexity.</p>
+
+                    <p>The cost is computational. I must evaluate the marginal likelihood many times during
+                        optimization. For very large systems, this can be slow. Various approximations exist to speed
+                        things up, including grid search over a coarse grid or using the Bayesian Information Criterion
+                        (BIC) as a proxy for the marginal likelihood.</p>
+
+                    <h2 id="pitfalls">4. Pitfalls in Practice</h2>
+
+                    <p>Textbooks present BVARs as if they always work cleanly. Real implementations encounter many
+                        subtle problems. This section catalogs issues that cause failures in practice.</p>
+
+                    <h3>4.1 The Inverse-Wishart Pathology</h3>
+
+                    <p>The Inverse-Wishart prior on \(\Sigma\) has a hidden danger. The Inverse-Wishart distribution has
+                        two parameters: a scale matrix \(\mathbf{S}_0\) and degrees of freedom \(\nu_0\). The mean is
+                        \(\mathbb{E}[\Sigma] = \mathbf{S}_0 / (\nu_0 - N - 1)\) and the variance of individual elements
+                        depends on \(\nu_0\).</p>
+
+                    <p>The problem is that the Inverse-Wishart couples the level of volatility with uncertainty about
+                        volatility. As I increase \(\nu_0\) to make the prior more informative (reducing posterior
+                        uncertainty), I also make it harder for the posterior variance to differ from the prior mean.
+                        This creates trouble during structural breaks.</p>
+
+                    <p>Consider the COVID-19 pandemic in 2020. Many macroeconomic variables showed unprecedented
+                        volatility. A BVAR estimated through this period needs to allow for much higher residual
+                        variances. But if the Inverse-Wishart prior is moderately informative, it resists this change.
+                        The model instead adjusts coefficients to try to fit the extreme observations, leading to
+                        spurious parameter instability.</p>
+
+                    <p>The solution is to either use a very diffuse Inverse-Wishart prior (small \(\nu_0\)) or switch to
+                        a model with stochastic volatility. Time-varying variance models like Carriero et al. (2019)
+                        separate coefficient uncertainty from volatility uncertainty, allowing both to evolve
+                        independently. This is more realistic during structural breaks but requires much more expensive
+                        computation.</p>
+
+                    <h3>4.2 Pre-Sample Information and Regime Dependence</h3>
+
+                    <p>Many BVAR implementations use a pre-sample period to calibrate the prior mean or to estimate
+                        \(\sigma_i\) for scaling. This creates a subtle form of data snooping if not done carefully.</p>
+
+                    <p>Suppose I estimate a BVAR for 2000-2020 to forecast 2021 onwards. I might use 1990-1999 as a
+                        pre-sample to calculate sample variances. If 1990-1999 was a low-volatility period (the Great
+                        Moderation) but 2021 has high inflation, my prior will be badly mis-calibrated. I will shrink
+                        toward a low-persistence model when high persistence is needed.</p>
+
+                    <p>The problem is worse if I use the pre-sample to center the prior mean \(\underline{\beta}\). Some
+                        practitioners estimate an OLS VAR on the pre-sample and use those coefficients as the prior
+                        mean. This makes sense if the economic structure is stable. But if there was a regime change
+                        between the pre-sample and estimation sample, I am forcing the model toward the wrong dynamics.
+                    </p>
+
+                    <p>A better approach is to use rolling windows for pre-sample calibration or to put a diffuse prior
+                        on the intercept. The dummy observation implementation helps here because the "Dummy Initial
+                        Observation" allows the unconditional mean to adjust relatively freely while still shrinking
+                        slope coefficients.</p>
+
+                    <h3>4.3 Standardization and Prior Scaling</h3>
+
+                    <p>A common pre-processing step is to standardize data: subtract the mean and divide by the standard
+                        deviation so each variable has mean zero and variance one. This makes coefficients comparable
+                        across variables and avoids numerical issues when variables have very different scales.</p>
+
+                    <p>But standardization interacts badly with the Minnesota prior if not handled correctly. Recall
+                        that the Minnesota prior scales the prior variance by \(\sigma_i/\sigma_j\). This scaling
+                        assumes variables are in their original units. If I standardize first, all variables have unit
+                        variance, so this scaling becomes irrelevant.</p>
+
+                    <p>Many practitioners standardize but forget to adjust the prior. They use \(\sigma_i/\sigma_j = 1\)
+                        for all \(i, j\) because the standardized data all have unit variance. But this ignores the
+                        information in the original scales. If inflation varies much more than output growth in the
+                        original data, that tells me something about relative predictability.</p>
+
+                    <p>The correct approach is either: (1) do not standardize and use the original data variances in the
+                        prior, or (2) standardize but compute \(\sigma_i/\sigma_j\) from the original data before
+                        standardization and use those ratios in the prior. The second approach is usually better for
+                        numerical stability while preserving information.</p>
+
+                    <h3>4.4 Lag Length and Frequency Mismatch</h3>
+
+                    <p>Choosing the lag length \(p\) is critical but often done mechanically. Many researchers use
+                        information criteria like AIC or BIC on an unrestricted VAR to select \(p\). This makes sense
+                        for small systems where unrestricted VARs are feasible. For large systems, the unrestricted VAR
+                        cannot be estimated, so information criteria are not available.</p>
+
+                    <p>A deeper problem is that the optimal lag length depends on the data frequency. Quarterly data
+                        typically needs 4 lags to capture annual dynamics. Monthly data needs 12 lags. But this simple
+                        rule ignores the specific application. For forecasting short horizons, shorter lag lengths work
+                        better because they reduce parameter uncertainty. For long horizons or structural analysis,
+                        longer lags are needed to capture delayed effects.</p>
+
+                    <p>The BVAR prior partially addresses this through lag decay. Even with \(p=12\), the prior shrinks
+                        coefficients on high lags aggressively. This means including "too many" lags does less harm than
+                        in an unrestricted VAR. Some practitioners therefore use conservatively high lag lengths (8
+                        quarters or 24 months) and let the prior determine which lags matter.</p>
+
+                    <h3>4.5 Mixing Stationary and Non-Stationary Variables</h3>
+
+                    <p>Standard VAR theory assumes either all variables are stationary or they are cointegrated. Mixing
+                        I(0) and I(1) variables without cointegration creates theoretical problems. But macroeconomic
+                        VARs routinely mix levels, growth rates, and other transformations.</p>
+
+                    <p>The Minnesota prior was designed for this situation. By centering on random walk behavior, it
+                        accommodates near-unit-root dynamics without taking a stand on exact integration orders. The
+                        "Sum of Coefficients" dummy observation further helps by allowing for cointegration-like
+                        relationships.</p>
+
+                    <p>Nevertheless, problems can arise. If some variables are genuinely stationary while others have
+                        stochastic trends, the uniform random walk prior is misspecified for the stationary variables. I
+                        would want to shrink those coefficients toward zero, not one. Some researchers handle this by
+                        using different priors for different variables, but this requires pre-testing for unit roots,
+                        which is unreliable in small samples.</p>
+
+                    <p>A pragmatic middle ground is to transform obvious I(1) variables (like log GDP) to growth rates,
+                        making them approximately I(0), while leaving others (like interest rates) in levels. This
+                        reduces the heterogeneity in persistence across variables. The cost is that I lose information
+                        about long-run levels relationships, which might matter for some applications.</p>
+
+                    <h3>4.6 The Curse of Dimensionality Returns in TVP Models</h3>
+
+                    <p>Time-varying parameter BVARs (TVP-BVAR) seem like a natural extension. If I believe coefficients
+                        drift as the economy evolves, why not model this explicitly? Primiceri (2005) showed how to do
+                        this with a state-space formulation where coefficients follow random walks.</p>
+
+                    <p>The problem is that TVP-BVARs explode the parameter count. Not only do I have \(N^2 p\)
+                        coefficients at each point in time, I also have variances governing how fast each coefficient
+                        drifts. With typical sample sizes of 200-300 observations, there is not enough information to
+                        estimate hundreds of drifting coefficients plus their drift variances.</p>
+
+                    <p>Various restrictions help. I can assume coefficients drift slowly by setting small prior means on
+                        the drift variances. I can use factor structures to reduce dimensionality. I can allow only some
+                        coefficients to drift while fixing others. But even with restrictions, TVP-BVARs are only
+                        estimable for small systems (5-10 variables) or with very strong priors.</p>
+
+                    <p>Koop and Korobilis (2013) developed methods for large TVP-BVARs using Bayesian shrinkage on drift
+                        variances. This works by assuming most coefficients are stable, with only occasional shifts. The
+                        prior shrinks drift variances toward zero unless the data strongly suggest otherwise. Even so,
+                        these models are very computationally expensive and prone to overfitting if priors are not
+                        carefully tuned.</p>
+
+                    <p>For most applications, a simpler alternative is to estimate the BVAR on rolling windows. Use the
+                        most recent 10-15 years of data, updated each period. This allows for implicit parameter change
+                        without modeling it explicitly. The cost is that I discard older data, reducing estimation
+                        precision. The benefit is computational simplicity and robustness.</p>
+
+                    <h2 id="extensions">5. Extensions and Modern Developments</h2>
+
+                    <p>Beyond the core framework described above, several extensions address specific limitations or
+                        applications.</p>
+
+                    <h3>5.1 Stochastic Volatility</h3>
+
+                    <p>The standard BVAR assumes constant residual variance \(\Sigma\). This is obviously unrealistic.
+                        The Great Moderation, the 2008 financial crisis, and the COVID-19 pandemic all featured dramatic
+                        volatility changes. Ignoring this can bias coefficient estimates and understate forecast
+                        uncertainty.</p>
+
+                    <p>Stochastic volatility models specify that \(\Sigma_t\) evolves over time, typically following a
+                        log-random walk:</p>
+                    <div class="equation">
+                        \[\log \sigma_{i,t} = \log \sigma_{i,t-1} + \eta_{i,t}, \quad \eta_{i,t} \sim N(0, \xi_i^2)\]
+                    </div>
+
+                    <p>This allows for smooth volatility changes. During crises, volatility rises gradually and then
+                        falls back. The model learns these patterns from data.</p>
+
+                    <p>Combining stochastic volatility with BVARs is computationally intensive. The likelihood is no
+                        longer available in closed form. I must use particle filters or other sequential Monte Carlo
+                        methods to integrate over the latent volatility states. Carriero et al. (2019) developed
+                        efficient algorithms for this using a non-conjugate prior structure.</p>
+
+                    <p>The forecasting gains from stochastic volatility are substantial during volatile periods but
+                        modest in calm times. For policy analysis, the gains are larger because impulse responses depend
+                        on current volatility. A shock during a crisis has different effects than the same shock during
+                        normal times.</p>
+
+                    <h3>5.2 Variable Selection and Sparsity</h3>
+
+                    <p>The Minnesota prior shrinks all coefficients but keeps them all in the model. An alternative is
+                        to select variables, setting some coefficients exactly to zero. This is sparsity.</p>
+
+                    <p>Spike-and-slab priors are the Bayesian approach to sparsity. Each coefficient has a prior that is
+                        a mixture:</p>
+                    <div class="equation">
+                        \[\beta_{ij} \sim \pi_0 \delta_0 + (1-\pi_0) N(0, \tau^2)\]
+                    </div>
+
+                    <p>where \(\delta_0\) is a point mass at zero (the "spike") and \(N(0, \tau^2)\) is a diffuse normal
+                        (the "slab"). With probability \(\pi_0\), the coefficient is exactly zero. Otherwise, it follows
+                        a normal prior.</p>
+
+                    <p>George and McCulloch (1993) developed this for linear regression. Application to VARs is
+                        straightforward but computationally demanding. I must search over \(2^{N^2p}\) possible models,
+                        which is impossible to enumerate. Stochastic search algorithms sample high-probability models.
+                    </p>
+
+                    <p>Empirical results are mixed. Sparsity helps in very high dimensions where the Minnesota prior
+                        over-smooths. But for typical BVAR applications with 10-50 variables, the Minnesota prior is
+                        hard to beat. The spike-and-slab prior adds complexity without clear gains.</p>
+
+                    <p>A middle ground is to use shrinkage priors that pull coefficients toward zero without setting
+                        them exactly to zero. The Horseshoe prior and similar priors achieve near-sparsity with easier
+                        computation than spike-and-slab.</p>
+
+                    <h3>5.3 Structural Identification</h3>
+
+                    <p>All the discussion so far concerns reduced-form forecasting. For policy analysis, I need
+                        structural identification to isolate causal shocks. This requires restrictions beyond what the
+                        data alone can provide.</p>
+
+                    <p>Common approaches include:</p>
+                    <ol>
+                        <li><strong>Cholesky decomposition:</strong> Order variables from most to least exogenous. This
+                            gives a recursive structure with triangular restrictions.</li>
+                        <li><strong>Sign restrictions:</strong> Specify the expected sign of impulse responses (e.g.,
+                            monetary tightening lowers output and inflation). Search over orthogonal rotation matrices
+                            that satisfy the signs.</li>
+                        <li><strong>External instruments:</strong> Use variables outside the VAR (e.g., narrative policy
+                            shocks) to identify specific structural shocks.</li>
+                        <li><strong>Long-run restrictions:</strong> Impose that some shocks have no long-run effects
+                            (e.g., demand shocks do not affect long-run productivity).</li>
+                    </ol>
+
+                    <p>All of these methods can be combined with BVAR estimation. I first estimate the reduced form,
+                        then apply identifying restrictions to the residuals. The Bayesian framework allows proper
+                        uncertainty quantification that accounts for both estimation uncertainty and identification
+                        ambiguity.</p>
+
+                    <p>Recent work emphasizes that identification is often weak in the sense that different rotation
+                        matrices fitting the restrictions give very different impulse responses. The Bayesian approach
+                        reveals this ambiguity through wide posterior credible sets. This is a feature, not a bug, as it
+                        shows when the data are not informative about structural parameters.</p>
+
+                    <h2 id="implementation">6. Practical Implementation Steps</h2>
+
+                    <p>I summarize the recommended implementation procedure for a practitioner starting from raw data.
+                    </p>
+
+                    <h3>6.1 Data Preparation</h3>
+
+                    <p><strong>Step 1: Select Variables</strong></p>
+
+                    <p>Choose variables based on economic theory and forecasting goals. For monetary policy analysis,
+                        include output, inflation, interest rates, and possibly financial variables. For general
+                        forecasting, cast a wider net including labor markets, surveys, and asset prices.</p>
+
+                    <p><strong>Step 2: Transform to Stationarity</strong></p>
+
+                    <p>Take logs of positive variables that grow over time (GDP, prices). Compute growth rates if clear
+                        trends exist. Leave rates and ratios in levels. The goal is to reduce obvious non-stationarity
+                        while preserving meaningful variation.</p>
+
+                    <p><strong>Step 3: Handle Missing Data</strong></p>
+
+                    <p>BVARs require balanced panels. If some variables have missing observations, either:</p>
+                    <ul>
+                        <li>Interpolate using cubic splines or state-space methods</li>
+                        <li>Drop those variables</li>
+                        <li>Start the sample after all variables are available</li>
+                    </ul>
+
+                    <p>Missing data methods exist but add complexity. Simple solutions usually work well.</p>
+
+                    <h3>6.2 Prior Specification</h3>
+
+                    <p><strong>Step 4: Choose Lag Length</strong></p>
+
+                    <p>Use 4-8 lags for quarterly data, 6-13 for monthly. Err on the high side since the prior shrinks
+                        high lags aggressively.</p>
+
+                    <p><strong>Step 5: Set Hyperparameter Ranges</strong></p>
+
+                    <p>If using hierarchical estimation, specify:</p>
+                    <ul>
+                        <li>Overall tightness \(\lambda \in [0.01, 1]\)</li>
+                        <li>Cross-variable tightness \(\theta \in [0.1, 1]\)</li>
+                        <li>Lag decay implicitly \(\ell^{-2}\)</li>
+                    </ul>
+
+                    <p>If fixing hyperparameters, use \(\lambda = 0.2\), \(\theta = 0.5\) as starting points.</p>
+
+                    <p><strong>Step 6: Construct Dummy Observations</strong></p>
+
+                    <p>Implement SIMS and LITT dummies as described. Use sample means for \(\bar{\mathbf{y}}\) or
+                        pre-sample values if available.</p>
+
+                    <h3>6.3 Estimation</h3>
+
+                    <p><strong>Step 7: Optimize Hyperparameters</strong></p>
+
+                    <p>Maximize the marginal likelihood over \(\lambda\) (and possibly \(\theta\)) using grid search or
+                        numerical optimization. This gives \(\lambda^*\).</p>
+
+                    <p><strong>Step 8: Compute Posterior</strong></p>
+
+                    <p>Using \(\lambda^*\), compute posterior moments or draw from posterior distribution. For point
+                        forecasts, the posterior mean suffices. For uncertainty quantification, draw 1000-10000 samples.
+                    </p>
+
+                    <p><strong>Step 9: Diagnostic Checks</strong></p>
+
+                    <p>Examine residual autocorrelation, normality, and heteroskedasticity. Large departures suggest
+                        model misspecification. Consider adding lags, transforming variables, or allowing stochastic
+                        volatility.</p>
+
+                    <h3>6.4 Forecasting and Analysis</h3>
+
+                    <p><strong>Step 10: Generate Forecasts</strong></p>
+
+                    <p>For \(h\)-step ahead forecasts, iterate forward using:</p>
+                    <div class="equation">
+                        \[\hat{\mathbf{y}}_{T+h} = \hat{\mathbf{c}} + \hat{\mathbf{B}}_1 \hat{\mathbf{y}}_{T+h-1} +
+                        \cdots + \hat{\mathbf{B}}_p \hat{\mathbf{y}}_{T+h-p}\]
+                    </div>
+
+                    <p>Forecast uncertainty comes from parameter uncertainty (posterior draws) and shock uncertainty
+                        (future \(\varepsilon_t\)).</p>
+
+                    <p><strong>Step 11: Impulse Responses</strong></p>
+
+                    <p>For structural analysis, apply identification scheme to estimated \(\hat{\Sigma}\). Compute
+                        impulse responses from the moving average representation. Report median and credible intervals
+                        from posterior draws.</p>
+
+                    <p><strong>Step 12: Validation</strong></p>
+
+                    <p>Use out-of-sample evaluation periods to assess forecast accuracy. Compare to benchmarks like
+                        random walk or AR models. Adjust specification if performance is poor.</p>
+
+                    <h2 id="conclusion">7. Conclusion and Open Questions</h2>
+
+                    <p>This monograph has traced the evolution of Bayesian VAR methods from the original Minnesota prior
+                        through modern hierarchical approaches. Several themes emerge.</p>
+
+                    <p>First, shrinkage is necessary but not sufficient. The curse of dimensionality is a real
+                        constraint. Bayesian methods mitigate it through prior information but cannot eliminate it. When
+                        parameters outnumber observations by orders of magnitude, even strong priors leave substantial
+                        uncertainty.</p>
+
+                    <p>Second, computational convenience often conflicts with economic realism. Conjugate priors give
+                        closed-form posteriors but impose restrictions like the Kronecker structure. Non-conjugate
+                        priors are more flexible but require expensive MCMC. The right choice depends on the specific
+                        application and available resources.</p>
+
+                    <p>Third, the treatment of hyperparameters matters greatly. Fixed hyperparameters invite data mining
+                        and arbitrary choices. Hierarchical estimation is more principled but assumes the model class is
+                        correct. Cross-validation provides an alternative but is computationally expensive for VARs.</p>
+
+                    <p>Fourth, common implementation practices hide subtle pitfalls. Standardization, pre-sample
+                        calibration, and lag length choice all affect results in ways that are easy to get wrong.
+                        Careful attention to these details distinguishes successful from failed applications.</p>
+
+                    <p>Several open questions remain at the research frontier.</p>
+
+                    <p><strong>How should I model structural change?</strong> TVP-BVARs are one answer but face severe
+                        computational limits. Rolling windows are simpler but discard data. Can I develop methods that
+                        are both computationally feasible and capture parameter drift realistically?</p>
+
+                    <p><strong>When does sparsity help?</strong> Variable selection has strong theoretical appeal but
+                        mixed empirical success. Under what conditions does exact sparsity outperform smooth shrinkage?
+                        Can I develop diagnostics that indicate when sparsity is likely to help?</p>
+
+                    <p><strong>How do I validate structural identification?</strong> Sign restrictions and external
+                        instruments both require auxiliary assumptions. How can I test whether these assumptions are
+                        credible? Can I quantify identification strength in ways that guide empirical practice?</p>
+
+                    <p><strong>What is the role of machine learning?</strong> Modern ML methods like neural networks are
+                        powerful forecasting tools. Can they be integrated with BVARs to combine ML's flexibility with
+                        BVAR's interpretability? Or are these fundamentally different approaches?</p>
+
+                    <p>The "perfected" BVAR remains an aspiration rather than a finished product. Each application
+                        requires judgment calls that balance competing goals. What this guide provides is a framework
+                        for making those calls systematically, understanding the trade-offs involved, and avoiding
+                        common mistakes. Used carefully, BVARs remain one of the most powerful tools in empirical
+                        macroeconomics.</p>
+
+                    <div class="emphasis-box">
+                        <p><strong>Key Takeaway:</strong> The journey from the simple Minnesota prior to modern
+                            hierarchical BVARs illustrates a fundamental tension in econometrics. I must balance
+                            computational feasibility against economic realism, data-driven flexibility against
+                            theoretical coherence, and parsimony against comprehensiveness. No single approach dominates
+                            in all contexts. The practitioner's skill lies in matching methods to questions, recognizing
+                            when simplicity suffices and when complexity becomes necessary.</p>
+                    </div>
+
+                    <div class="references">
+                        <h2>References</h2>
+
+                        <div class="reference-item">Bańbura, M., Giannone, D., & Reichlin, L. (2010). Large Bayesian
+                            vector auto regressions. <em>Journal of Applied Econometrics, 25</em>(1), 71-92.
+                            https://doi.org/10.1002/jae.1137</div>
+
+                        <div class="reference-item">Carriero, A., Clark, T. E., & Marcellino, M. (2019). Large Bayesian
+                            vector autoregressions with stochastic volatility and non-conjugate priors. <em>Journal of
+                                Econometrics, 212</em>(1), 137-154. https://doi.org/10.1016/j.jeconom.2019.04.024</div>
+
+                        <div class="reference-item">Cogley, T., & Sargent, T. J. (2005). Drifts and volatilities:
+                            Monetary policies and outcomes in the post WWII US. <em>Review of Economic Dynamics,
+                                8</em>(2), 262-302. https://doi.org/10.1016/j.red.2004.10.009</div>
+
+                        <div class="reference-item">Doan, T., Litterman, R., & Sims, C. (1984). Forecasting and
+                            conditional projection using realistic prior distributions. <em>Econometric Reviews,
+                                3</em>(1), 1-100. https://doi.org/10.1080/07474938408800053</div>
+
+                        <div class="reference-item">George, E. I., & McCulloch, R. E. (1993). Variable selection via
+                            Gibbs sampling. <em>Journal of the American Statistical Association, 88</em>(423), 881-889.
+                            https://doi.org/10.1080/01621459.1993.10476353</div>
+
+                        <div class="reference-item">Giannone, D., Lenza, M., & Primiceri, G. E. (2015). Prior selection
+                            for vector autoregressions. <em>Review of Economics and Statistics, 97</em>(2), 436-451.
+                            https://doi.org/10.1162/REST_a_00483</div>
+
+                        <div class="reference-item">Kadiyala, K. R., & Karlsson, S. (1997). Numerical methods for
+                            estimation and inference in Bayesian VAR-models. <em>Journal of Applied Econometrics,
+                                12</em>(2), 99-132.
+                            https://doi.org/10.1002/(SICI)1099-1255(199703)12:2<99::AID-JAE429>3.0.CO;2-A</div>
+
+                        <div class="reference-item">Koop, G., & Korobilis, D. (2013). Large time-varying parameter VARs.
+                            <em>Journal of Econometrics, 177</em>(2), 185-198.
+                            https://doi.org/10.1016/j.jeconom.2013.04.007</div>
+
+                        <div class="reference-item">Litterman, R. B. (1986). Forecasting with Bayesian vector
+                            autoregressions—five years of experience. <em>Journal of Business & Economic Statistics,
+                                4</em>(1), 25-38. https://doi.org/10.1080/07350015.1986.10509492</div>
+
+                        <div class="reference-item">Primiceri, G. E. (2005). Time varying structural vector
+                            autoregressions and monetary policy. <em>The Review of Economic Studies, 72</em>(3),
+                            821-852. https://doi.org/10.1111/j.1467-937X.2005.00353.x</div>
+
+                        <div class="reference-item">Sims, C. A. (1980). Macroeconomics and reality. <em>Econometrica,
+                                48</em>(1), 1-48. https://doi.org/10.2307/1912017</div>
+
+                        <div class="reference-item">Stock, J. H., & Watson, M. W. (2002). Forecasting using principal
+                            components from a large number of predictors. <em>Journal of the American Statistical
+                                Association, 97</em>(460), 1167-1179. https://doi.org/10.1198/016214502388618960</div>
+                    </div>
+
+        </article>
     </div>
 
+    <footer>
+        <p>&copy; 2025 Anıl Kaya. All rights reserved.</p>
+        <p style="margin-top: 0.5rem;">Built with precision for the econometrics community.</p>
+    </footer>
+
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            renderMathInElement(document.body, {
-                delimiters: [
-                    { left: "\\[", right: "\\]", display: true },
-                    { left: "\\(", right: "\\)", display: false }
-                ],
-                throwOnError: false
+        // Reading progress bar - Removed as requested
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             });
-            updateOVB();
         });
 
-        // UTILITY FUNCTIONS
-        function generateNormal(mean = 0, std = 1) {
-            let u = 0, v = 0;
-            while (u === 0) u = Math.random();
-            while (v === 0) v = Math.random();
-            return mean + std * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-        }
-
-        function generateAR1(n, rho, sigma = 1) {
-            const eps = [generateNormal(0, sigma)];
-            for (let i = 1; i < n; i++) {
-                eps.push(rho * eps[i - 1] + generateNormal(0, sigma));
-            }
-            return eps;
-        }
-
-        function simpleOLS(x, y) {
-            const n = x.length;
-            const xMean = x.reduce((a, b) => a + b, 0) / n;
-            const yMean = y.reduce((a, b) => a + b, 0) / n;
-            let num = 0, den = 0;
-            for (let i = 0; i < n; i++) {
-                num += (x[i] - xMean) * (y[i] - yMean);
-                den += (x[i] - xMean) ** 2;
-            }
-            const slope = num / den;
-            const intercept = yMean - slope * xMean;
-            const resid = y.map((yi, i) => yi - (intercept + slope * x[i]));
-            const ssr = resid.reduce((a, b) => a + b * b, 0);
-            const se_slope = Math.sqrt(ssr / (n - 2) / den);
-            return { slope, intercept, residuals: resid, se_slope };
-        }
-
-        function multipleOLS(X_mat, Y_vec) {
-            try {
-                const X = math.matrix(X_mat);
-                const Y = math.matrix(Y_vec);
-                const Xt = math.transpose(X);
-                const XtX = math.multiply(Xt, X);
-                const XtX_inv = math.inv(XtX);
-                const XtY = math.multiply(Xt, Y);
-                const Beta = math.multiply(XtX_inv, XtY);
-                const Y_pred = math.multiply(X, Beta);
-                const resid = math.subtract(Y, Y_pred);
-                return { coeffs: Beta.toArray() };
-            } catch (e) {
-                return { coeffs: [0, 0, 0] };
-            }
-        }
-
-        function correlation(x, y) {
-            const n = x.length;
-            const xMean = x.reduce((a, b) => a + b, 0) / n;
-            const yMean = y.reduce((a, b) => a + b, 0) / n;
-            let num = 0, denX = 0, denY = 0;
-            for (let i = 0; i < n; i++) {
-                num += (x[i] - xMean) * (y[i] - yMean);
-                denX += (x[i] - xMean) ** 2;
-                denY += (y[i] - yMean) ** 2;
-            }
-            return num / Math.sqrt(denX * denY);
-        }
-
-        // Plotly dark theme config
-        const plotConfig = {
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: '#0a0a0a',
-            font: { color: '#D4AF37', family: 'Times New Roman' },
-            xaxis: { gridcolor: '#333333', zerolinecolor: '#444444' },
-            yaxis: { gridcolor: '#333333', zerolinecolor: '#444444' }
+        // Add fade-in animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
         };
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.module').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(`module-${tabId}`).classList.add('active');
-            event.target.classList.add('active');
-            window.dispatchEvent(new Event('resize'));
-            const initFuncs = {
-                'omitted': updateOVB,
-                'endogeneity': updateEndo,
-                'measurement': updateME,
-                'autocorr': updateAC,
-                'weak-iv': updateWIV,
-                'robust-se': updateRSE
-            };
-            if (initFuncs[tabId]) initFuncs[tabId]();
-        }
-
-        // MODULE 1: OMITTED VARIABLE BIAS
-        function updateOVB() {
-            const rho = parseFloat(document.getElementById('ovb-corr').value);
-            const beta2 = parseFloat(document.getElementById('ovb-beta2').value);
-            const n = parseInt(document.getElementById('ovb-n').value);
-            document.getElementById('ovb-corr-val').textContent = rho.toFixed(2);
-            document.getElementById('ovb-beta2-val').textContent = beta2.toFixed(1);
-            document.getElementById('ovb-n-val').textContent = n;
-
-            const beta0 = 1, beta1 = 1;
-            const x1 = [], x2 = [], y = [];
-            for (let i = 0; i < n; i++) {
-                const z1 = generateNormal(0, 1);
-                const z2 = generateNormal(0, 1);
-                const x1i = z1;
-                const x2i = rho * z1 + Math.sqrt(1 - rho * rho) * z2;
-                const yi = beta0 + beta1 * x1i + beta2 * x2i + generateNormal(0, 1);
-                x1.push(x1i); x2.push(x2i); y.push(yi);
-            }
-
-            const omitted = simpleOLS(x1, y);
-            const X_full = x1.map((x, i) => [1, x1[i], x2[i]]);
-            const full = multipleOLS(X_full, y);
-
-            const varX1 = x1.reduce((a, b) => a + b * b, 0) / n;
-            const covX1X2 = x1.reduce((a, b, i) => a + b * x2[i], 0) / n;
-            const theorBias = beta2 * covX1X2 / varX1;
-
-            document.getElementById('ovb-est-beta1').textContent = omitted.slope.toFixed(3);
-            document.getElementById('ovb-theory-bias').textContent = theorBias.toFixed(3);
-            document.getElementById('ovb-full-beta1').textContent = full.coeffs[1].toFixed(3);
-
-            const biasEl = document.getElementById('ovb-est-beta1');
-            if (Math.abs(omitted.slope - beta1) > 0.5) biasEl.className = "value bad";
-            else if (Math.abs(omitted.slope - beta1) > 0.2) biasEl.className = "value warning";
-            else biasEl.className = "value neutral";
-
-            const trace1 = { x: x1, y: y, mode: 'markers', name: 'Data', marker: { color: '#D4AF37', opacity: 0.6, size: 6 } };
-            const x1_range = [Math.min(...x1), Math.max(...x1)];
-            const trace2 = {
-                x: x1_range,
-                y: x1_range.map(x => omitted.intercept + omitted.slope * x),
-                mode: 'lines',
-                name: `Omitted Fit`,
-                line: { color: '#FF3333', width: 3 }
-            };
-
-            const layout1 = { ...plotConfig, title: 'Biased Regression', xaxis: { title: 'X1', ...plotConfig.xaxis }, yaxis: { title: 'Y', ...plotConfig.yaxis } };
-            Plotly.newPlot('ovb-chart-main', [trace1, trace2], layout1, { displayModeBar: false });
-
-            const trials = 500;
-            const estimates = [];
-            for (let t = 0; t < trials; t++) {
-                const x1t = [], yt = [];
-                for (let i = 0; i < n; i++) {
-                    const z1 = generateNormal(0, 1);
-                    const z2 = generateNormal(0, 1);
-                    const x1i = z1;
-                    const x2i = rho * z1 + Math.sqrt(1 - rho * rho) * z2;
-                    const yi = beta0 + beta1 * x1i + beta2 * x2i + generateNormal(0, 1);
-                    x1t.push(x1i); yt.push(yi);
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
                 }
-                estimates.push(simpleOLS(x1t, yt).slope);
-            }
+            });
+        }, observerOptions);
 
-            const traceHist = { x: estimates, type: 'histogram', name: 'Estimated Beta1', marker: { color: '#D4AF37', opacity: 0.7 } };
-            const traceTrue = { x: [beta1, beta1], y: [0, 50], mode: 'lines', name: 'True Beta1', line: { color: '#00FF00', dash: 'dash', width: 3 } };
-            const tracePlim = { x: [beta1 + theorBias, beta1 + theorBias], y: [0, 50], mode: 'lines', name: 'plim', line: { color: '#FF3333', dash: 'dot', width: 3 } };
+        document.querySelectorAll('h2, h3, p, .equation, table').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
 
-            const layout2 = { ...plotConfig, title: 'Distribution of Estimator', xaxis: { title: 'Estimated Beta1', ...plotConfig.xaxis }, yaxis: { title: 'Frequency', ...plotConfig.yaxis } };
-            Plotly.newPlot('ovb-chart-dist', [traceHist, traceTrue, tracePlim], layout2, { displayModeBar: false });
-        }
-
-        function resetOVB() {
-            document.getElementById('ovb-corr').value = 0.5;
-            document.getElementById('ovb-beta2').value = 2;
-            document.getElementById('ovb-n').value = 100;
-            updateOVB();
-        }
-
-        // MODULE 2: ENDOGENEITY
-        function updateEndo() {
-            const endoLevel = parseFloat(document.getElementById('endo-level').value);
-            const gamma1 = parseFloat(document.getElementById('endo-gamma').value);
-            const n = parseInt(document.getElementById('endo-n').value);
-            document.getElementById('endo-level-val').textContent = endoLevel.toFixed(2);
-            document.getElementById('endo-gamma-val').textContent = gamma1.toFixed(1);
-            document.getElementById('endo-n-val').textContent = n;
-
-            const beta_true = 2;
-            const z = [], x = [], y = [];
-            for (let i = 0; i < n; i++) {
-                const zi = generateNormal(0, 1);
-                const u_common = generateNormal(0, 1);
-                const nu = endoLevel * u_common + Math.sqrt(1 - endoLevel * endoLevel) * generateNormal(0, 1);
-                const eps = endoLevel * u_common + Math.sqrt(1 - endoLevel * endoLevel) * generateNormal(0, 1);
-                const xi = gamma1 * zi + nu;
-                const yi = beta_true * xi + eps;
-                z.push(zi); x.push(xi); y.push(yi);
-            }
-
-            const ols = simpleOLS(x, y);
-            const stage1 = simpleOLS(z, x);
-            const x_hat = z.map(zi => stage1.intercept + stage1.slope * zi);
-            const stage2 = simpleOLS(x_hat, y);
-            const f_stat = (stage1.slope / stage1.se_slope) ** 2;
-
-            document.getElementById('endo-ols-beta').textContent = ols.slope.toFixed(3);
-            document.getElementById('endo-2sls-beta').textContent = stage2.slope.toFixed(3);
-            document.getElementById('endo-f-stat').textContent = f_stat.toFixed(2);
-
-            const fEl = document.getElementById('endo-f-stat');
-            if (f_stat < 10) fEl.className = "value bad"; else if (f_stat < 20) fEl.className = "value warning"; else fEl.className = "value good";
-
-            const corrZeps = correlation(z, ols.residuals);
-            document.getElementById('endo-tests').innerHTML = `
-                <div class="test-result ${f_stat > 10 ? 'accept' : 'reject'}"><span>First-Stage F > 10</span><span><strong>${f_stat.toFixed(2)}</strong></span></div>
-                <div class="test-result ${Math.abs(corrZeps) < 0.1 ? 'accept' : 'reject'}"><span>Corr(Z, e) approx 0</span><span><strong>${corrZeps.toFixed(3)}</strong></span></div>`;
-
-            const trace1 = { x: x, y: y, mode: 'markers', name: 'Data', marker: { color: '#D4AF37', opacity: 0.5, size: 6 } };
-            const x_range = [Math.min(...x), Math.max(...x)];
-            const trace_ols = { x: x_range, y: x_range.map(xi => ols.intercept + ols.slope * xi), mode: 'lines', name: 'OLS', line: { color: '#FF3333', width: 3 } };
-            const trace_2sls = { x: x_range, y: x_range.map(xi => stage2.intercept + stage2.slope * xi), mode: 'lines', name: '2SLS', line: { color: '#00FF00', width: 3, dash: 'dash' } };
-
-            const layout = { ...plotConfig, title: 'OLS vs 2SLS', xaxis: { title: 'X', ...plotConfig.xaxis }, yaxis: { title: 'Y', ...plotConfig.yaxis } };
-            Plotly.newPlot('endo-chart-comparison', [trace1, trace_ols, trace_2sls], layout, { displayModeBar: false });
-        }
-
-        // MODULE 3: MEASUREMENT ERROR
-        function updateME() {
-            const snr = parseFloat(document.getElementById('me-snr').value);
-            const n = parseInt(document.getElementById('me-n').value);
-            document.getElementById('me-snr-val').textContent = snr.toFixed(1);
-            document.getElementById('me-n-val').textContent = n;
-
-            const beta0 = 0.5, beta1 = 1.5, sigma_xstar = 1;
-            const sigma_u = sigma_xstar / Math.sqrt(snr);
-            const xstar = [], x = [], y = [];
-
-            for (let i = 0; i < n; i++) {
-                const xstar_i = generateNormal(0, sigma_xstar);
-                const x_i = xstar_i + generateNormal(0, sigma_u);
-                const y_i = beta0 + beta1 * xstar_i + generateNormal(0, 0.5);
-                xstar.push(xstar_i); x.push(x_i); y.push(y_i);
-            }
-
-            const measured = simpleOLS(x, y);
-            const var_xstar = xstar.reduce((a, b) => a + b * b, 0) / n;
-            const lambda = var_xstar / (var_xstar + sigma_u ** 2);
-
-            document.getElementById('me-est-beta').textContent = measured.slope.toFixed(3);
-            document.getElementById('me-lambda').textContent = lambda.toFixed(3);
-            document.getElementById('me-plim').textContent = (beta1 * lambda).toFixed(3);
-
-            const trace_measured = { x: x, y: y, mode: 'markers', name: 'Measured', marker: { color: '#FF3333', opacity: 0.5, size: 6 } };
-            const trace_true = { x: xstar, y: y, mode: 'markers', name: 'True X', marker: { color: '#00FF00', opacity: 0.5, size: 6 } };
-            const x_range = [Math.min(...x, ...xstar), Math.max(...x, ...xstar)];
-            const trace_fit = { x: x_range, y: x_range.map(xi => measured.intercept + measured.slope * xi), mode: 'lines', name: 'Fit', line: { color: '#D4AF37', width: 3 } };
-
-            const layout1 = { ...plotConfig, title: 'Attenuation Bias', xaxis: { title: 'X', ...plotConfig.xaxis }, yaxis: { title: 'Y', ...plotConfig.yaxis } };
-            Plotly.newPlot('me-chart-scatter', [trace_measured, trace_true, trace_fit], layout1, { displayModeBar: false });
-
-            const trials = 500, estimates = [];
-            for (let t = 0; t < trials; t++) {
-                const xt = [], yt = [];
-                for (let i = 0; i < n; i++) {
-                    const xstar_i = generateNormal(0, sigma_xstar);
-                    const x_i = xstar_i + generateNormal(0, sigma_u);
-                    const y_i = beta0 + beta1 * xstar_i + generateNormal(0, 0.5);
-                    xt.push(x_i); yt.push(y_i);
-                }
-                estimates.push(simpleOLS(xt, yt).slope);
-            }
-
-            const traceHist = { x: estimates, type: 'histogram', marker: { color: '#D4AF37', opacity: 0.7 } };
-            const traceTrueLine = { x: [beta1, beta1], y: [0, 50], mode: 'lines', name: 'True', line: { color: '#00FF00', dash: 'dash', width: 3 } };
-
-            const layout2 = { ...plotConfig, title: 'Distribution', xaxis: { title: 'Est. Beta1', ...plotConfig.xaxis }, yaxis: { title: 'Freq', ...plotConfig.yaxis } };
-            Plotly.newPlot('me-chart-dist', [traceHist, traceTrueLine], layout2, { displayModeBar: false });
-        }
-
-        // MODULE 4: AUTOCORRELATION
-        function updateAC() {
-            const rho = parseFloat(document.getElementById('ac-rho').value);
-            const n = parseInt(document.getElementById('ac-n').value);
-            document.getElementById('ac-rho-val').textContent = rho.toFixed(2);
-            document.getElementById('ac-n-val').textContent = n;
-
-            const beta0 = 1, beta1 = 1;
-            const x = [], y = [];
-            const eps = generateAR1(n, rho, 1);
-            for (let i = 0; i < n; i++) {
-                const xi = i / 50 + generateNormal(0, 0.5);
-                x.push(xi); y.push(beta0 + beta1 * xi + eps[i]);
-            }
-
-            const ols = simpleOLS(x, y);
-            const resid = ols.residuals;
-            let dw_num = 0, dw_den = resid.reduce((a, b) => a + b * b, 0);
-            for (let i = 1; i < n; i++) dw_num += (resid[i] - resid[i - 1]) ** 2;
-            const dw = dw_num / dw_den;
-
-            const resid_mean = resid.reduce((a, b) => a + b, 0) / n;
-            let acf1_num = 0, acf1_den = 0;
-            for (let i = 1; i < n; i++) acf1_num += (resid[i] - resid_mean) * (resid[i - 1] - resid_mean);
-            for (let i = 0; i < n; i++) acf1_den += (resid[i] - resid_mean) ** 2;
-            const acf1 = acf1_num / acf1_den;
-
-            document.getElementById('ac-ols-beta').textContent = ols.slope.toFixed(3);
-            document.getElementById('ac-dw').textContent = dw.toFixed(3);
-            document.getElementById('ac-acf1').textContent = acf1.toFixed(3);
-
-            const acfEl = document.getElementById('ac-acf1');
-            if (Math.abs(acf1) > 0.3) acfEl.className = "value bad"; else if (Math.abs(acf1) > 0.1) acfEl.className = "value warning"; else acfEl.className = "value good";
-
-            const trace_resid = { x: Array.from({ length: n }, (_, i) => i), y: resid, mode: 'lines+markers', line: { color: '#D4AF37' }, marker: { size: 4 } };
-            Plotly.newPlot('ac-chart-residuals', [trace_resid], { ...plotConfig, title: 'Residuals over Time' }, { displayModeBar: false });
-
-            const acf = [1];
-            for (let lag = 1; lag <= 20; lag++) {
-                let num = 0;
-                for (let i = lag; i < n; i++) num += (resid[i] - resid_mean) * (resid[i - lag] - resid_mean);
-                acf.push(num / acf1_den);
-            }
-            const trace_acf = { x: Array.from({ length: 21 }, (_, i) => i), y: acf, type: 'bar', marker: { color: '#D4AF37' } };
-            Plotly.newPlot('ac-chart-acf', [trace_acf], { ...plotConfig, title: 'ACF' }, { displayModeBar: false });
-        }
-
-        // MODULE 5: WEAK IV
-        function updateWIV() {
-            const pi = parseFloat(document.getElementById('wiv-pi').value);
-            const n = parseInt(document.getElementById('wiv-n').value);
-            const sims = parseInt(document.getElementById('wiv-sims').value);
-            document.getElementById('wiv-pi-val').textContent = pi.toFixed(2);
-            document.getElementById('wiv-n-val').textContent = n;
-            document.getElementById('wiv-sims-val').textContent = sims;
-
-            const beta_true = 1, estimates_2sls = [], f_stats = [];
-            for (let s = 0; s < sims; s++) {
-                const z = [], x = [], y = [];
-                for (let i = 0; i < n; i++) {
-                    const zi = generateNormal(0, 1);
-                    const u_common = generateNormal(0, 1);
-                    const nu = 0.5 * u_common + Math.sqrt(0.75) * generateNormal(0, 1);
-                    const eps = 0.5 * u_common + Math.sqrt(0.75) * generateNormal(0, 1);
-                    const xi = pi * zi + nu;
-                    const yi = beta_true * xi + eps;
-                    z.push(zi); x.push(xi); y.push(yi);
-                }
-                const stage1 = simpleOLS(z, x);
-                f_stats.push((stage1.slope / stage1.se_slope) ** 2);
-                const x_hat = z.map(zi => stage1.intercept + stage1.slope * zi);
-                estimates_2sls.push(simpleOLS(x_hat, y).slope);
-            }
-
-            const avg_2sls = estimates_2sls.reduce((a, b) => a + b, 0) / sims;
-            const std_2sls = Math.sqrt(estimates_2sls.map(x => (x - avg_2sls) ** 2).reduce((a, b) => a + b, 0) / sims);
-            const median_f = f_stats.sort((a, b) => a - b)[Math.floor(sims / 2)];
-
-            document.getElementById('wiv-avg-2sls').textContent = avg_2sls.toFixed(3);
-            document.getElementById('wiv-std').textContent = std_2sls.toFixed(3);
-            document.getElementById('wiv-median-f').textContent = median_f.toFixed(2);
-
-            const traceHist = { x: estimates_2sls, type: 'histogram', marker: { color: '#D4AF37', opacity: 0.7 } };
-            const traceTrue = { x: [beta_true, beta_true], y: [0, 50], mode: 'lines', line: { color: '#00FF00', dash: 'dash' } };
-            Plotly.newPlot('wiv-chart-dist', [traceHist, traceTrue], { ...plotConfig, title: '2SLS Distribution' }, { displayModeBar: false });
-
-            const pct_weak = (f_stats.filter(f => f < 10).length / sims * 100).toFixed(1);
-            document.getElementById('wiv-diagnostics').innerHTML = `<div class="test-result ${pct_weak < 20 ? 'accept' : 'reject'}"><span>% Weak IV (F < 10)</span><span><strong>${pct_weak}%</strong></span></div>`;
-        }
-
-        // MODULE 6: ROBUST SE
-        function updateRSE() {
-            const alpha = parseFloat(document.getElementById('rse-alpha').value);
-            const n = parseInt(document.getElementById('rse-n').value);
-            const sims = parseInt(document.getElementById('rse-sims').value);
-            document.getElementById('rse-alpha-val').textContent = alpha.toFixed(1);
-            document.getElementById('rse-n-val').textContent = n;
-            document.getElementById('rse-sims-val').textContent = sims;
-
-            let classical_reject = 0, robust_reject = 0;
-            const se_ratios = [], classical_t_stats = [], robust_t_stats = [];
-
-            for (let s = 0; s < sims; s++) {
-                const x = [], y = [];
-                for (let i = 0; i < n; i++) {
-                    const xi = 1 + i / n * 3;
-                    const yi = generateNormal(0, Math.pow(xi, alpha));
-                    x.push(xi); y.push(yi);
-                }
-                const ols = simpleOLS(x, y);
-                const classical_se = ols.se_slope;
-                const classical_t = ols.slope / classical_se;
-                if (Math.abs(classical_t) > 1.96) classical_reject++;
-                classical_t_stats.push(classical_t);
-
-                const xMean = x.reduce((a, b) => a + b, 0) / n;
-                const resid_sq = ols.residuals.map(r => r * r);
-                let hc_var = 0, sum_x_sq = 0;
-                for (let i = 0; i < n; i++) {
-                    const diff = x[i] - xMean;
-                    hc_var += diff * diff * resid_sq[i];
-                    sum_x_sq += diff * diff;
-                }
-                const robust_se = Math.sqrt(hc_var / (sum_x_sq ** 2));
-                const robust_t = ols.slope / robust_se;
-                if (Math.abs(robust_t) > 1.96) robust_reject++;
-                robust_t_stats.push(robust_t);
-                se_ratios.push(robust_se / classical_se);
-            }
-
-            document.getElementById('rse-classical-reject').textContent = (classical_reject / sims * 100).toFixed(1) + '%';
-            document.getElementById('rse-robust-reject').textContent = (robust_reject / sims * 100).toFixed(1) + '%';
-            document.getElementById('rse-ratio').textContent = (se_ratios.reduce((a, b) => a + b, 0) / sims).toFixed(2);
-
-            const trace_class = { x: classical_t_stats, y: robust_t_stats, mode: 'markers', marker: { color: '#D4AF37', opacity: 0.4, size: 4 } };
-            const trace_diag = { x: [-4, 4], y: [-4, 4], mode: 'lines', line: { color: '#FF3333', dash: 'dash' } };
-            Plotly.newPlot('rse-chart-comparison', [trace_class, trace_diag], { ...plotConfig, title: 't-stat Comparison', xaxis: { title: 'Classical t' }, yaxis: { title: 'Robust t' } }, { displayModeBar: false });
-
-            const traceRatio = { x: se_ratios, type: 'histogram', marker: { color: '#D4AF37', opacity: 0.7 } };
-            Plotly.newPlot('rse-chart-dist', [traceRatio], { ...plotConfig, title: 'SE Ratio Dist', xaxis: { title: 'Ratio' } }, { displayModeBar: false });
-        }
     </script>
 </body>
 
