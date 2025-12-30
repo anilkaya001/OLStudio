@@ -7,211 +7,277 @@
     <meta name="description" content="Econometric research by Anıl Kaya. Bayesian VAR models, Time Series Analysis, and Macroeconomic Forecasting.">
     <title>Anıl Kaya | Econometric Insights</title>
 
-    <!-- Preconnect to external resources -->
+    <!-- Preconnect -->
     <link rel="preconnect" href="https://polyfill.io" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Modern Sans-Serif for UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <!-- Critical CSS -->
     <style>
         :root {
             --bg-color: #050505;
-            --text-color: #D4AF37;
-            --accent-color: #F7E7CE;
+            --text-color: #e0e0e0;
+            --accent-color: #F7E7CE; /* Pale Gold */
             --dim-gold: #8a7326;
-            --card-bg: #111111;
-            --border-color: #333333;
-            --font-main: 'Times New Roman', Times, serif;
+            --card-bg: rgba(20, 20, 20, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --font-ui: 'Inter', sans-serif;
+            --font-serif: 'Charter', 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+            --glass-bg: rgba(10, 10, 10, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
         body, html {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: var(--font-main);
+            width: 100%; height: 100%; background-color: var(--bg-color);
+            color: var(--text-color); font-family: var(--font-ui);
+            overflow: hidden; /* Main scroll handled by views */
         }
 
+        /* Utility */
         .hidden { display: none !important; pointer-events: none; }
-
-        /* Navigation */
-        #global-nav {
-            position: fixed; top: 0; left: 0; width: 100%; padding: 1.5rem;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 1000; mix-blend-mode: difference; pointer-events: none;
-        }
-        .home-btn {
-            font-size: 1.2rem; font-weight: bold; text-transform: uppercase;
-            letter-spacing: 3px; cursor: pointer; pointer-events: auto;
-            color: var(--text-color); position: relative;
-        }
-        .home-btn::after {
-            content: ''; position: absolute; bottom: -5px; left: 0; width: 0%;
-            height: 1px; background: var(--text-color); transition: width 0.3s;
-        }
-        .home-btn:hover::after { width: 100%; }
+        a { color: var(--accent-color); text-decoration: none; transition: opacity 0.2s; }
+        a:hover { opacity: 0.8; }
 
         /* Canvas Background */
         canvas#econometric-canvas {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 1; touch-action: none; /* Prevent scroll only on canvas */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
         }
 
-        /* Landing View */
+        /* Navigation */
+        #global-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+            padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;
+            z-index: 1000;
+            background: rgba(5, 5, 5, 0.01); /* Mostly transparent */
+            backdrop-filter: blur(0px); /* Clear by default */
+            transition: all 0.3s ease;
+        }
+        #global-nav.scrolled {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .home-btn {
+            font-size: 1.1rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 2px; cursor: pointer; color: var(--accent-color);
+            position: relative; padding: 0.5rem 0; pointer-events: auto;
+        }
+        
+        /* Progress Bar */
+        #reading-progress {
+            position: fixed; top: 70px; left: 0; width: 0%; height: 3px;
+            background: linear-gradient(90deg, var(--dim-gold), var(--accent-color));
+            z-index: 1001; transition: width 0.1s linear; opacity: 0;
+        }
+
+        /* VIEW: LANDING */
         #view-landing {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 100;
-            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 85%);
+            position: absolute; inset: 0; z-index: 100;
+            background: radial-gradient(circle at center, rgba(26,26,26,0.3) 0%, #000 90%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: opacity 0.8s ease;
         }
         .landing-content {
-            position: relative; z-index: 2; text-align: center; opacity: 0;
-            animation: fadeIn 2s 0.5s forwards; pointer-events: none;
+            z-index: 2; text-align: center; opacity: 0; animation: fadeIn 2s 0.5s forwards;
         }
         .landing-title {
-            font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 100;
-            text-transform: uppercase; letter-spacing: clamp(0.2rem, 1vw, 0.8rem);
-            margin-bottom: 0.5rem; color: #fff; text-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+            font-family: var(--font-serif); font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 300; letter-spacing: 0.2em; color: #fff;
+            text-shadow: 0 0 40px rgba(212, 175, 55, 0.3); margin-bottom: 1rem;
         }
         .landing-subtitle {
-            font-size: clamp(0.9rem, 2vw, 1.2rem); font-style: italic;
-            color: var(--text-color); letter-spacing: 2px; margin-bottom: 4rem;
+            font-size: 1rem; letter-spacing: 3px; text-transform: uppercase;
+            color: var(--dim-gold); margin-bottom: 3rem;
         }
         .enter-btn {
-            padding: 1.2rem 4rem; background: transparent; border: 1px solid var(--dim-gold);
-            color: var(--text-color); font-family: var(--font-main); font-size: 0.9rem;
-            text-transform: uppercase; letter-spacing: 3px; cursor: pointer; pointer-events: auto;
-            transition: all 0.4s ease; backdrop-filter: blur(2px); position: relative; overflow: hidden;
-        }
-        .enter-btn::before {
-            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
-            transition: left 0.5s;
+            padding: 1rem 3rem; background: rgba(255,255,255,0.03);
+            border: 1px solid var(--dim-gold); color: var(--text-color);
+            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px;
+            cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(4px);
         }
         .enter-btn:hover {
-            border-color: var(--text-color); box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            background: rgba(212, 175, 55, 0.1); border-color: var(--accent-color);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.15);
         }
-        .enter-btn:hover::before { left: 100%; }
 
-        /* Deck View (Archive) */
+        /* VIEW: DECK */
         #view-deck {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 50; padding-top: 8rem; overflow-y: auto;
-            opacity: 0; transform: scale(0.95); filter: blur(10px);
-            transition: all 0.8s ease; display: flex; flex-direction: column; align-items: center;
+            position: absolute; inset: 0; z-index: 50; padding-top: 100px;
+            overflow-y: auto; opacity: 0; transform: scale(0.98);
+            transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            backdrop-filter: blur(10px); /* Blur background rain slightly */
+            background: rgba(5,5,5,0.85);
         }
-        #view-deck.active { opacity: 1; transform: scale(1); filter: blur(0); }
+        #view-deck.active { opacity: 1; transform: scale(1); }
         
         .deck-header { text-align: center; margin-bottom: 4rem; }
         .deck-title {
-            font-size: 3rem; font-weight: 100; letter-spacing: 5px;
-            background: linear-gradient(to bottom, #fff, var(--text-color));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-family: var(--font-serif); font-size: 3rem; font-weight: 300;
+            color: var(--accent-color); margin-bottom: 1rem;
+        }
+        .deck-divider {
+            width: 60px; height: 1px; background: var(--dim-gold); margin: 0 auto;
         }
 
         .card-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem; width: 100%; max-width: 1400px; padding: 0 4rem 4rem;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 2rem 4rem;
         }
-        
         .article-card {
-            background: linear-gradient(145deg, #111, #0a0a0a); border: 1px solid #222;
-            padding: 3rem 2rem; min-height: 400px; display: flex; flex-direction: column;
-            justify-content: space-between; cursor: pointer; position: relative;
-            transition: all 0.5s ease; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-        }
-        .article-card::after {
-            content: ''; position: absolute; inset: 0; border: 1px solid var(--text-color);
-            opacity: 0; transition: opacity 0.5s; pointer-events: none;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            padding: 2.5rem; min-height: 380px; display: flex; flex-direction: column;
+            justify-content: space-between; cursor: pointer; transition: all 0.4s ease;
+            position: relative; overflow: hidden; backdrop-filter: blur(10px);
         }
         .article-card:hover {
-            transform: translateY(-10px); box-shadow: 0 30px 60px -15px rgba(212, 175, 55, 0.1);
-            border-color: transparent;
+            transform: translateY(-8px); border-color: var(--dim-gold);
+            box-shadow: 0 15px 40px -10px rgba(0,0,0,0.5);
+            background: rgba(30, 30, 30, 0.8);
         }
-        .article-card:hover::after { opacity: 0.5; }
-
-        .card-num {
-            font-size: 4rem; opacity: 0.1; font-weight: 900; 
-            position: absolute; top: 1rem; right: 2rem;
-        }
-        .card-category {
-            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;
-            color: var(--dim-gold); margin-bottom: 2rem;
+        .card-meta {
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--dim-gold); margin-bottom: 1rem; display: flex; justify-content: space-between;
         }
         .card-title {
-            font-size: 2rem; font-weight: 100; line-height: 1.2;
-            color: var(--accent-color); margin-bottom: 1rem;
+            font-family: var(--font-serif); font-size: 2rem; line-height: 1.2;
+            color: #fff; margin-bottom: 1.5rem; font-weight: 400;
         }
         .card-excerpt {
-            font-size: 0.95rem; color: #666; line-height: 1.6;
+            font-size: 1rem; line-height: 1.6; color: #aaa; font-weight: 300;
+        }
+        .read-more {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--accent-color); margin-top: auto; display: inline-block;
         }
 
-        /* Reader View */
+        /* VIEW: READER (Updated Structure) */
         #view-reader {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 60; background: var(--bg-color); overflow-y: scroll;
-            opacity: 0; transform: translateY(50px); transition: opacity 0.6s ease, transform 0.6s ease;
+            position: absolute; inset: 0; z-index: 60;
+            background: #080808; /* Solid dark for reading readability */
+            overflow-y: auto; opacity: 0; transform: translateY(30px);
+            transition: opacity 0.5s, transform 0.5s;
         }
         #view-reader.active { opacity: 1; transform: translateY(0); }
-        .reader-content-wrapper { max-width: 800px; margin: 8rem auto; padding: 0 2rem 5rem; }
 
-        /* Typography for Dynamic Content */
-        #article-content h1 { font-size: 2.8rem; color: var(--accent-color); margin-bottom: 1.5rem; }
-        #article-content p { font-size: 19px; line-height: 1.8; color: #ccc; margin-bottom: 1.5rem; text-align: justify; }
+        .reader-layout {
+            display: grid; grid-template-columns: 240px 1fr; gap: 4rem;
+            max-width: 1100px; margin: 120px auto 4rem; padding: 0 2rem;
+        }
         
-        @keyframes fadeIn { to { opacity: 1; } }
+        /* Table of Contents Sidebar */
+        .toc-sidebar {
+            position: sticky; top: 120px; align-self: start;
+            border-left: 1px solid var(--border-color);
+            padding-left: 1.5rem; max-height: 70vh; overflow-y: auto;
+        }
+        .toc-title {
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px;
+            color: #666; margin-bottom: 1rem; font-weight: 600;
+        }
+        .toc-list { list-style: none; }
+        .toc-item { margin-bottom: 0.8rem; }
+        .toc-link {
+            font-size: 0.9rem; color: #888; transition: all 0.2s;
+            display: block; line-height: 1.4;
+        }
+        .toc-link:hover, .toc-link.active {
+            color: var(--accent-color); transform: translateX(5px);
+        }
+        .toc-link.active { font-weight: 500; }
+
+        /* Article Body Typography */
+        .article-body {
+            font-family: var(--font-serif); font-size: 1.25rem; line-height: 1.8;
+            color: #d0d0d0; max-width: 740px; /* Optimal reading width */
+        }
+        .article-header { margin-bottom: 4rem; border-bottom: 1px solid var(--border-color); padding-bottom: 2rem;}
+        .article-title {
+            font-size: 3.5rem; line-height: 1.1; margin-bottom: 1rem;
+            color: var(--accent-color); font-weight: 400;
+        }
+        .article-meta-row {
+            display: flex; gap: 2rem; font-family: var(--font-ui); font-size: 0.9rem; color: #666;
+        }
+        
+        /* Content Styling */
+        .article-body h2 {
+            font-family: var(--font-ui); font-size: 1.8rem; color: #fff;
+            margin: 3rem 0 1rem; font-weight: 600; letter-spacing: -0.5px;
+        }
+        .article-body h3 {
+            font-family: var(--font-ui); font-size: 1.4rem; color: #eee;
+            margin: 2rem 0 1rem; font-weight: 500;
+        }
+        .article-body p { margin-bottom: 1.8rem; }
+        .article-body ul { margin-bottom: 1.8rem; padding-left: 1.5rem; }
+        .article-body li { margin-bottom: 0.5rem; }
+        
+        .equation-box {
+            background: rgba(255,255,255,0.03); border-radius: 4px;
+            padding: 1.5rem; margin: 2rem 0; overflow-x: auto; text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* Loading */
         .loader {
             width: 40px; height: 40px; border: 2px solid var(--dim-gold);
             border-top-color: transparent; border-radius: 50%;
-            animation: spin 0.8s linear infinite; margin: 5rem auto;
+            animation: spin 0.8s linear infinite; margin: 100px auto;
         }
+        @keyframes fadeIn { to { opacity: 1; } }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        @media (max-width: 768px) {
-            .landing-title { font-size: 3rem; }
-            .card-grid { padding: 2rem; grid-template-columns: 1fr; }
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            .reader-layout { grid-template-columns: 1fr; margin-top: 100px; }
+            .toc-sidebar { display: none; } /* Hide sticky TOC on mobile */
+            .article-title { font-size: 2.5rem; }
+            .article-body { font-size: 1.15rem; }
+            #global-nav { background: var(--glass-bg); backdrop-filter: blur(10px); }
+            #reading-progress { opacity: 1 !important; }
         }
     </style>
 </head>
 
 <body>
+    <!-- Reading Progress Bar -->
+    <div id="reading-progress"></div>
+
+    <!-- Navigation -->
     <nav id="global-nav">
         <div class="home-btn" onclick="app.goHome()">Anıl Kaya</div>
     </nav>
 
     <div id="app">
-        <!-- Landing -->
+        <!-- LANDING -->
         <div id="view-landing">
             <canvas id="econometric-canvas"></canvas>
             <div class="landing-content">
                 <div class="landing-title">Anıl Kaya</div>
-                <div class="landing-subtitle">Econometrics </div>
-                <button class="enter-btn" onclick="app.enterDeck()">Explore Research</button>
+                <div class="landing-subtitle">Econometrics & Neural Forecasting</div>
+                <button class="enter-btn" onclick="app.enterDeck()">Enter Archives</button>
             </div>
         </div>
 
-        <!-- Deck -->
+        <!-- DECK (Archives) -->
         <div id="view-deck" class="hidden">
             <div class="deck-header">
-                <h2 class="deck-title">The Archives</h2>
-                <div style="width: 50px; height: 1px; background: var(--text-color); margin: 2rem auto;"></div>
+                <h2 class="deck-title">Research Archives</h2>
+                <div class="deck-divider"></div>
             </div>
             <div class="card-grid" id="card-grid"></div>
         </div>
 
-        <!-- Reader -->
+        <!-- READER -->
         <div id="view-reader" class="hidden">
-            <div id="article-content" class="reader-content-wrapper">
-                <div class="loader"></div>
-            </div>
+            <!-- Content Injected via JS -->
+            <div id="reader-container"></div>
         </div>
     </div>
 
@@ -221,48 +287,24 @@
 
     <script defer>
         const ARTICLE_MANIFEST = [
-            { id: 'bvar', file: 'articles/bvar.html', category: 'Core Theory', title: 'Bayesian Vector Autoregression', excerpt: 'A complete guide to modern implementation, covering Minnesota priors, hierarchical estimation, and large-scale forecasting algorithms.', enabled: true },
-            { id: 'stoch-vol', file: 'articles/stochastic-volatility.html', category: 'Time Variance', title: 'Stochastic Volatility', excerpt: 'Modeling structural breaks and changing error variance in post-pandemic macroeconomic data.', enabled: false },
-            { id: 'sign-rest', file: 'articles/sign-restrictions.html', category: 'Identification', title: 'Sign Restrictions', excerpt: 'Moving beyond Cholesky: Set-identified structural shocks using robust Bayesian sampling methods.', enabled: false }
+            { id: 'bvar', file: 'articles/bvar.html', category: 'Core Theory', title: 'Bayesian Vector Autoregression', date: 'Oct 2024', excerpt: 'A comprehensive guide to modern implementation, covering Minnesota priors, hierarchical estimation, and large-scale forecasting algorithms.', enabled: true },
+            { id: 'stoch-vol', file: 'articles/stochastic-volatility.html', category: 'Time Variance', title: 'Stochastic Volatility', date: 'Nov 2024', excerpt: 'Modeling structural breaks and changing error variance in post-pandemic macroeconomic data using state-space methods.', enabled: false },
+            { id: 'sign-rest', file: 'articles/sign-restrictions.html', category: 'Identification', title: 'Sign Restrictions', date: 'Dec 2024', excerpt: 'Moving beyond Cholesky: Set-identified structural shocks utilizing robust Bayesian sampling methods.', enabled: false }
         ];
 
-        // --- VISUAL SYSTEM: NEURAL RAIN ---
+        // --- VISUAL SYSTEM (Background Rain) ---
         const Visuals = {
-            canvas: null,
-            ctx: null,
-            width: 0,
-            height: 0,
-            particles: [],
-            pointer: { x: -1000, y: -1000, vx: 0, vy: 0, lastX: 0, lastY: 0 },
+            canvas: null, ctx: null, width: 0, height: 0, particles: [],
+            formulas: ["𝑦ₜ = 𝛽𝑥ₜ + 𝜖ₜ", "Σ = 𝐴⁻¹Λ𝐴⁻¹′", "∇ℒ(𝜃)", "𝑃(𝐴|𝐵)", "∫ 𝑒⁻ˣ² 𝑑𝑥", "𝜎²ₜ", "Δ𝑦ₜ"],
             
-            formulas: [
-                "𝑦ₜ = 𝛽𝑥ₜ + 𝜖ₜ", "Σ = 𝐴⁻¹Λ𝐴⁻¹′", "∇ℒ(𝜃)", "𝑃(𝐴|𝐵)", 
-                "∫ 𝑒⁻ˣ² 𝑑𝑥", "𝜎²ₜ", "Δ𝑦ₜ", "𝜖 ∼ 𝑁(0,1)", "ℍ₀: 𝛽 = 0", "𝐸[𝑦ₜ|ℐₜ₋₁]"
-            ],
-
             init() {
                 this.canvas = document.getElementById('econometric-canvas');
                 this.ctx = this.canvas.getContext('2d', { alpha: false });
                 this.resize();
                 window.addEventListener('resize', () => this.resize());
-                
-                // Interaction Listeners (Physics only)
-                const updatePointer = (x, y) => {
-                    this.pointer.vx = x - this.pointer.lastX;
-                    this.pointer.vy = y - this.pointer.lastY;
-                    this.pointer.lastX = x; this.pointer.lastY = y;
-                    this.pointer.x = x; this.pointer.y = y;
-                };
-
-                window.addEventListener('mousemove', e => updatePointer(e.clientX, e.clientY));
-                window.addEventListener('touchmove', e => {
-                    updatePointer(e.touches[0].clientX, e.touches[0].clientY);
-                }, { passive: true });
-
                 this.createParticles();
                 this.animate();
             },
-
             resize() {
                 const dpr = window.devicePixelRatio || 1;
                 this.width = window.innerWidth;
@@ -272,81 +314,32 @@
                 this.ctx.scale(dpr, dpr);
                 this.createParticles();
             },
-
             createParticles() {
                 this.particles = [];
-                const count = this.width < 768 ? 40 : 80;
+                const count = this.width < 768 ? 30 : 60;
                 for(let i=0; i<count; i++) {
                     this.particles.push({
                         x: Math.random() * this.width,
                         y: Math.random() * this.height,
-                        vx: (Math.random() - 0.5) * 1.5,
-                        vy: Math.random() * 1.5 + 0.5,
+                        vy: Math.random() * 1.0 + 0.2, // Slow rain
                         text: this.formulas[Math.floor(Math.random() * this.formulas.length)],
-                        size: Math.random() * 12 + 10,
-                        alpha: Math.random() * 0.5 + 0.1
+                        size: Math.random() * 14 + 12,
+                        alpha: Math.random() * 0.4 + 0.05
                     });
                 }
             },
-
             animate() {
                 this.ctx.fillStyle = '#050505';
                 this.ctx.fillRect(0, 0, this.width, this.height);
-                this.ctx.lineWidth = 0.5;
-
-                for (let i = 0; i < this.particles.length; i++) {
-                    let p1 = this.particles[i];
-                    p1.x += p1.vx;
-                    p1.y += p1.vy;
-
-                    // Physics Interaction
-                    const dx = p1.x - this.pointer.x;
-                    const dy = p1.y - this.pointer.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    const interactionRadius = 250;
-
-                    if (dist < interactionRadius) {
-                        const force = (interactionRadius - dist) / interactionRadius;
-                        const angle = Math.atan2(dy, dx);
-                        p1.vx += Math.cos(angle) * force * 0.5;
-                        p1.vy += Math.sin(angle) * force * 0.5;
-                        p1.vx += this.pointer.vx * 0.05 * force;
-                        p1.vy += this.pointer.vy * 0.05 * force;
-                    }
-
-                    p1.vx *= 0.98;
-                    if(p1.vy < 0.5 && p1.vy > -0.5) p1.vy += 0.05;
-                    p1.vy = Math.min(Math.max(p1.vy, -3), 3);
-
-                    if (p1.x < -50) p1.x = this.width + 50;
-                    if (p1.x > this.width + 50) p1.x = -50;
-                    if (p1.y > this.height + 50) p1.y = -50;
-                    if (p1.y < -50) p1.y = this.height + 50;
-
-                    // Neural Connections
-                    for (let j = i + 1; j < this.particles.length; j++) {
-                        let p2 = this.particles[j];
-                        const dxC = p1.x - p2.x;
-                        const dyC = p1.y - p2.y;
-                        const distC = Math.sqrt(dxC*dxC + dyC*dyC);
-                        if (distC < 120) {
-                            const alpha = 1 - (distC / 120);
-                            this.ctx.strokeStyle = `rgba(212, 175, 55, ${alpha * 0.15})`;
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(p1.x, p1.y);
-                            this.ctx.lineTo(p2.x, p2.y);
-                            this.ctx.stroke();
-                        }
-                    }
-
-                    // Render Formula
-                    this.ctx.font = `italic ${p1.size}px "Times New Roman"`;
-                    this.ctx.fillStyle = `rgba(212, 175, 55, ${p1.alpha})`;
-                    this.ctx.fillText(p1.text, p1.x, p1.y);
+                
+                for(let p of this.particles) {
+                    p.y += p.vy;
+                    if(p.y > this.height + 50) { p.y = -50; p.x = Math.random() * this.width; }
+                    
+                    this.ctx.font = `italic ${p.size}px "Times New Roman"`;
+                    this.ctx.fillStyle = `rgba(212, 175, 55, ${p.alpha})`;
+                    this.ctx.fillText(p.text, p.x, p.y);
                 }
-
-                this.pointer.vx *= 0.9;
-                this.pointer.vy *= 0.9;
                 requestAnimationFrame(() => this.animate());
             }
         };
@@ -354,57 +347,180 @@
         // --- APP LOGIC ---
         const app = {
             state: { view: 'landing' },
+            
             init() {
                 Visuals.init();
-                this.renderCards();
+                this.renderDeck();
+                // Scroll Listener for Navbar & Progress
+                document.addEventListener('scroll', this.handleScroll.bind(this), { passive: true });
+                document.getElementById('view-reader').addEventListener('scroll', this.handleReaderScroll.bind(this), { passive: true });
             },
-            renderCards() {
-                // Using the specific HTML structure you preferred for correct rendering
-                document.getElementById('card-grid').innerHTML = ARTICLE_MANIFEST.map((article, index) => `
-                    <div class="article-card" 
-                         style="${!article.enabled ? 'opacity: 0.3; pointer-events: none;' : ''}"
-                         onclick="${article.enabled ? `app.openArticle('${article.id}')` : ''}">
-                        <div class="card-num">${String(index + 1).padStart(2, '0')}</div>
+
+            handleScroll() {
+                // Global window scroll (Deck view)
+                const nav = document.getElementById('global-nav');
+                if(window.scrollY > 50) nav.classList.add('scrolled');
+                else nav.classList.remove('scrolled');
+            },
+
+            handleReaderScroll(e) {
+                // Reader container scroll
+                const target = e.target;
+                const scroll = target.scrollTop;
+                const height = target.scrollHeight - target.clientHeight;
+                const percent = (scroll / height) * 100;
+                
+                document.getElementById('reading-progress').style.width = `${percent}%`;
+                
+                // Active TOC Highlighting
+                const sections = target.querySelectorAll('h2');
+                let current = '';
+                sections.forEach(section => {
+                    if (section.offsetTop - 200 <= scroll) current = section.getAttribute('id');
+                });
+                
+                document.querySelectorAll('.toc-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${current}`) link.classList.add('active');
+                });
+            },
+
+            renderDeck() {
+                const grid = document.getElementById('card-grid');
+                grid.innerHTML = ARTICLE_MANIFEST.map((a, i) => `
+                    <div class="article-card" style="${!a.enabled?'opacity:0.5;pointer-events:none':''}" onclick="app.openArticle('${a.id}')">
                         <div>
-                            <div class="card-category">${article.category}</div>
-                            <div class="card-title">${article.title}</div>
+                            <div class="card-meta">
+                                <span>${String(i+1).padStart(2,'0')} · ${a.category}</span>
+                                <span>${a.date}</span>
+                            </div>
+                            <h3 class="card-title">${a.title}</h3>
+                            <p class="card-excerpt">${a.excerpt}</p>
                         </div>
-                        <div class="card-excerpt">${article.excerpt}</div>
+                        <div class="read-more">Read Article &rarr;</div>
                     </div>
                 `).join('');
             },
-            enterDeck() {
-                this.switchView('landing', 'deck');
-            },
-            goHome() {
-                if(this.state.view !== 'landing') this.switchView(this.state.view, 'landing');
-            },
-            switchView(from, to) {
-                const fromEl = document.getElementById('view-'+from);
-                const toEl = document.getElementById('view-'+to);
-                fromEl.classList.remove('active');
+
+            switchView(to) {
+                const current = document.getElementById('view-' + this.state.view);
+                const next = document.getElementById('view-' + to);
+                const progress = document.getElementById('reading-progress');
+                
+                current.classList.remove('active');
+                
+                // Toggle Progress Bar Visibility
+                progress.style.opacity = (to === 'reader') ? '1' : '0';
+
                 setTimeout(() => {
-                    fromEl.classList.add('hidden');
-                    toEl.classList.remove('hidden');
-                    void toEl.offsetWidth; 
-                    toEl.classList.add('active');
-                }, 600);
+                    current.classList.add('hidden');
+                    next.classList.remove('hidden');
+                    void next.offsetWidth; // Force reflow
+                    next.classList.add('active');
+                }, 500);
                 this.state.view = to;
             },
+
+            enterDeck() { this.switchView('deck'); },
+            goHome() { if(this.state.view !== 'landing') this.switchView('landing'); },
+
             async openArticle(id) {
-                this.switchView('deck', 'reader');
-                const container = document.getElementById('article-content');
-                const article = ARTICLE_MANIFEST.find(a => a.id === id);
+                this.switchView('reader');
+                const container = document.getElementById('reader-container');
                 container.innerHTML = '<div class="loader"></div>';
+
+                const article = ARTICLE_MANIFEST.find(a => a.id === id);
+                
                 try {
+                    // Simulating fetch or getting content
                     const res = await fetch(article.file);
-                    if(!res.ok) throw new Error();
-                    const text = await res.text();
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(text, 'text/html');
-                    container.innerHTML = doc.querySelector('article')?.innerHTML || text;
+                    let html = "";
+                    if(res.ok) {
+                        const text = await res.text();
+                        const doc = new DOMParser().parseFromString(text, 'text/html');
+                        html = doc.querySelector('article')?.innerHTML || text;
+                    } else {
+                        // Fallback dummy content for demo/test
+                        html = this.generateDemoContent(article);
+                    }
+                    
+                    // Render Reader Layout
+                    container.innerHTML = `
+                        <div class="reader-layout">
+                            <aside class="toc-sidebar">
+                                <div class="toc-title">Table of Contents</div>
+                                <ul class="toc-list" id="toc-list"></ul>
+                            </aside>
+                            <article class="article-body">
+                                <header class="article-header">
+                                    <div class="article-meta-row">
+                                        <span>${article.category}</span>
+                                        <span>${article.date}</span>
+                                        <span>12 min read</span>
+                                    </div>
+                                    <h1 class="article-title">${article.title}</h1>
+                                </header>
+                                ${html}
+                            </article>
+                        </div>
+                    `;
+
+                    // Generate TOC dynamically from H2 tags
+                    this.generateTOC(container);
+
                     if(window.MathJax) MathJax.typesetPromise([container]);
-                } catch(e) { container.innerHTML = '<p style="text-align:center">Content unavailable.</p>'; }
+
+                } catch(e) {
+                    container.innerHTML = '<p style="text-align:center;color:#666;margin-top:5rem">Unable to load content.</p>';
+                }
+            },
+
+            generateTOC(container) {
+                const headings = container.querySelectorAll('.article-body h2');
+                const tocList = document.getElementById('toc-list');
+                
+                if (headings.length === 0) {
+                    document.querySelector('.toc-sidebar').style.display = 'none';
+                    return;
+                }
+
+                headings.forEach((h2, index) => {
+                    if (!h2.id) h2.id = `section-${index}`;
+                    const li = document.createElement('li');
+                    li.className = 'toc-item';
+                    li.innerHTML = `<a href="#${h2.id}" class="toc-link">${h2.innerText}</a>`;
+                    li.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        h2.scrollIntoView({ behavior: 'smooth' });
+                    });
+                    tocList.appendChild(li);
+                });
+            },
+
+            generateDemoContent(article) {
+                // Just for preview if file fetch fails
+                return `
+                    <p class="lead">Vector Autoregressions (VARs) have become a standard tool in macroeconometrics. However, as the number of variables increases, the number of parameters explodes, leading to overfitting. This article explores Bayesian methods (BVARs) to impose structure on these parameters.</p>
+                    
+                    <h2>1. The Curse of Dimensionality</h2>
+                    <p>In a standard VAR model with $N$ variables and $p$ lags, we must estimate $N(Np + 1)$ parameters. For a moderate system of 20 variables and 4 lags, this amounts to over 1600 coefficients. Without immense datasets, standard OLS estimation yields estimates with massive variance.</p>
+                    <div class="equation-box">$$ Y_t = c + A_1 Y_{t-1} + \dots + A_p Y_{t-p} + u_t $$</div>
+                    <p>To solve this, we turn to Bayesian shrinkage. By imposing prior beliefs that coefficients on distant lags are likely zero, we can effectively reduce the parameter space while retaining the model's flexibility.</p>
+                    
+                    <h2>2. The Minnesota Prior</h2>
+                    <p>Proposed by Litterman (1986), the Minnesota prior assumes that most macroeconomic variables follow a random walk. Thus, the prior mean for the first own lag is set to 1, and all other coefficients are set to 0.</p>
+                    <ul>
+                        <li>Shrinkage towards a Random Walk</li>
+                        <li>Diagonal covariance matrix assumption</li>
+                        <li>Hyperparameters controlling overall tightness</li>
+                    </ul>
+                    <p>The beauty of this approach lies in its analytical tractability. The posterior distribution can often be derived in closed form, making estimation computationally efficient even for large systems.</p>
+
+                    <h2>3. Large BVARs and Forecasting</h2>
+                    <p>Bańbura, Giannone, and Reichlin (2010) showed that BVARs could handle systems with over 100 variables ("Large BVARs") and outperform standard Factor Models in forecasting. This was a paradigm shift, proving that we don't need to aggregate information into factors if we have enough shrinkage.</p>
+                    <div class="equation-box">$$ \min_{\beta} \sum (y_t - x_t \beta)^2 + \lambda ||\beta||^2 $$</div>
+                    <p>Modern implementations often use hierarchical modeling, where the hyperparameters themselves are treated as random variables to be estimated from the data, removing the need for ad-hoc tuning.</p>
+                `;
             }
         };
 
