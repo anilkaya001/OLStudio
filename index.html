@@ -37,12 +37,12 @@
 
       --shadow: 0 18px 50px -18px rgba(0,0,0,0.75);
 
-      /* Canvas color tokens */
+      /* Canvas */
       --canvas-bg: #050505;
-      --canvas-ink: rgba(212,175,55,0.42);
+      --canvas-ink: rgba(212,175,55,0.44);
       --canvas-ink-soft: rgba(212,175,55,0.18);
       --canvas-stroke: rgba(0,0,0,0.55);
-      --canvas-glow: rgba(212,175,55,0.28);
+      --canvas-glow: rgba(212,175,55,0.30);
     }
 
     html[data-theme="light"]{
@@ -66,7 +66,7 @@
       --canvas-bg: #fbfbfc;
       --canvas-ink: rgba(184,138,0,0.26);
       --canvas-ink-soft: rgba(184,138,0,0.10);
-      --canvas-stroke: rgba(255,255,255,0.68);
+      --canvas-stroke: rgba(255,255,255,0.70);
       --canvas-glow: rgba(184,138,0,0.12);
     }
 
@@ -76,7 +76,7 @@
       background: var(--bg);
       color: var(--silver);
       font-family: var(--font-main);
-      overflow: hidden; /* view containers scroll */
+      overflow: hidden;
     }
 
     a{ color: var(--link); text-decoration: none; }
@@ -97,7 +97,6 @@
       white-space:nowrap; border:0;
     }
 
-    /* Background canvas */
     #econometric-canvas{
       position: fixed;
       inset: 0;
@@ -107,7 +106,6 @@
       pointer-events: none;
     }
 
-    /* Nav */
     #global-nav{
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -173,7 +171,6 @@
       text-decoration: none;
     }
 
-    /* Reading progress */
     #reading-progress{
       position: fixed;
       top: calc(var(--nav-h) + var(--safe-top));
@@ -187,7 +184,6 @@
       transition: opacity 220ms ease, width 80ms linear;
     }
 
-    /* App container */
     #app{ position: relative; z-index: 2; height: 100%; }
 
     /* Landing */
@@ -201,11 +197,7 @@
       background: radial-gradient(circle at 50% 40%, rgba(150,120,20,0.10), rgba(0,0,0,0.0) 55%);
     }
 
-    .landing{
-      width: min(980px, 100%);
-      text-align: center;
-    }
-
+    .landing{ width: min(980px, 100%); text-align: center; }
     .landing h1{
       color: color-mix(in oklab, var(--silver) 20%, #fff);
       font-weight: 300;
@@ -215,7 +207,6 @@
       text-shadow: 0 0 30px color-mix(in oklab, var(--gold) 25%, transparent);
       margin-bottom: 14px;
     }
-
     .landing .divider{
       width: 88px;
       height: 1px;
@@ -223,7 +214,6 @@
       opacity: 0.75;
       margin: 0 auto 22px;
     }
-
     .landing-actions{
       display:flex;
       justify-content:center;
@@ -232,7 +222,6 @@
       gap: 12px;
       margin-top: 8px;
     }
-
     .cta{
       font-family: var(--font-ui);
       font-size: 0.86rem;
@@ -505,7 +494,6 @@
       letter-spacing: 0.01em;
     }
 
-    /* Scoped long-form typography */
     .article .content{
       font-family: var(--font-main);
       font-size: clamp(1.08rem, 2.2vw, 1.30rem);
@@ -615,7 +603,6 @@
       color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim));
     }
 
-    /* Loader */
     .loader{
       width: 38px; height: 38px;
       border-radius: 999px;
@@ -633,7 +620,6 @@
     }
   </style>
 
-  <!-- MathJax config -->
   <script>
     window.MathJax = {
       tex: {
@@ -669,7 +655,6 @@
   </nav>
 
   <main id="app">
-    <!-- LANDING -->
     <section id="view-landing" aria-label="Landing">
       <div class="landing">
         <h1>Anıl Kaya</h1>
@@ -685,7 +670,6 @@
       </noscript>
     </section>
 
-    <!-- DECK -->
     <section id="view-deck" class="hidden" aria-label="Archives">
       <header class="deck-header">
         <h2>Research Archives</h2>
@@ -694,13 +678,11 @@
       <div class="card-grid" id="card-grid" aria-label="Article list"></div>
     </section>
 
-    <!-- READER -->
     <section id="view-reader" class="hidden" aria-label="Reader">
       <div class="reader-shell" id="reader-container"></div>
     </section>
   </main>
 
-  <!-- Deferred scripts -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
   <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
@@ -735,9 +717,7 @@
       }
     ];
 
-    /* -----------------------------
-       Theme (localStorage + OS fallback)
-       ----------------------------- */
+    /* Theme */
     const Theme = (() => {
       const LS_KEY = "theme";
       const root = document.documentElement;
@@ -757,7 +737,6 @@
         const b = btn();
         if (b) b.textContent = (theme === "dark") ? "Light" : "Dark";
 
-        // keep meta theme-color reasonably aligned
         const meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.setAttribute("content", theme === "dark" ? "#050505" : "#fbfbfc");
 
@@ -772,10 +751,7 @@
       return { apply, toggle, getInitialTheme };
     })();
 
-    /* -----------------------------
-       Visuals: equation rain + neural connections
-       (equations made more apparent via stroke + shadow)
-       ----------------------------- */
+    /* Visuals: stronger equations */
     const Visuals = (() => {
       const canvas = document.getElementById("econometric-canvas");
       const ctx = canvas.getContext("2d", { alpha: false });
@@ -783,10 +759,10 @@
       let w = 0, h = 0, dpr = 1;
 
       let bg = "#050505";
-      let ink = "rgba(212,175,55,0.42)";
+      let ink = "rgba(212,175,55,0.44)";
       let inkSoft = "rgba(212,175,55,0.18)";
       let stroke = "rgba(0,0,0,0.55)";
-      let glow = "rgba(212,175,55,0.28)";
+      let glow = "rgba(212,175,55,0.30)";
 
       const formulas = [
         "𝑦ₜ = 𝛽𝑥ₜ + 𝜖ₜ",
@@ -829,7 +805,7 @@
         canvas.width = Math.floor(w * dpr);
         canvas.height = Math.floor(h * dpr);
 
-        // Reset then scale (prevents cumulative scaling)
+        // reset transform then scale to avoid cumulative scaling
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(dpr, dpr);
 
@@ -850,17 +826,15 @@
           r: Math.random() * (isMobile ? 1.4 : 1.8) + 0.6
         }));
 
-        // Background equation rain (more apparent)
         drops = Array.from({ length: dropCount }, () => ({
           x: Math.random() * w,
           y: Math.random() * h,
           vy: Math.random() * (isMobile ? 0.85 : 1.05) + 0.25,
           size: Math.random() * (isMobile ? 14 : 18) + (isMobile ? 12 : 13),
-          a: Math.random() * 0.28 + 0.18, // bumped visibility
+          a: Math.random() * 0.28 + 0.18,
           text: formulas[(Math.random() * formulas.length) | 0]
         }));
 
-        // Hero equations (slow drifting, larger, very subtle but more noticeable)
         const heroCount = reduceMotion ? 2 : (isMobile ? 3 : 5);
         hero = Array.from({ length: heroCount }, () => ({
           x: Math.random() * w,
@@ -879,19 +853,14 @@
         ctx.font = `italic ${fontSize}px "Times New Roman"`;
         ctx.textBaseline = "alphabetic";
 
-        // glow/shadow to make equations pop a bit more
         ctx.shadowColor = glow;
         ctx.shadowBlur = isHero ? 18 : 12;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
 
-        // stroke behind for contrast
         ctx.globalAlpha = Math.min(1, alpha * (isHero ? 0.95 : 0.85));
         ctx.lineWidth = isHero ? 2.0 : 1.25;
         ctx.strokeStyle = stroke;
         ctx.strokeText(text, x, y);
 
-        // fill
         ctx.globalAlpha = alpha;
         ctx.fillStyle = ink;
         ctx.fillText(text, x, y);
@@ -900,14 +869,11 @@
       }
 
       function step() {
-        // background
         ctx.fillStyle = bg;
         ctx.fillRect(0, 0, w, h);
 
-        // hero equations layer (slow drift)
         for (const e of hero) {
-          e.x += e.vx;
-          e.y += e.vy;
+          e.x += e.vx; e.y += e.vy;
           if (e.x < -400) e.x = w + 200;
           if (e.x > w + 400) e.x = -200;
           if (e.y < -200) e.y = h + 120;
@@ -915,7 +881,6 @@
           drawTextWithStroke(e.text, e.x, e.y, e.size, e.a, true);
         }
 
-        // equation rain layer
         for (const d of drops) {
           d.y += d.vy;
           if (d.y > h + 80) {
@@ -929,15 +894,12 @@
           drawTextWithStroke(d.text, d.x, d.y, d.size, d.a, false);
         }
 
-        // nodes + connections
         const isMobile = w < 820;
         const maxDist = isMobile ? 105 : 150;
         const maxDist2 = maxDist * maxDist;
 
         for (const n of nodes) {
-          n.x += n.vx;
-          n.y += n.vy;
-
+          n.x += n.vx; n.y += n.vy;
           if (n.x < -20) n.x = w + 20;
           if (n.x > w + 20) n.x = -20;
           if (n.y < -20) n.y = h + 20;
@@ -946,12 +908,12 @@
 
         ctx.save();
         ctx.lineWidth = 1;
+
         for (let i = 0; i < nodes.length; i++) {
           for (let j = i + 1; j < nodes.length; j++) {
             const a = nodes[i], b = nodes[j];
-            const dx = a.x - b.x;
-            const dy = a.y - b.y;
-            const d2 = dx * dx + dy * dy;
+            const dx = a.x - b.x, dy = a.y - b.y;
+            const d2 = dx*dx + dy*dy;
             if (d2 < maxDist2) {
               const t = 1 - d2 / maxDist2;
               ctx.globalAlpha = Math.min(0.42, t * 0.28);
@@ -963,8 +925,8 @@
             }
           }
         }
-        ctx.globalAlpha = 1;
 
+        ctx.globalAlpha = 1;
         for (const n of nodes) {
           ctx.beginPath();
           ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
@@ -972,8 +934,8 @@
           ctx.globalAlpha = 0.9;
           ctx.fill();
         }
-        ctx.restore();
 
+        ctx.restore();
         requestAnimationFrame(step);
       }
 
@@ -987,9 +949,7 @@
       return { init, syncTheme };
     })();
 
-    /* -----------------------------
-       App: views + reader + progress + TOC
-       ----------------------------- */
+    /* App */
     const App = (() => {
       const el = (id) => document.getElementById(id);
 
@@ -1129,6 +1089,45 @@
         return headings;
       }
 
+      // Remove any in-article TOC block to avoid “double TOC” overlap
+      function stripInlineTOC(articleEl) {
+        if (!articleEl) return;
+
+        // common explicit TOC markers
+        const explicitSelectors = [
+          "#toc", ".toc", "nav.toc", ".table-of-contents", ".contents", "[data-toc]"
+        ];
+        explicitSelectors.forEach(sel => {
+          articleEl.querySelectorAll(sel).forEach(n => n.remove());
+        });
+
+        // heuristic: if the first 1-3 blocks contain many hash links (e.g. #introduction, #literature,...),
+        // treat it as an inline TOC list and remove it.
+        const candidates = Array.from(articleEl.children).slice(0, 4);
+        for (const c of candidates) {
+          if (!c) continue;
+          const links = Array.from(c.querySelectorAll("a[href]"));
+          if (links.length < 5) continue;
+
+          const samePageHashLinks = links.filter(a => {
+            const href = (a.getAttribute("href") || "").trim();
+            return href.startsWith("#") || href.includes("#introduction") || href.includes("#literature") || href.includes("#mathematical") || href.includes("#pitfalls") || href.includes("#extensions") || href.includes("#implementation") || href.includes("#conclusion");
+          });
+
+          // also check that most links are hash links (TOC-like)
+          if (samePageHashLinks.length >= 5 && samePageHashLinks.length / links.length > 0.7) {
+            c.remove();
+            break;
+          }
+
+          // secondary: a paragraph full of TOC anchors
+          if (c.tagName === "P" && samePageHashLinks.length >= 5) {
+            c.remove();
+            break;
+          }
+        }
+      }
+
       function buildTOC(readerRoot) {
         const tocList = readerRoot.querySelector("#toc-list");
         const mobileLinks = readerRoot.querySelector("#mobile-toc-links");
@@ -1219,6 +1218,10 @@
 
           const doc = new DOMParser().parseFromString(html, "text/html");
           const articleNode = doc.querySelector("article") || doc.body;
+
+          // IMPORTANT: remove any in-article TOC so our generated TOC is the only one
+          stripInlineTOC(articleNode);
+
           const contentHTML = articleNode ? articleNode.innerHTML : html;
 
           readerContainer.innerHTML = buildReaderShell(article, contentHTML);
@@ -1250,17 +1253,13 @@
       }
 
       function init() {
-        // initial state
         views.landing.classList.add("active");
 
-        // render deck
         renderDeck();
 
-        // scrolling: use view containers (not window)
         views.deck.addEventListener("scroll", () => setNavScrolled(views.deck.scrollTop > 8), { passive: true });
         views.reader.addEventListener("scroll", onReaderScroll, { passive: true });
 
-        // top nav actions
         const home = el("btn-home");
         home.addEventListener("click", goHome);
         home.addEventListener("keydown", (e) => {
@@ -1270,7 +1269,7 @@
         el("btn-archives").addEventListener("click", enterDeck);
         el("btn-enter").addEventListener("click", enterDeck);
 
-        // expose article open for future extensions (not global by default)
+        // optional: deep-link to article sections if you ever route them
         window.__openArticle = openArticle;
       }
 
