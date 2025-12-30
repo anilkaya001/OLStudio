@@ -1,530 +1,1289 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="description" content="Econometric research by Anıl Kaya. Bayesian VAR models, Time Series Analysis, and Macroeconomic Forecasting.">
-    <title>Anıl Kaya | Econometric Insights</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="description" content="Econometric research and independent analysis by Anıl Kaya, specializing in Bayesian Vector Autoregression, time series, and macroeconomic modeling." />
+  <meta name="theme-color" content="#050505" />
+  <title>Anıl Kaya | Econometric Insights</title>
 
-    <!-- Preconnect -->
-    <link rel="preconnect" href="https://polyfill.io" crossorigin>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Modern Sans-Serif for UI -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://polyfill.io" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
-    <style>
-        :root {
-            --bg-color: #050505;
-            --text-color: #e0e0e0;
-            --accent-color: #F7E7CE; /* Pale Gold */
-            --dim-gold: #8a7326;
-            --card-bg: rgba(20, 20, 20, 0.6);
-            --border-color: rgba(255, 255, 255, 0.1);
-            --font-ui: 'Inter', sans-serif;
-            --font-serif: 'Charter', 'Bitstream Charter', 'Sitka Text', Cambria, serif;
-            --glass-bg: rgba(10, 10, 10, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.08);
-        }
+  <style>
+    :root{
+      color-scheme: light dark;
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+      --font-main: "Times New Roman", Times, "Charter", "Cambria", serif;
+      --font-ui: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 
-        body, html {
-            width: 100%; height: 100%; background-color: var(--bg-color);
-            color: var(--text-color); font-family: var(--font-ui);
-            overflow: hidden; /* Main scroll handled by views */
-        }
+      --nav-h: 64px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
 
-        /* Utility */
-        .hidden { display: none !important; pointer-events: none; }
-        a { color: var(--accent-color); text-decoration: none; transition: opacity 0.2s; }
-        a:hover { opacity: 0.8; }
+      /* Dark (default) */
+      --bg: #050505;
+      --panel: rgba(18,18,18,0.72);
+      --panel-strong: rgba(10,10,10,0.92);
+      --border: rgba(255,255,255,0.10);
 
-        /* Canvas Background */
-        canvas#econometric-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none;
-        }
+      --silver: #e2e2e2;
+      --silver-dim: rgba(226,226,226,0.70);
 
-        /* Navigation */
-        #global-nav {
-            position: fixed; top: 0; left: 0; width: 100%; height: 70px;
-            padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;
-            z-index: 1000;
-            background: rgba(5, 5, 5, 0.01); /* Mostly transparent */
-            backdrop-filter: blur(0px); /* Clear by default */
-            transition: all 0.3s ease;
-        }
-        #global-nav.scrolled {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--glass-border);
-        }
+      --gold: #D4AF37;
+      --gold-soft: #F7E7CE;
 
-        .home-btn {
-            font-size: 1.1rem; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 2px; cursor: pointer; color: var(--accent-color);
-            position: relative; padding: 0.5rem 0; pointer-events: auto;
-        }
-        
-        /* Progress Bar */
-        #reading-progress {
-            position: fixed; top: 70px; left: 0; width: 0%; height: 3px;
-            background: linear-gradient(90deg, var(--dim-gold), var(--accent-color));
-            z-index: 1001; transition: width 0.1s linear; opacity: 0;
-        }
+      --link: var(--gold-soft);
 
-        /* VIEW: LANDING */
-        #view-landing {
-            position: absolute; inset: 0; z-index: 100;
-            background: radial-gradient(circle at center, rgba(26,26,26,0.3) 0%, #000 90%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 0.8s ease;
-        }
-        .landing-content {
-            z-index: 2; text-align: center; opacity: 0; animation: fadeIn 2s 0.5s forwards;
-        }
-        .landing-title {
-            font-family: var(--font-serif); font-size: clamp(3rem, 8vw, 6rem);
-            font-weight: 300; letter-spacing: 0.2em; color: #fff;
-            text-shadow: 0 0 40px rgba(212, 175, 55, 0.3); margin-bottom: 1rem;
-        }
-        .landing-subtitle {
-            font-size: 1rem; letter-spacing: 3px; text-transform: uppercase;
-            color: var(--dim-gold); margin-bottom: 3rem;
-        }
-        .enter-btn {
-            padding: 1rem 3rem; background: rgba(255,255,255,0.03);
-            border: 1px solid var(--dim-gold); color: var(--text-color);
-            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px;
-            cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(4px);
-        }
-        .enter-btn:hover {
-            background: rgba(212, 175, 55, 0.1); border-color: var(--accent-color);
-            box-shadow: 0 0 25px rgba(212, 175, 55, 0.15);
-        }
+      --shadow: 0 18px 50px -18px rgba(0,0,0,0.75);
 
-        /* VIEW: DECK */
-        #view-deck {
-            position: absolute; inset: 0; z-index: 50; padding-top: 100px;
-            overflow-y: auto; opacity: 0; transform: scale(0.98);
-            transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-            backdrop-filter: blur(10px); /* Blur background rain slightly */
-            background: rgba(5,5,5,0.85);
-        }
-        #view-deck.active { opacity: 1; transform: scale(1); }
-        
-        .deck-header { text-align: center; margin-bottom: 4rem; }
-        .deck-title {
-            font-family: var(--font-serif); font-size: 3rem; font-weight: 300;
-            color: var(--accent-color); margin-bottom: 1rem;
-        }
-        .deck-divider {
-            width: 60px; height: 1px; background: var(--dim-gold); margin: 0 auto;
-        }
+      /* Canvas color tokens */
+      --canvas-bg: #050505;
+      --canvas-ink: rgba(212,175,55,0.42);
+      --canvas-ink-soft: rgba(212,175,55,0.18);
+      --canvas-stroke: rgba(0,0,0,0.55);
+      --canvas-glow: rgba(212,175,55,0.28);
+    }
 
-        .card-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 2rem 4rem;
-        }
-        .article-card {
-            background: var(--card-bg); border: 1px solid var(--border-color);
-            padding: 2.5rem; min-height: 380px; display: flex; flex-direction: column;
-            justify-content: space-between; cursor: pointer; transition: all 0.4s ease;
-            position: relative; overflow: hidden; backdrop-filter: blur(10px);
-        }
-        .article-card:hover {
-            transform: translateY(-8px); border-color: var(--dim-gold);
-            box-shadow: 0 15px 40px -10px rgba(0,0,0,0.5);
-            background: rgba(30, 30, 30, 0.8);
-        }
-        .card-meta {
-            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px;
-            color: var(--dim-gold); margin-bottom: 1rem; display: flex; justify-content: space-between;
-        }
-        .card-title {
-            font-family: var(--font-serif); font-size: 2rem; line-height: 1.2;
-            color: #fff; margin-bottom: 1.5rem; font-weight: 400;
-        }
-        .card-excerpt {
-            font-size: 1rem; line-height: 1.6; color: #aaa; font-weight: 300;
-        }
-        .read-more {
-            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;
-            color: var(--accent-color); margin-top: auto; display: inline-block;
-        }
+    html[data-theme="light"]{
+      color-scheme: light;
 
-        /* VIEW: READER (Updated Structure) */
-        #view-reader {
-            position: absolute; inset: 0; z-index: 60;
-            background: #080808; /* Solid dark for reading readability */
-            overflow-y: auto; opacity: 0; transform: translateY(30px);
-            transition: opacity 0.5s, transform 0.5s;
-        }
-        #view-reader.active { opacity: 1; transform: translateY(0); }
+      --bg: #fbfbfc;
+      --panel: rgba(255,255,255,0.82);
+      --panel-strong: rgba(255,255,255,0.94);
+      --border: rgba(0,0,0,0.10);
 
-        .reader-layout {
-            display: grid; grid-template-columns: 240px 1fr; gap: 4rem;
-            max-width: 1100px; margin: 120px auto 4rem; padding: 0 2rem;
-        }
-        
-        /* Table of Contents Sidebar */
-        .toc-sidebar {
-            position: sticky; top: 120px; align-self: start;
-            border-left: 1px solid var(--border-color);
-            padding-left: 1.5rem; max-height: 70vh; overflow-y: auto;
-        }
-        .toc-title {
-            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px;
-            color: #666; margin-bottom: 1rem; font-weight: 600;
-        }
-        .toc-list { list-style: none; }
-        .toc-item { margin-bottom: 0.8rem; }
-        .toc-link {
-            font-size: 0.9rem; color: #888; transition: all 0.2s;
-            display: block; line-height: 1.4;
-        }
-        .toc-link:hover, .toc-link.active {
-            color: var(--accent-color); transform: translateX(5px);
-        }
-        .toc-link.active { font-weight: 500; }
+      --silver: #1b1b1c;
+      --silver-dim: rgba(27,27,28,0.72);
 
-        /* Article Body Typography */
-        .article-body {
-            font-family: var(--font-serif); font-size: 1.25rem; line-height: 1.8;
-            color: #d0d0d0; max-width: 740px; /* Optimal reading width */
-        }
-        .article-header { margin-bottom: 4rem; border-bottom: 1px solid var(--border-color); padding-bottom: 2rem;}
-        .article-title {
-            font-size: 3.5rem; line-height: 1.1; margin-bottom: 1rem;
-            color: var(--accent-color); font-weight: 400;
-        }
-        .article-meta-row {
-            display: flex; gap: 2rem; font-family: var(--font-ui); font-size: 0.9rem; color: #666;
-        }
-        
-        /* Content Styling */
-        .article-body h2 {
-            font-family: var(--font-ui); font-size: 1.8rem; color: #fff;
-            margin: 3rem 0 1rem; font-weight: 600; letter-spacing: -0.5px;
-        }
-        .article-body h3 {
-            font-family: var(--font-ui); font-size: 1.4rem; color: #eee;
-            margin: 2rem 0 1rem; font-weight: 500;
-        }
-        .article-body p { margin-bottom: 1.8rem; }
-        .article-body ul { margin-bottom: 1.8rem; padding-left: 1.5rem; }
-        .article-body li { margin-bottom: 0.5rem; }
-        
-        .equation-box {
-            background: rgba(255,255,255,0.03); border-radius: 4px;
-            padding: 1.5rem; margin: 2rem 0; overflow-x: auto; text-align: center;
-            border: 1px solid var(--border-color);
-        }
-        
-        /* Loading */
-        .loader {
-            width: 40px; height: 40px; border: 2px solid var(--dim-gold);
-            border-top-color: transparent; border-radius: 50%;
-            animation: spin 0.8s linear infinite; margin: 100px auto;
-        }
-        @keyframes fadeIn { to { opacity: 1; } }
-        @keyframes spin { to { transform: rotate(360deg); } }
+      --gold: #B88A00;
+      --gold-soft: #7A5A00;
 
-        /* Mobile Responsive */
-        @media (max-width: 900px) {
-            .reader-layout { grid-template-columns: 1fr; margin-top: 100px; }
-            .toc-sidebar { display: none; } /* Hide sticky TOC on mobile */
-            .article-title { font-size: 2.5rem; }
-            .article-body { font-size: 1.15rem; }
-            #global-nav { background: var(--glass-bg); backdrop-filter: blur(10px); }
-            #reading-progress { opacity: 1 !important; }
-        }
-    </style>
+      --link: #7A5A00;
+
+      --shadow: 0 18px 55px -25px rgba(0,0,0,0.22);
+
+      --canvas-bg: #fbfbfc;
+      --canvas-ink: rgba(184,138,0,0.26);
+      --canvas-ink-soft: rgba(184,138,0,0.10);
+      --canvas-stroke: rgba(255,255,255,0.68);
+      --canvas-glow: rgba(184,138,0,0.12);
+    }
+
+    *{ margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing: antialiased; }
+    html, body{ height:100%; }
+    body{
+      background: var(--bg);
+      color: var(--silver);
+      font-family: var(--font-main);
+      overflow: hidden; /* view containers scroll */
+    }
+
+    a{ color: var(--link); text-decoration: none; }
+    a:hover{ opacity: 0.88; }
+
+    :focus-visible{
+      outline: 2px solid color-mix(in oklab, var(--gold) 65%, #fff);
+      outline-offset: 3px;
+      border-radius: 10px;
+    }
+
+    .hidden{ display:none !important; pointer-events:none; opacity:0; }
+    .sr-only{
+      position:absolute !important;
+      width:1px; height:1px;
+      padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0);
+      white-space:nowrap; border:0;
+    }
+
+    /* Background canvas */
+    #econometric-canvas{
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Nav */
+    #global-nav{
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: calc(var(--nav-h) + var(--safe-top));
+      padding-top: var(--safe-top);
+      padding-left: clamp(14px, 4vw, 40px);
+      padding-right: clamp(14px, 4vw, 40px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      z-index: 1000;
+      background: rgba(0,0,0,0.01);
+      transition: background 240ms ease, backdrop-filter 240ms ease, border-color 240ms ease;
+    }
+    #global-nav.scrolled{
+      background: var(--panel-strong);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand{
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .nav-actions{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+
+    .nav-btn{
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--silver);
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: transform 160ms ease, border-color 200ms ease, background 200ms ease;
+    }
+    .nav-btn:hover{
+      transform: translateY(-1px);
+      border-color: color-mix(in oklab, var(--gold) 45%, var(--border));
+    }
+
+    .nav-link-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    /* Reading progress */
+    #reading-progress{
+      position: fixed;
+      top: calc(var(--nav-h) + var(--safe-top));
+      left: 0;
+      height: 2px;
+      width: 0%;
+      z-index: 1001;
+      opacity: 0;
+      background: linear-gradient(90deg, var(--gold), color-mix(in oklab, var(--gold) 35%, #fff));
+      box-shadow: 0 0 12px color-mix(in oklab, var(--gold) 55%, transparent);
+      transition: opacity 220ms ease, width 80ms linear;
+    }
+
+    /* App container */
+    #app{ position: relative; z-index: 2; height: 100%; }
+
+    /* Landing */
+    #view-landing{
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: calc(var(--nav-h) + var(--safe-top) + 24px) 16px calc(var(--safe-bottom) + 24px);
+      background: radial-gradient(circle at 50% 40%, rgba(150,120,20,0.10), rgba(0,0,0,0.0) 55%);
+    }
+
+    .landing{
+      width: min(980px, 100%);
+      text-align: center;
+    }
+
+    .landing h1{
+      color: color-mix(in oklab, var(--silver) 20%, #fff);
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      line-height: 1.05;
+      font-size: clamp(2.6rem, 10vw, 6rem);
+      text-shadow: 0 0 30px color-mix(in oklab, var(--gold) 25%, transparent);
+      margin-bottom: 14px;
+    }
+
+    .landing .divider{
+      width: 88px;
+      height: 1px;
+      background: color-mix(in oklab, var(--gold) 70%, transparent);
+      opacity: 0.75;
+      margin: 0 auto 22px;
+    }
+
+    .landing-actions{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .cta{
+      font-family: var(--font-ui);
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid color-mix(in oklab, var(--gold) 55%, var(--border));
+      background: color-mix(in oklab, var(--panel) 78%, transparent);
+      color: var(--silver);
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: transform 160ms ease, background 200ms ease, border-color 200ms ease;
+    }
+    .cta:hover{ transform: translateY(-2px); }
+    .cta.gold{ color: var(--gold); }
+
+    /* Deck */
+    #view-deck{
+      position:absolute;
+      inset:0;
+      z-index: 60;
+      padding-top: calc(var(--nav-h) + var(--safe-top) + 28px);
+      padding-bottom: calc(var(--safe-bottom) + 32px);
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+      background: color-mix(in oklab, var(--bg) 70%, transparent);
+      opacity: 0;
+      transform: scale(0.985);
+      transition: opacity 420ms ease, transform 420ms ease;
+    }
+    #view-deck.active{ opacity: 1; transform: scale(1); }
+
+    .deck-header{
+      text-align:center;
+      margin: 8px auto 26px;
+      padding: 0 16px;
+      max-width: 1200px;
+    }
+    .deck-header h2{
+      color: var(--gold-soft);
+      font-size: clamp(2.1rem, 5.5vw, 3.3rem);
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      margin-bottom: 10px;
+    }
+    .deck-header .line{
+      width: 68px; height: 1px;
+      margin: 0 auto;
+      background: var(--gold);
+      opacity: 0.7;
+    }
+
+    .card-grid{
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 18px clamp(16px, 4vw, 44px);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+      gap: 18px;
+    }
+
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      backdrop-filter: blur(14px);
+      padding: 22px;
+      min-height: 320px;
+      display:flex;
+      flex-direction: column;
+      gap: 12px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform 220ms ease, border-color 240ms ease, background 240ms ease;
+    }
+
+    .card:hover{
+      transform: translateY(-6px);
+      border-color: color-mix(in oklab, var(--gold) 55%, var(--border));
+      background: color-mix(in oklab, var(--panel) 88%, rgba(255,255,255,0.02));
+    }
+
+    .card-top{
+      display:flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--font-ui);
+      font-size: 0.72rem;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--gold);
+      border-bottom: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
+      padding-bottom: 10px;
+    }
+
+    .card h3{
+      font-size: 1.9rem;
+      line-height: 1.15;
+      font-weight: 400;
+      color: var(--gold-soft);
+      margin-top: 4px;
+    }
+
+    .card p{
+      color: var(--silver-dim);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .card .read{
+      margin-top:auto;
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      color: var(--gold);
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .card[aria-disabled="true"]{
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Reader */
+    #view-reader{
+      position:absolute;
+      inset:0;
+      z-index: 80;
+      padding-top: calc(var(--nav-h) + var(--safe-top));
+      padding-bottom: calc(var(--safe-bottom) + 24px);
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      background: var(--bg);
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 360ms ease, transform 360ms ease;
+    }
+    #view-reader.active{ opacity: 1; transform: translateY(0); }
+
+    .reader-shell{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px clamp(16px, 4vw, 44px) 60px;
+    }
+
+    .reader-layout{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap: clamp(22px, 5vw, 54px);
+      align-items: start;
+      margin-top: 20px;
+    }
+    @media (max-width: 980px){
+      .reader-layout{ grid-template-columns: 1fr; }
+    }
+
+    .toc{
+      position: sticky;
+      top: calc(var(--nav-h) + var(--safe-top) + 18px);
+      align-self: start;
+      padding-left: 16px;
+      border-left: 1px solid var(--border);
+      max-height: calc(100vh - (var(--nav-h) + var(--safe-top) + 44px));
+      overflow: auto;
+    }
+    @media (max-width: 980px){
+      .toc{ display:none; }
+    }
+
+    .toc h4{
+      font-family: var(--font-ui);
+      font-size: 0.74rem;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--silver-dim);
+      margin-bottom: 12px;
+    }
+    .toc ul{ list-style:none; }
+    .toc li{ margin: 0 0 10px; }
+    .toc a{
+      font-family: var(--font-ui);
+      font-size: 0.88rem;
+      line-height: 1.35;
+      color: color-mix(in oklab, var(--silver) 55%, var(--silver-dim));
+      display:block;
+      transition: color 160ms ease, transform 160ms ease;
+    }
+    .toc a:hover{ color: var(--gold); transform: translateX(4px); }
+    .toc a.active{
+      color: var(--gold);
+      border-left: 2px solid var(--gold);
+      padding-left: 10px;
+      margin-left: -12px;
+    }
+
+    .mobile-toc{
+      display:none;
+      margin-bottom: 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      backdrop-filter: blur(14px);
+    }
+    @media (max-width: 980px){
+      .mobile-toc{ display:block; }
+    }
+    .mobile-toc summary{
+      font-family: var(--font-ui);
+      color: var(--gold);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      list-style:none;
+      user-select:none;
+    }
+    .mobile-toc summary::-webkit-details-marker{ display:none; }
+    .mobile-toc .toc-links{
+      margin-top: 12px;
+      display:grid;
+      gap: 10px;
+    }
+    .mobile-toc .toc-links a{
+      font-family: var(--font-ui);
+      font-size: 0.92rem;
+      line-height: 1.35;
+      color: color-mix(in oklab, var(--silver) 60%, var(--silver-dim));
+    }
+
+    .article{ max-width: 760px; }
+    .article-header{
+      padding: 14px 0 22px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .meta{
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--silver-dim);
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items:center;
+    }
+    .meta .pill{
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--panel) 70%, transparent);
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: var(--gold);
+    }
+
+    .article h1{
+      margin-top: 12px;
+      font-weight: 400;
+      line-height: 1.06;
+      font-size: clamp(2.2rem, 5.4vw, 4rem);
+      color: var(--gold-soft);
+      letter-spacing: 0.01em;
+    }
+
+    /* Scoped long-form typography */
+    .article .content{
+      font-family: var(--font-main);
+      font-size: clamp(1.08rem, 2.2vw, 1.30rem);
+      line-height: 1.75;
+      color: var(--silver);
+    }
+    @media (max-width: 980px){
+      .article .content{ font-size: 1.12rem; line-height: 1.70; }
+    }
+
+    .article .content p{
+      margin: 0 0 1.6rem;
+      color: color-mix(in oklab, var(--silver) 88%, var(--silver-dim));
+      text-align: justify;
+    }
+    @media (max-width: 980px){
+      .article .content p{ text-align: left; }
+    }
+
+    .article .content strong,
+    .article .content b{
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .article .content h2{
+      margin: 2.6rem 0 1rem;
+      font-size: clamp(1.55rem, 3.5vw, 2.2rem);
+      font-weight: 500;
+      color: var(--gold-soft);
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid color-mix(in oklab, var(--gold) 22%, var(--border));
+    }
+
+    .article .content h3{
+      margin: 2.0rem 0 0.8rem;
+      font-size: clamp(1.25rem, 2.8vw, 1.55rem);
+      font-weight: 500;
+      font-style: italic;
+      color: color-mix(in oklab, var(--silver) 25%, #fff);
+    }
+
+    .article .content ul,
+    .article .content ol{
+      margin: 0 0 1.6rem 1.4rem;
+      color: color-mix(in oklab, var(--silver) 85%, var(--silver-dim));
+    }
+    .article .content li{ margin: 0.35rem 0; }
+
+    .article .content blockquote{
+      margin: 1.8rem 0;
+      padding: 1.1rem 1.2rem;
+      border-left: 3px solid var(--gold);
+      background: color-mix(in oklab, var(--panel) 75%, transparent);
+      border-radius: 10px;
+      color: color-mix(in oklab, var(--silver) 75%, var(--gold-soft));
+    }
+
+    .article .content table{
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.8rem 0;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--panel) 70%, transparent);
+      border-radius: 12px;
+      overflow:hidden;
+    }
+    .article .content th,
+    .article .content td{
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      font-family: var(--font-ui);
+      font-size: 0.92rem;
+      line-height: 1.35;
+      color: color-mix(in oklab, var(--silver) 82%, var(--silver-dim));
+    }
+    .article .content th{
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-size: 0.78rem;
+      color: var(--gold);
+      background: color-mix(in oklab, var(--panel) 85%, transparent);
+    }
+
+    .article .content code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+      background: color-mix(in oklab, var(--panel) 82%, transparent);
+      border: 1px solid var(--border);
+      padding: 0.12em 0.34em;
+      border-radius: 8px;
+      color: color-mix(in oklab, var(--silver) 70%, var(--gold));
+    }
+    .article .content pre{
+      margin: 1.6rem 0;
+      padding: 14px 14px;
+      overflow:auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--panel-strong) 92%, transparent);
+    }
+    .article .content pre code{
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim));
+    }
+
+    /* Loader */
+    .loader{
+      width: 38px; height: 38px;
+      border-radius: 999px;
+      border: 2px solid color-mix(in oklab, var(--gold) 55%, var(--border));
+      border-top-color: transparent;
+      margin: 42px auto;
+      animation: spin 0.85s linear infinite;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ scroll-behavior: auto !important; }
+      .card, .cta, .nav-btn{ transition: none !important; }
+      #view-deck, #view-reader{ transition: none !important; }
+    }
+  </style>
+
+  <!-- MathJax config -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true
+      },
+      options: { ignoreHtmlClass: 'tex2jax_ignore', processHtmlClass: 'tex2jax_process' },
+      chtml: { displayAlign: 'center' }
+    };
+  </script>
 </head>
 
 <body>
-    <!-- Reading Progress Bar -->
-    <div id="reading-progress"></div>
+  <canvas id="econometric-canvas" aria-hidden="true"></canvas>
+  <div id="reading-progress" aria-hidden="true"></div>
 
-    <!-- Navigation -->
-    <nav id="global-nav">
-        <div class="home-btn" onclick="app.goHome()">Anıl Kaya</div>
-    </nav>
+  <nav id="global-nav" aria-label="Primary">
+    <div class="brand" id="btn-home" role="button" tabindex="0">Anıl Kaya</div>
+    <div class="nav-actions">
+      <button class="nav-btn" id="btn-archives" type="button">Archives</button>
 
-    <div id="app">
-        <!-- LANDING -->
-        <div id="view-landing">
-            <canvas id="econometric-canvas"></canvas>
-            <div class="landing-content">
-                <div class="landing-title">Anıl Kaya</div>
-                <div class="landing-subtitle">Econometrics & Forecasting</div>
-                <button class="enter-btn" onclick="app.enterDeck()">Enter Archives</button>
-            </div>
-        </div>
+      <a class="nav-btn nav-link-btn"
+         href="https://www.linkedin.com/in/anillkaya"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Open LinkedIn profile in a new tab">
+        LinkedIn
+      </a>
 
-        <!-- DECK (Archives) -->
-        <div id="view-deck" class="hidden">
-            <div class="deck-header">
-                <h2 class="deck-title">Research Archives</h2>
-                <div class="deck-divider"></div>
-            </div>
-            <div class="card-grid" id="card-grid"></div>
-        </div>
-
-        <!-- READER -->
-        <div id="view-reader" class="hidden">
-            <!-- Content Injected via JS -->
-            <div id="reader-container"></div>
-        </div>
+      <button class="nav-btn" id="btn-theme" type="button" aria-label="Toggle theme">Light</button>
     </div>
+  </nav>
 
-    <!-- Deferred Scripts -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
-    <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <main id="app">
+    <!-- LANDING -->
+    <section id="view-landing" aria-label="Landing">
+      <div class="landing">
+        <h1>Anıl Kaya</h1>
+        <div class="divider" aria-hidden="true"></div>
+        <div class="landing-actions">
+          <button class="cta gold" id="btn-enter" type="button">Enter Archives</button>
+        </div>
+      </div>
+      <noscript>
+        <p style="max-width:680px;margin:18px auto 0;font-family:var(--font-ui);color:var(--silver-dim);text-align:center;line-height:1.5;">
+          JavaScript is required to load articles and interactive views.
+        </p>
+      </noscript>
+    </section>
 
-    <script defer>
-        const ARTICLE_MANIFEST = [
-            { id: 'bvar', file: 'articles/bvar.html', category: 'Core Theory', title: 'Bayesian Vector Autoregression', date: 'Oct 2024', excerpt: 'A comprehensive guide to modern implementation, covering Minnesota priors, hierarchical estimation, and large-scale forecasting algorithms.', enabled: true },
-            { id: 'stoch-vol', file: 'articles/stochastic-volatility.html', category: 'Time Variance', title: 'Stochastic Volatility', date: 'Nov 2024', excerpt: 'Modeling structural breaks and changing error variance in post-pandemic macroeconomic data using state-space methods.', enabled: false },
-            { id: 'sign-rest', file: 'articles/sign-restrictions.html', category: 'Identification', title: 'Sign Restrictions', date: 'Dec 2024', excerpt: 'Moving beyond Cholesky: Set-identified structural shocks utilizing robust Bayesian sampling methods.', enabled: false }
-        ];
+    <!-- DECK -->
+    <section id="view-deck" class="hidden" aria-label="Archives">
+      <header class="deck-header">
+        <h2>Research Archives</h2>
+        <div class="line" aria-hidden="true"></div>
+      </header>
+      <div class="card-grid" id="card-grid" aria-label="Article list"></div>
+    </section>
 
-        // --- VISUAL SYSTEM (Background Rain) ---
-        const Visuals = {
-            canvas: null, ctx: null, width: 0, height: 0, particles: [],
-            formulas: ["𝑦ₜ = 𝛽𝑥ₜ + 𝜖ₜ", "Σ = 𝐴⁻¹Λ𝐴⁻¹′", "∇ℒ(𝜃)", "𝑃(𝐴|𝐵)", "∫ 𝑒⁻ˣ² 𝑑𝑥", "𝜎²ₜ", "Δ𝑦ₜ"],
-            
-            init() {
-                this.canvas = document.getElementById('econometric-canvas');
-                this.ctx = this.canvas.getContext('2d', { alpha: false });
-                this.resize();
-                window.addEventListener('resize', () => this.resize());
-                this.createParticles();
-                this.animate();
-            },
-            resize() {
-                const dpr = window.devicePixelRatio || 1;
-                this.width = window.innerWidth;
-                this.height = window.innerHeight;
-                this.canvas.width = this.width * dpr;
-                this.canvas.height = this.height * dpr;
-                this.ctx.scale(dpr, dpr);
-                this.createParticles();
-            },
-            createParticles() {
-                this.particles = [];
-                const count = this.width < 768 ? 30 : 60;
-                for(let i=0; i<count; i++) {
-                    this.particles.push({
-                        x: Math.random() * this.width,
-                        y: Math.random() * this.height,
-                        vy: Math.random() * 1.0 + 0.2, // Slow rain
-                        text: this.formulas[Math.floor(Math.random() * this.formulas.length)],
-                        size: Math.random() * 14 + 12,
-                        alpha: Math.random() * 0.4 + 0.05
-                    });
-                }
-            },
-            animate() {
-                this.ctx.fillStyle = '#050505';
-                this.ctx.fillRect(0, 0, this.width, this.height);
-                
-                for(let p of this.particles) {
-                    p.y += p.vy;
-                    if(p.y > this.height + 50) { p.y = -50; p.x = Math.random() * this.width; }
-                    
-                    this.ctx.font = `italic ${p.size}px "Times New Roman"`;
-                    this.ctx.fillStyle = `rgba(212, 175, 55, ${p.alpha})`;
-                    this.ctx.fillText(p.text, p.x, p.y);
-                }
-                requestAnimationFrame(() => this.animate());
+    <!-- READER -->
+    <section id="view-reader" class="hidden" aria-label="Reader">
+      <div class="reader-shell" id="reader-container"></div>
+    </section>
+  </main>
+
+  <!-- Deferred scripts -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+  <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <script defer>
+    const ARTICLE_MANIFEST = [
+      {
+        id: "bvar",
+        file: "./articles/bvar.html",
+        category: "Core Theory",
+        title: "Bayesian Vector Autoregression",
+        date: "OCT 2024",
+        excerpt: "A comprehensive guide covering Minnesota priors, hierarchical estimation, and large-scale forecasting algorithms.",
+        enabled: true
+      },
+      {
+        id: "stoch-vol",
+        file: "./articles/stochastic-volatility.html",
+        category: "Time Variance",
+        title: "Stochastic Volatility",
+        date: "NOV 2024",
+        excerpt: "Modeling structural breaks and changing error variance in post-pandemic macroeconomic data using state-space methods.",
+        enabled: false
+      },
+      {
+        id: "sign-rest",
+        file: "./articles/sign-restrictions.html",
+        category: "Identification",
+        title: "Sign Restrictions",
+        date: "DEC 2024",
+        excerpt: "Moving beyond Cholesky: set-identified structural shocks using robust Bayesian sampling methods.",
+        enabled: false
+      }
+    ];
+
+    /* -----------------------------
+       Theme (localStorage + OS fallback)
+       ----------------------------- */
+    const Theme = (() => {
+      const LS_KEY = "theme";
+      const root = document.documentElement;
+      const btn = () => document.getElementById("btn-theme");
+      const media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+
+      function getInitialTheme() {
+        const saved = localStorage.getItem(LS_KEY);
+        if (saved === "light" || saved === "dark") return saved;
+        if (media && media.matches) return "dark";
+        return "light";
+      }
+
+      function apply(theme, persist = true) {
+        root.setAttribute("data-theme", theme);
+        if (persist) localStorage.setItem(LS_KEY, theme);
+        const b = btn();
+        if (b) b.textContent = (theme === "dark") ? "Light" : "Dark";
+
+        // keep meta theme-color reasonably aligned
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", theme === "dark" ? "#050505" : "#fbfbfc");
+
+        Visuals.syncTheme();
+      }
+
+      function toggle() {
+        const current = root.getAttribute("data-theme") || "dark";
+        apply(current === "dark" ? "light" : "dark");
+      }
+
+      return { apply, toggle, getInitialTheme };
+    })();
+
+    /* -----------------------------
+       Visuals: equation rain + neural connections
+       (equations made more apparent via stroke + shadow)
+       ----------------------------- */
+    const Visuals = (() => {
+      const canvas = document.getElementById("econometric-canvas");
+      const ctx = canvas.getContext("2d", { alpha: false });
+
+      let w = 0, h = 0, dpr = 1;
+
+      let bg = "#050505";
+      let ink = "rgba(212,175,55,0.42)";
+      let inkSoft = "rgba(212,175,55,0.18)";
+      let stroke = "rgba(0,0,0,0.55)";
+      let glow = "rgba(212,175,55,0.28)";
+
+      const formulas = [
+        "𝑦ₜ = 𝛽𝑥ₜ + 𝜖ₜ",
+        "Σ = 𝐴⁻¹Λ𝐴⁻¹′",
+        "∇ℒ(𝜃)",
+        "𝑃(𝐴|𝐵)",
+        "∫ 𝑒⁻ˣ² 𝑑𝑥",
+        "𝜎²ₜ",
+        "Δ𝑦ₜ",
+        "𝜖 ∼ 𝑁(0,1)",
+        "ℍ₀: 𝛽 = 0",
+        "𝐸[𝑦ₜ|ℐₜ₋₁]",
+        "𝑌ₜ = 𝐴₁𝑌ₜ₋₁ + ⋯ + 𝐴ₚ𝑌ₜ₋ₚ + 𝑢ₜ",
+        "𝑝(𝜃|𝑌) ∝ 𝑝(𝑌|𝜃)𝑝(𝜃)"
+      ];
+
+      let nodes = [];
+      let drops = [];
+      let hero = [];
+
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function cssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      }
+
+      function syncTheme() {
+        bg = cssVar("--canvas-bg") || bg;
+        ink = cssVar("--canvas-ink") || ink;
+        inkSoft = cssVar("--canvas-ink-soft") || inkSoft;
+        stroke = cssVar("--canvas-stroke") || stroke;
+        glow = cssVar("--canvas-glow") || glow;
+      }
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = window.innerWidth;
+        h = window.innerHeight;
+
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+
+        // Reset then scale (prevents cumulative scaling)
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+
+        build();
+      }
+
+      function build() {
+        const isMobile = w < 820;
+
+        const nodeCount = reduceMotion ? (isMobile ? 22 : 44) : (isMobile ? 46 : 110);
+        const dropCount = reduceMotion ? (isMobile ? 16 : 28) : (isMobile ? 26 : 62);
+
+        nodes = Array.from({ length: nodeCount }, () => ({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * (isMobile ? 0.55 : 0.75),
+          vy: (Math.random() - 0.5) * (isMobile ? 0.55 : 0.75),
+          r: Math.random() * (isMobile ? 1.4 : 1.8) + 0.6
+        }));
+
+        // Background equation rain (more apparent)
+        drops = Array.from({ length: dropCount }, () => ({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vy: Math.random() * (isMobile ? 0.85 : 1.05) + 0.25,
+          size: Math.random() * (isMobile ? 14 : 18) + (isMobile ? 12 : 13),
+          a: Math.random() * 0.28 + 0.18, // bumped visibility
+          text: formulas[(Math.random() * formulas.length) | 0]
+        }));
+
+        // Hero equations (slow drifting, larger, very subtle but more noticeable)
+        const heroCount = reduceMotion ? 2 : (isMobile ? 3 : 5);
+        hero = Array.from({ length: heroCount }, () => ({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.10,
+          vy: (Math.random() - 0.5) * 0.10,
+          size: Math.random() * (isMobile ? 18 : 26) + (isMobile ? 22 : 30),
+          a: Math.random() * 0.10 + 0.10,
+          text: formulas[(Math.random() * formulas.length) | 0]
+        }));
+      }
+
+      function drawTextWithStroke(text, x, y, fontSize, alpha, isHero = false) {
+        ctx.save();
+
+        ctx.font = `italic ${fontSize}px "Times New Roman"`;
+        ctx.textBaseline = "alphabetic";
+
+        // glow/shadow to make equations pop a bit more
+        ctx.shadowColor = glow;
+        ctx.shadowBlur = isHero ? 18 : 12;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        // stroke behind for contrast
+        ctx.globalAlpha = Math.min(1, alpha * (isHero ? 0.95 : 0.85));
+        ctx.lineWidth = isHero ? 2.0 : 1.25;
+        ctx.strokeStyle = stroke;
+        ctx.strokeText(text, x, y);
+
+        // fill
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = ink;
+        ctx.fillText(text, x, y);
+
+        ctx.restore();
+      }
+
+      function step() {
+        // background
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // hero equations layer (slow drift)
+        for (const e of hero) {
+          e.x += e.vx;
+          e.y += e.vy;
+          if (e.x < -400) e.x = w + 200;
+          if (e.x > w + 400) e.x = -200;
+          if (e.y < -200) e.y = h + 120;
+          if (e.y > h + 200) e.y = -120;
+          drawTextWithStroke(e.text, e.x, e.y, e.size, e.a, true);
+        }
+
+        // equation rain layer
+        for (const d of drops) {
+          d.y += d.vy;
+          if (d.y > h + 80) {
+            d.y = -80;
+            d.x = Math.random() * w;
+            d.text = formulas[(Math.random() * formulas.length) | 0];
+            d.size = Math.random() * (w < 820 ? 14 : 18) + (w < 820 ? 12 : 13);
+            d.a = Math.random() * 0.28 + 0.18;
+            d.vy = Math.random() * (w < 820 ? 0.85 : 1.05) + 0.25;
+          }
+          drawTextWithStroke(d.text, d.x, d.y, d.size, d.a, false);
+        }
+
+        // nodes + connections
+        const isMobile = w < 820;
+        const maxDist = isMobile ? 105 : 150;
+        const maxDist2 = maxDist * maxDist;
+
+        for (const n of nodes) {
+          n.x += n.vx;
+          n.y += n.vy;
+
+          if (n.x < -20) n.x = w + 20;
+          if (n.x > w + 20) n.x = -20;
+          if (n.y < -20) n.y = h + 20;
+          if (n.y > h + 20) n.y = -20;
+        }
+
+        ctx.save();
+        ctx.lineWidth = 1;
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const a = nodes[i], b = nodes[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < maxDist2) {
+              const t = 1 - d2 / maxDist2;
+              ctx.globalAlpha = Math.min(0.42, t * 0.28);
+              ctx.strokeStyle = inkSoft;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
             }
-        };
+          }
+        }
+        ctx.globalAlpha = 1;
 
-        // --- APP LOGIC ---
-        const app = {
-            state: { view: 'landing' },
-            
-            init() {
-                Visuals.init();
-                this.renderDeck();
-                // Scroll Listener for Navbar & Progress
-                document.addEventListener('scroll', this.handleScroll.bind(this), { passive: true });
-                document.getElementById('view-reader').addEventListener('scroll', this.handleReaderScroll.bind(this), { passive: true });
-            },
+        for (const n of nodes) {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fillStyle = inkSoft;
+          ctx.globalAlpha = 0.9;
+          ctx.fill();
+        }
+        ctx.restore();
 
-            handleScroll() {
-                // Global window scroll (Deck view)
-                const nav = document.getElementById('global-nav');
-                if(window.scrollY > 50) nav.classList.add('scrolled');
-                else nav.classList.remove('scrolled');
-            },
+        requestAnimationFrame(step);
+      }
 
-            handleReaderScroll(e) {
-                // Reader container scroll
-                const target = e.target;
-                const scroll = target.scrollTop;
-                const height = target.scrollHeight - target.clientHeight;
-                const percent = (scroll / height) * 100;
-                
-                document.getElementById('reading-progress').style.width = `${percent}%`;
-                
-                // Active TOC Highlighting
-                const sections = target.querySelectorAll('h2');
-                let current = '';
-                sections.forEach(section => {
-                    if (section.offsetTop - 200 <= scroll) current = section.getAttribute('id');
-                });
-                
-                document.querySelectorAll('.toc-link').forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${current}`) link.classList.add('active');
-                });
-            },
+      function init() {
+        syncTheme();
+        resize();
+        window.addEventListener("resize", resize, { passive: true });
+        requestAnimationFrame(step);
+      }
 
-            renderDeck() {
-                const grid = document.getElementById('card-grid');
-                grid.innerHTML = ARTICLE_MANIFEST.map((a, i) => `
-                    <div class="article-card" style="${!a.enabled?'opacity:0.5;pointer-events:none':''}" onclick="app.openArticle('${a.id}')">
-                        <div>
-                            <div class="card-meta">
-                                <span>${String(i+1).padStart(2,'0')} · ${a.category}</span>
-                                <span>${a.date}</span>
-                            </div>
-                            <h3 class="card-title">${a.title}</h3>
-                            <p class="card-excerpt">${a.excerpt}</p>
-                        </div>
-                        <div class="read-more">Read Article &rarr;</div>
-                    </div>
-                `).join('');
-            },
+      return { init, syncTheme };
+    })();
 
-            switchView(to) {
-                const current = document.getElementById('view-' + this.state.view);
-                const next = document.getElementById('view-' + to);
-                const progress = document.getElementById('reading-progress');
-                
-                current.classList.remove('active');
-                
-                // Toggle Progress Bar Visibility
-                progress.style.opacity = (to === 'reader') ? '1' : '0';
+    /* -----------------------------
+       App: views + reader + progress + TOC
+       ----------------------------- */
+    const App = (() => {
+      const el = (id) => document.getElementById(id);
 
-                setTimeout(() => {
-                    current.classList.add('hidden');
-                    next.classList.remove('hidden');
-                    void next.offsetWidth; // Force reflow
-                    next.classList.add('active');
-                }, 500);
-                this.state.view = to;
-            },
+      const views = {
+        landing: el("view-landing"),
+        deck: el("view-deck"),
+        reader: el("view-reader")
+      };
 
-            enterDeck() { this.switchView('deck'); },
-            goHome() { if(this.state.view !== 'landing') this.switchView('landing'); },
+      const nav = el("global-nav");
+      const progress = el("reading-progress");
+      const deckGrid = el("card-grid");
+      const readerContainer = el("reader-container");
 
-            async openArticle(id) {
-                this.switchView('reader');
-                const container = document.getElementById('reader-container');
-                container.innerHTML = '<div class="loader"></div>';
+      let state = { view: "landing" };
+      let rafScrollPending = false;
 
-                const article = ARTICLE_MANIFEST.find(a => a.id === id);
-                
-                try {
-                    // Simulating fetch or getting content
-                    const res = await fetch(article.file);
-                    let html = "";
-                    if(res.ok) {
-                        const text = await res.text();
-                        const doc = new DOMParser().parseFromString(text, 'text/html');
-                        html = doc.querySelector('article')?.innerHTML || text;
-                    } else {
-                        // Fallback dummy content for demo/test
-                        html = this.generateDemoContent(article);
-                    }
-                    
-                    // Render Reader Layout
-                    container.innerHTML = `
-                        <div class="reader-layout">
-                            <aside class="toc-sidebar">
-                                <div class="toc-title">Table of Contents</div>
-                                <ul class="toc-list" id="toc-list"></ul>
-                            </aside>
-                            <article class="article-body">
-                                <header class="article-header">
-                                    <div class="article-meta-row">
-                                        <span>${article.category}</span>
-                                        <span>${article.date}</span>
-                                        <span>12 min read</span>
-                                    </div>
-                                    <h1 class="article-title">${article.title}</h1>
-                                </header>
-                                ${html}
-                            </article>
-                        </div>
-                    `;
+      function setNavScrolled(scrolled) {
+        nav.classList.toggle("scrolled", !!scrolled);
+      }
 
-                    // Generate TOC dynamically from H2 tags
-                    this.generateTOC(container);
+      function switchView(to) {
+        const from = state.view;
+        if (from === to) return;
 
-                    if(window.MathJax) MathJax.typesetPromise([container]);
+        const fromEl = views[from];
+        const toEl = views[to];
 
-                } catch(e) {
-                    container.innerHTML = '<p style="text-align:center;color:#666;margin-top:5rem">Unable to load content.</p>';
-                }
-            },
+        fromEl.classList.remove("active");
 
-            generateTOC(container) {
-                const headings = container.querySelectorAll('.article-body h2');
-                const tocList = document.getElementById('toc-list');
-                
-                if (headings.length === 0) {
-                    document.querySelector('.toc-sidebar').style.display = 'none';
-                    return;
-                }
+        progress.style.opacity = (to === "reader") ? "1" : "0";
+        if (to !== "reader") progress.style.width = "0%";
 
-                headings.forEach((h2, index) => {
-                    if (!h2.id) h2.id = `section-${index}`;
-                    const li = document.createElement('li');
-                    li.className = 'toc-item';
-                    li.innerHTML = `<a href="#${h2.id}" class="toc-link">${h2.innerText}</a>`;
-                    li.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        h2.scrollIntoView({ behavior: 'smooth' });
-                    });
-                    tocList.appendChild(li);
-                });
-            },
+        setTimeout(() => {
+          fromEl.classList.add("hidden");
+          toEl.classList.remove("hidden");
 
-            generateDemoContent(article) {
-                // Just for preview if file fetch fails
-                return `
-                    <p class="lead">Vector Autoregressions (VARs) have become a standard tool in macroeconometrics. However, as the number of variables increases, the number of parameters explodes, leading to overfitting. This article explores Bayesian methods (BVARs) to impose structure on these parameters.</p>
-                    
-                    <h2>1. The Curse of Dimensionality</h2>
-                    <p>In a standard VAR model with $N$ variables and $p$ lags, we must estimate $N(Np + 1)$ parameters. For a moderate system of 20 variables and 4 lags, this amounts to over 1600 coefficients. Without immense datasets, standard OLS estimation yields estimates with massive variance.</p>
-                    <div class="equation-box">$$ Y_t = c + A_1 Y_{t-1} + \dots + A_p Y_{t-p} + u_t $$</div>
-                    <p>To solve this, we turn to Bayesian shrinkage. By imposing prior beliefs that coefficients on distant lags are likely zero, we can effectively reduce the parameter space while retaining the model's flexibility.</p>
-                    
-                    <h2>2. The Minnesota Prior</h2>
-                    <p>Proposed by Litterman (1986), the Minnesota prior assumes that most macroeconomic variables follow a random walk. Thus, the prior mean for the first own lag is set to 1, and all other coefficients are set to 0.</p>
-                    <ul>
-                        <li>Shrinkage towards a Random Walk</li>
-                        <li>Diagonal covariance matrix assumption</li>
-                        <li>Hyperparameters controlling overall tightness</li>
-                    </ul>
-                    <p>The beauty of this approach lies in its analytical tractability. The posterior distribution can often be derived in closed form, making estimation computationally efficient even for large systems.</p>
+          if (to === "deck") views.deck.scrollTop = 0;
+          if (to === "reader") views.reader.scrollTop = 0;
 
-                    <h2>3. Large BVARs and Forecasting</h2>
-                    <p>Bańbura, Giannone, and Reichlin (2010) showed that BVARs could handle systems with over 100 variables ("Large BVARs") and outperform standard Factor Models in forecasting. This was a paradigm shift, proving that we don't need to aggregate information into factors if we have enough shrinkage.</p>
-                    <div class="equation-box">$$ \min_{\beta} \sum (y_t - x_t \beta)^2 + \lambda ||\beta||^2 $$</div>
-                    <p>Modern implementations often use hierarchical modeling, where the hyperparameters themselves are treated as random variables to be estimated from the data, removing the need for ad-hoc tuning.</p>
-                `;
+          void toEl.offsetWidth;
+          toEl.classList.add("active");
+
+          setNavScrolled(to !== "landing");
+        }, 200);
+
+        state.view = to;
+      }
+
+      function goHome() { switchView("landing"); }
+      function enterDeck() { switchView("deck"); }
+
+      function renderDeck() {
+        deckGrid.innerHTML = ARTICLE_MANIFEST.map((a, i) => {
+          const disabled = !a.enabled;
+          return `
+            <article class="card" role="button" tabindex="${disabled ? -1 : 0}"
+              aria-disabled="${disabled ? "true" : "false"}"
+              data-article-id="${a.id}">
+              <div class="card-top">
+                <span>${String(i + 1).padStart(2, "0")} · ${a.category}</span>
+                <span>${a.date}</span>
+              </div>
+              <h3>${a.title}</h3>
+              <p>${a.excerpt}</p>
+              <div class="read"><span>Read</span><span aria-hidden="true">→</span></div>
+            </article>
+          `;
+        }).join("");
+
+        deckGrid.querySelectorAll(".card").forEach(card => {
+          const id = card.getAttribute("data-article-id");
+          const article = ARTICLE_MANIFEST.find(x => x.id === id);
+          if (!article || !article.enabled) return;
+
+          card.addEventListener("click", () => openArticle(id));
+          card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openArticle(id);
             }
-        };
+          });
+        });
+      }
 
-        document.addEventListener('DOMContentLoaded', () => app.init());
-    </script>
+      function estimateReadTime(text) {
+        const words = (text || "").trim().split(/\s+/).filter(Boolean).length;
+        const minutes = Math.max(1, Math.round(words / 220));
+        return `${minutes} min read`;
+      }
+
+      function buildReaderShell(article, contentHTML) {
+        return `
+          <details class="mobile-toc" id="mobile-toc">
+            <summary>Contents</summary>
+            <div class="toc-links" id="mobile-toc-links"></div>
+          </details>
+
+          <div class="reader-layout">
+            <aside class="toc" aria-label="Table of contents">
+              <h4>Contents</h4>
+              <ul id="toc-list"></ul>
+            </aside>
+
+            <article class="article">
+              <header class="article-header">
+                <div class="meta">
+                  <span class="pill">${article.category}</span>
+                  <span>${article.date}</span>
+                  <span>•</span>
+                  <span id="readtime">…</span>
+                </div>
+                <h1>${article.title}</h1>
+              </header>
+              <div class="content" id="article-content">
+                ${contentHTML}
+              </div>
+            </article>
+          </div>
+        `;
+      }
+
+      function ensureHeadingIds(scope) {
+        const headings = scope.querySelectorAll("h2, h3");
+        let k = 0;
+        headings.forEach(h => {
+          if (!h.id) {
+            const slug = h.textContent
+              .toLowerCase()
+              .trim()
+              .replace(/[^\w\s-]/g, "")
+              .replace(/\s+/g, "-")
+              .slice(0, 60);
+            h.id = slug ? `${slug}-${k++}` : `section-${k++}`;
+          }
+        });
+        return headings;
+      }
+
+      function buildTOC(readerRoot) {
+        const tocList = readerRoot.querySelector("#toc-list");
+        const mobileLinks = readerRoot.querySelector("#mobile-toc-links");
+        if (!tocList || !mobileLinks) return;
+
+        tocList.innerHTML = "";
+        mobileLinks.innerHTML = "";
+
+        const content = readerRoot.querySelector("#article-content");
+        if (!content) return;
+
+        const headings = ensureHeadingIds(content);
+        const h2s = Array.from(headings).filter(h => h.tagName.toLowerCase() === "h2");
+
+        if (h2s.length === 0) {
+          const toc = readerRoot.querySelector(".toc");
+          const mtoc = readerRoot.querySelector(".mobile-toc");
+          if (toc) toc.style.display = "none";
+          if (mtoc) mtoc.style.display = "none";
+          return;
+        }
+
+        for (const h of h2s) {
+          const li = document.createElement("li");
+          li.innerHTML = `<a href="#${h.id}" class="toc-link">${h.textContent}</a>`;
+          li.querySelector("a").addEventListener("click", (e) => {
+            e.preventDefault();
+            h.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+          tocList.appendChild(li);
+
+          const a2 = document.createElement("a");
+          a2.href = `#${h.id}`;
+          a2.textContent = h.textContent;
+          a2.addEventListener("click", (e) => {
+            e.preventDefault();
+            h.scrollIntoView({ behavior: "smooth", block: "start" });
+            const mtoc = readerRoot.querySelector("#mobile-toc");
+            if (mtoc) mtoc.open = false;
+          });
+          mobileLinks.appendChild(a2);
+        }
+      }
+
+      function updateProgressAndTOC() {
+        const scroller = views.reader;
+        const total = scroller.scrollHeight - scroller.clientHeight;
+        const pct = total > 0 ? Math.min(100, Math.max(0, (scroller.scrollTop / total) * 100)) : 0;
+        progress.style.width = pct.toFixed(2) + "%";
+
+        const links = readerContainer.querySelectorAll(".toc-link");
+        const headings = readerContainer.querySelectorAll("#article-content h2[id]");
+        if (!links.length || !headings.length) return;
+
+        let currentId = "";
+        const y = scroller.scrollTop;
+
+        headings.forEach(h => {
+          if (h.offsetTop - 160 <= y) currentId = h.id;
+        });
+
+        links.forEach(a => {
+          a.classList.toggle("active", a.getAttribute("href") === `#${currentId}`);
+        });
+      }
+
+      function onReaderScroll() {
+        if (rafScrollPending) return;
+        rafScrollPending = true;
+        requestAnimationFrame(() => {
+          rafScrollPending = false;
+          updateProgressAndTOC();
+          setNavScrolled(true);
+        });
+      }
+
+      async function openArticle(id) {
+        const article = ARTICLE_MANIFEST.find(a => a.id === id);
+        if (!article || !article.enabled) return;
+
+        switchView("reader");
+        readerContainer.innerHTML = `<div class="loader" aria-label="Loading"></div>`;
+
+        try {
+          const res = await fetch(article.file, { cache: "no-store" });
+          if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+          const html = await res.text();
+
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          const articleNode = doc.querySelector("article") || doc.body;
+          const contentHTML = articleNode ? articleNode.innerHTML : html;
+
+          readerContainer.innerHTML = buildReaderShell(article, contentHTML);
+
+          const text = (readerContainer.querySelector("#article-content")?.innerText || "");
+          const rt = readerContainer.querySelector("#readtime");
+          if (rt) rt.textContent = estimateReadTime(text);
+
+          buildTOC(readerContainer);
+
+          views.reader.scrollTop = 0;
+          progress.style.width = "0%";
+
+          if (window.MathJax && window.MathJax.typesetPromise) {
+            try { await window.MathJax.typesetPromise([readerContainer]); } catch (_) {}
+          }
+
+          updateProgressAndTOC();
+        } catch (err) {
+          readerContainer.innerHTML = `
+            <div style="padding: 28px 18px;">
+              <p style="font-family: var(--font-ui); color: var(--silver-dim); line-height: 1.6;">
+                Could not load <strong style="color: var(--gold); font-weight: 800;">${article.file}</strong>.
+                Verify the path and that the file is reachable from your server.
+              </p>
+            </div>
+          `;
+        }
+      }
+
+      function init() {
+        // initial state
+        views.landing.classList.add("active");
+
+        // render deck
+        renderDeck();
+
+        // scrolling: use view containers (not window)
+        views.deck.addEventListener("scroll", () => setNavScrolled(views.deck.scrollTop > 8), { passive: true });
+        views.reader.addEventListener("scroll", onReaderScroll, { passive: true });
+
+        // top nav actions
+        const home = el("btn-home");
+        home.addEventListener("click", goHome);
+        home.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goHome(); }
+        });
+
+        el("btn-archives").addEventListener("click", enterDeck);
+        el("btn-enter").addEventListener("click", enterDeck);
+
+        // expose article open for future extensions (not global by default)
+        window.__openArticle = openArticle;
+      }
+
+      return { init, goHome, enterDeck, openArticle };
+    })();
+
+    document.addEventListener("DOMContentLoaded", () => {
+      Theme.apply(Theme.getInitialTheme(), false);
+      document.getElementById("btn-theme").addEventListener("click", Theme.toggle);
+
+      Visuals.init();
+      App.init();
+    });
+  </script>
 </body>
 </html>
