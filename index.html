@@ -4,26 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Econometric research and independent analysis by Anıl Kaya, specializing in Bayesian Vector Autoregression, time series, and macroeconomic modeling.">
     <title>Anıl Kaya | Econometric Insights</title>
 
-    <!-- MathJax Configuration -->
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true
-            },
-            options: {
-                ignoreHtmlClass: 'tex2jax_ignore',
-                processHtmlClass: 'tex2jax_process'
-            },
-            chtml: { displayAlign: 'center' }
-        };
-    </script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://polyfill.io" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
+    <!-- Critical CSS inlined for faster First Contentful Paint -->
     <style>
         :root {
             --bg-color: #050505;
@@ -53,7 +41,6 @@
             font-family: var(--font-main);
         }
 
-        /* Custom Cursor */
         #cursor-dot,
         #cursor-ring {
             position: fixed;
@@ -89,7 +76,6 @@
             pointer-events: none;
         }
 
-        /* Global Nav */
         #global-nav {
             position: fixed;
             top: 0;
@@ -129,7 +115,6 @@
             width: 100%;
         }
 
-        /* Landing */
         #view-landing {
             position: absolute;
             top: 0;
@@ -217,7 +202,6 @@
             left: 100%;
         }
 
-        /* Deck */
         #view-deck {
             position: absolute;
             top: 0;
@@ -332,7 +316,6 @@
             line-height: 1.6;
         }
 
-        /* Reader */
         #view-reader {
             position: absolute;
             top: 0;
@@ -359,7 +342,6 @@
             animation: contentFadeIn 1s ease;
         }
 
-        /* Reader Typography (Applied to dynamically loaded content) */
         #article-content .article-header {
             margin-bottom: 3rem;
             padding-bottom: 2rem;
@@ -525,7 +507,6 @@
             color: #666;
         }
 
-        /* Loading Spinner */
         .loader {
             display: flex;
             justify-content: center;
@@ -616,7 +597,6 @@
     </nav>
 
     <div id="app">
-        <!-- LANDING -->
         <div id="view-landing">
             <canvas id="econometric-canvas"></canvas>
             <div class="landing-content">
@@ -626,18 +606,14 @@
             </div>
         </div>
 
-        <!-- DECK -->
         <div id="view-deck" class="hidden">
             <div class="deck-header">
                 <h2 class="deck-title">The Archives</h2>
                 <div style="width: 50px; height: 1px; background: var(--text-color); margin: 2rem auto;"></div>
             </div>
-            <div class="card-grid" id="card-grid">
-                <!-- Cards are generated dynamically from the manifest -->
-            </div>
+            <div class="card-grid" id="card-grid"></div>
         </div>
 
-        <!-- READER -->
         <div id="view-reader" class="hidden">
             <div id="article-content" class="reader-content-wrapper">
                 <div class="loader"></div>
@@ -645,13 +621,28 @@
         </div>
     </div>
 
+    <!-- MathJax Configuration (deferred) -->
     <script>
-        // =====================================================================
-        // ARTICLE MANIFEST
-        // To add a new article:
-        // 1. Create articles/your-article-id.html
-        // 2. Add an entry to this array
-        // =====================================================================
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            },
+            chtml: { displayAlign: 'center' }
+        };
+    </script>
+    
+    <!-- Load polyfill and MathJax with defer to prevent render blocking -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+    <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Main application script (deferred) -->
+    <script defer>
         const ARTICLE_MANIFEST = [
             {
                 id: 'bvar',
@@ -667,7 +658,7 @@
                 category: 'Time Variance',
                 title: 'Stochastic Volatility',
                 excerpt: 'Modeling structural breaks and changing error variance in post-pandemic macroeconomic data.',
-                enabled: false // Coming Soon
+                enabled: false
             },
             {
                 id: 'sign-restrictions',
@@ -675,15 +666,13 @@
                 category: 'Identification',
                 title: 'Sign Restrictions',
                 excerpt: 'Moving beyond Cholesky: Set-identified structural shocks using robust Bayesian sampling methods.',
-                enabled: false // Coming Soon
+                enabled: false
             }
         ];
 
-        // =====================================================================
-        // CUSTOM CURSOR
-        // =====================================================================
         const cursorDot = document.getElementById('cursor-dot');
         const cursorRing = document.getElementById('cursor-ring');
+        
         window.addEventListener('mousemove', (e) => {
             cursorDot.style.left = e.clientX + 'px';
             cursorDot.style.top = e.clientY + 'px';
@@ -693,9 +682,6 @@
             }, 50);
         });
 
-        // =====================================================================
-        // APP
-        // =====================================================================
         const app = {
             state: { view: 'landing' },
 
@@ -760,14 +746,12 @@
                 const reader = document.getElementById('view-reader');
                 const container = document.getElementById('article-content');
 
-                // Find article in manifest
                 const article = ARTICLE_MANIFEST.find(a => a.id === id);
                 if (!article) {
                     container.innerHTML = '<p>Article not found.</p>';
                     return;
                 }
 
-                // Show loader
                 container.innerHTML = '<div class="loader"></div>';
 
                 deck.classList.remove('active');
@@ -777,13 +761,11 @@
                     reader.scrollTop = 0;
                     requestAnimationFrame(() => reader.classList.add('active'));
 
-                    // FETCH EXTERNAL ARTICLE FILE
                     try {
                         const response = await fetch(article.file);
                         if (!response.ok) throw new Error('Network response was not ok');
                         const html = await response.text();
 
-                        // Parse and extract content from <article> tag
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
                         const articleElement = doc.querySelector('article');
@@ -791,10 +773,9 @@
                         if (articleElement) {
                             container.innerHTML = articleElement.innerHTML;
                         } else {
-                            container.innerHTML = html; // Fallback: use entire body
+                            container.innerHTML = html;
                         }
 
-                        // Re-render MathJax
                         if (window.MathJax) {
                             window.MathJax.typesetPromise([container]);
                         }
@@ -806,12 +787,6 @@
             }
         };
 
-        // Initialize app
-        app.init();
-
-        // =====================================================================
-        // CANVAS PHYSICS
-        // =====================================================================
         const canvas = document.getElementById('econometric-canvas');
         const ctx = canvas.getContext('2d');
         let width, height, particles = [];
@@ -905,8 +880,18 @@
         window.addEventListener('resize', init);
         window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
         window.addEventListener('mousedown', e => { shockwave(e.clientX, e.clientY, 100); });
-        init();
-        animate();
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                app.init();
+                init();
+                animate();
+            });
+        } else {
+            app.init();
+            init();
+            animate();
+        }
     </script>
 </body>
 
