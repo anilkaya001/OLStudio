@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="description" content="Econometric research by Anıl Kaya. Time Series Analysis, and Macroeconomic Forecasting.">
+    <meta name="description" content="Econometric research by Anıl Kaya. Bayesian VAR models, Time Series Analysis, and Macroeconomic Forecasting.">
     <title>Anıl Kaya | Econometric Insights</title>
 
     <!-- Preconnect to external resources -->
@@ -28,7 +28,6 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased;
-            touch-action: none;
         }
 
         body, html {
@@ -42,6 +41,7 @@
 
         .hidden { display: none !important; pointer-events: none; }
 
+        /* Navigation */
         #global-nav {
             position: fixed; top: 0; left: 0; width: 100%; padding: 1.5rem;
             display: flex; justify-content: space-between; align-items: center;
@@ -50,21 +50,28 @@
         .home-btn {
             font-size: 1.2rem; font-weight: bold; text-transform: uppercase;
             letter-spacing: 3px; cursor: pointer; pointer-events: auto;
-            color: var(--text-color);
+            color: var(--text-color); position: relative;
+        }
+        .home-btn::after {
+            content: ''; position: absolute; bottom: -5px; left: 0; width: 0%;
+            height: 1px; background: var(--text-color); transition: width 0.3s;
+        }
+        .home-btn:hover::after { width: 100%; }
+
+        /* Canvas Background */
+        canvas#econometric-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 1; touch-action: none; /* Prevent scroll only on canvas */
         }
 
+        /* Landing View */
         #view-landing {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 100;
-            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 90%);
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 85%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: opacity 0.8s ease;
         }
-
-        canvas#econometric-canvas {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-        }
-
         .landing-content {
             position: relative; z-index: 2; text-align: center; opacity: 0;
             animation: fadeIn 2s 0.5s forwards; pointer-events: none;
@@ -82,14 +89,19 @@
             padding: 1.2rem 4rem; background: transparent; border: 1px solid var(--dim-gold);
             color: var(--text-color); font-family: var(--font-main); font-size: 0.9rem;
             text-transform: uppercase; letter-spacing: 3px; cursor: pointer; pointer-events: auto;
-            transition: all 0.4s ease; backdrop-filter: blur(2px);
+            transition: all 0.4s ease; backdrop-filter: blur(2px); position: relative; overflow: hidden;
+        }
+        .enter-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+            transition: left 0.5s;
         }
         .enter-btn:hover {
-            border-color: var(--text-color); box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-            background: rgba(212, 175, 55, 0.05);
+            border-color: var(--text-color); box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
         }
+        .enter-btn:hover::before { left: 100%; }
 
-        /* Deck View */
+        /* Deck View (Archive) */
         #view-deck {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 50; padding-top: 8rem; overflow-y: auto;
@@ -97,36 +109,64 @@
             transition: all 0.8s ease; display: flex; flex-direction: column; align-items: center;
         }
         #view-deck.active { opacity: 1; transform: scale(1); filter: blur(0); }
+        
+        .deck-header { text-align: center; margin-bottom: 4rem; }
+        .deck-title {
+            font-size: 3rem; font-weight: 100; letter-spacing: 5px;
+            background: linear-gradient(to bottom, #fff, var(--text-color));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
         .card-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem; width: 100%; max-width: 1400px; padding: 0 2rem 4rem;
+            gap: 2rem; width: 100%; max-width: 1400px; padding: 0 4rem 4rem;
         }
+        
         .article-card {
             background: linear-gradient(145deg, #111, #0a0a0a); border: 1px solid #222;
-            padding: 2.5rem 2rem; min-height: 350px; display: flex; flex-direction: column;
-            justify-content: space-between; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
-            position: relative;
+            padding: 3rem 2rem; min-height: 400px; display: flex; flex-direction: column;
+            justify-content: space-between; cursor: pointer; position: relative;
+            transition: all 0.5s ease; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        .article-card::after {
+            content: ''; position: absolute; inset: 0; border: 1px solid var(--text-color);
+            opacity: 0; transition: opacity 0.5s; pointer-events: none;
         }
         .article-card:hover {
-            transform: translateY(-5px); border-color: var(--dim-gold);
-            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.7);
+            transform: translateY(-10px); box-shadow: 0 30px 60px -15px rgba(212, 175, 55, 0.1);
+            border-color: transparent;
         }
+        .article-card:hover::after { opacity: 0.5; }
+
         .card-num {
-            font-size: 4rem; opacity: 0.1; font-weight: 900; position: absolute; top: 1rem; right: 2rem;
+            font-size: 4rem; opacity: 0.1; font-weight: 900; 
+            position: absolute; top: 1rem; right: 2rem;
+        }
+        .card-category {
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;
+            color: var(--dim-gold); margin-bottom: 2rem;
         }
         .card-title {
-            font-size: 1.8rem; font-weight: 100; color: var(--accent-color); margin: 1rem 0;
+            font-size: 2rem; font-weight: 100; line-height: 1.2;
+            color: var(--accent-color); margin-bottom: 1rem;
+        }
+        .card-excerpt {
+            font-size: 0.95rem; color: #666; line-height: 1.6;
         }
 
         /* Reader View */
         #view-reader {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 60; background: var(--bg-color); overflow-y: scroll;
-            opacity: 0; transform: translateY(30px); transition: opacity 0.6s, transform 0.6s;
+            opacity: 0; transform: translateY(50px); transition: opacity 0.6s ease, transform 0.6s ease;
         }
         #view-reader.active { opacity: 1; transform: translateY(0); }
-        .reader-content-wrapper { max-width: 800px; margin: 6rem auto; padding: 0 2rem 4rem; }
+        .reader-content-wrapper { max-width: 800px; margin: 8rem auto; padding: 0 2rem 5rem; }
 
+        /* Typography for Dynamic Content */
+        #article-content h1 { font-size: 2.8rem; color: var(--accent-color); margin-bottom: 1.5rem; }
+        #article-content p { font-size: 19px; line-height: 1.8; color: #ccc; margin-bottom: 1.5rem; text-align: justify; }
+        
         @keyframes fadeIn { to { opacity: 1; } }
         .loader {
             width: 40px; height: 40px; border: 2px solid var(--dim-gold);
@@ -134,6 +174,11 @@
             animation: spin 0.8s linear infinite; margin: 5rem auto;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .landing-title { font-size: 3rem; }
+            .card-grid { padding: 2rem; grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 
@@ -143,23 +188,26 @@
     </nav>
 
     <div id="app">
+        <!-- Landing -->
         <div id="view-landing">
             <canvas id="econometric-canvas"></canvas>
             <div class="landing-content">
                 <div class="landing-title">Anıl Kaya</div>
-                <div class="landing-subtitle">Econometrics & Research</div>
+                <div class="landing-subtitle">Econometrics </div>
                 <button class="enter-btn" onclick="app.enterDeck()">Explore Research</button>
             </div>
         </div>
 
+        <!-- Deck -->
         <div id="view-deck" class="hidden">
-            <div style="text-align: center; margin-top: 2rem;">
-                <h2 style="font-size: 3rem; font-weight: 100; letter-spacing: 5px; background: linear-gradient(to bottom, #fff, var(--text-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 2rem;">The Archives</h2>
-                <div style="width: 50px; height: 1px; background: var(--text-color); margin: 0 auto 2rem;"></div>
+            <div class="deck-header">
+                <h2 class="deck-title">The Archives</h2>
+                <div style="width: 50px; height: 1px; background: var(--text-color); margin: 2rem auto;"></div>
             </div>
             <div class="card-grid" id="card-grid"></div>
         </div>
 
+        <!-- Reader -->
         <div id="view-reader" class="hidden">
             <div id="article-content" class="reader-content-wrapper">
                 <div class="loader"></div>
@@ -173,12 +221,12 @@
 
     <script defer>
         const ARTICLE_MANIFEST = [
-            { id: 'bvar', file: 'articles/bvar.html', category: 'Core Theory', title: 'Bayesian Vector Autoregression', excerpt: 'Large-scale forecasting with Minnesota priors.', enabled: true },
-            { id: 'stoch-vol', file: 'articles/stochastic-volatility.html', category: 'Time Variance', title: 'Stochastic Volatility', excerpt: 'Modeling structural breaks and heteroskedasticity.', enabled: false },
-            { id: 'sign-rest', file: 'articles/sign-restrictions.html', category: 'Identification', title: 'Sign Restrictions', excerpt: 'Set-identified structural shocks utilizing robust Bayesian sampling.', enabled: false }
+            { id: 'bvar', file: 'articles/bvar.html', category: 'Core Theory', title: 'Bayesian Vector Autoregression', excerpt: 'A complete guide to modern implementation, covering Minnesota priors, hierarchical estimation, and large-scale forecasting algorithms.', enabled: true },
+            { id: 'stoch-vol', file: 'articles/stochastic-volatility.html', category: 'Time Variance', title: 'Stochastic Volatility', excerpt: 'Modeling structural breaks and changing error variance in post-pandemic macroeconomic data.', enabled: false },
+            { id: 'sign-rest', file: 'articles/sign-restrictions.html', category: 'Identification', title: 'Sign Restrictions', excerpt: 'Moving beyond Cholesky: Set-identified structural shocks using robust Bayesian sampling methods.', enabled: false }
         ];
 
-        // --- VISUAL SYSTEM: PARTICLES & RAIN ---
+        // --- VISUAL SYSTEM: NEURAL RAIN ---
         const Visuals = {
             canvas: null,
             ctx: null,
@@ -187,35 +235,23 @@
             particles: [],
             pointer: { x: -1000, y: -1000, vx: 0, vy: 0, lastX: 0, lastY: 0 },
             
-            // Unicode LaTeX approximations for high performance
             formulas: [
-                "𝑦ₜ = 𝛽𝑥ₜ + 𝜖ₜ", 
-                "Σ = 𝐴⁻¹Λ𝐴⁻¹′", 
-                "∇ℒ(𝜃)", 
-                "𝑃(𝐴|𝐵)", 
-                "∫ 𝑒⁻ˣ² 𝑑𝑥", 
-                "𝜎²ₜ", 
-                "Δ𝑦ₜ", 
-                "𝜖 ∼ 𝑁(0,1)",
-                "ℍ₀: 𝛽 = 0",
-                "𝐸[𝑦ₜ|ℐₜ₋₁]"
+                "𝑦ₜ = 𝛽𝑥ₜ + 𝜖ₜ", "Σ = 𝐴⁻¹Λ𝐴⁻¹′", "∇ℒ(𝜃)", "𝑃(𝐴|𝐵)", 
+                "∫ 𝑒⁻ˣ² 𝑑𝑥", "𝜎²ₜ", "Δ𝑦ₜ", "𝜖 ∼ 𝑁(0,1)", "ℍ₀: 𝛽 = 0", "𝐸[𝑦ₜ|ℐₜ₋₁]"
             ],
 
             init() {
                 this.canvas = document.getElementById('econometric-canvas');
                 this.ctx = this.canvas.getContext('2d', { alpha: false });
-                
                 this.resize();
                 window.addEventListener('resize', () => this.resize());
                 
-                // Input Listeners (Kept for particle physics interaction)
+                // Interaction Listeners (Physics only)
                 const updatePointer = (x, y) => {
                     this.pointer.vx = x - this.pointer.lastX;
                     this.pointer.vy = y - this.pointer.lastY;
-                    this.pointer.lastX = x;
-                    this.pointer.lastY = y;
-                    this.pointer.x = x;
-                    this.pointer.y = y;
+                    this.pointer.lastX = x; this.pointer.lastY = y;
+                    this.pointer.x = x; this.pointer.y = y;
                 };
 
                 window.addEventListener('mousemove', e => updatePointer(e.clientX, e.clientY));
@@ -223,7 +259,6 @@
                     updatePointer(e.touches[0].clientX, e.touches[0].clientY);
                 }, { passive: true });
 
-                // Init Particles
                 this.createParticles();
                 this.animate();
             },
@@ -241,13 +276,12 @@
             createParticles() {
                 this.particles = [];
                 const count = this.width < 768 ? 40 : 80;
-                
                 for(let i=0; i<count; i++) {
                     this.particles.push({
                         x: Math.random() * this.width,
                         y: Math.random() * this.height,
                         vx: (Math.random() - 0.5) * 1.5,
-                        vy: Math.random() * 1.5 + 0.5, // Downward trend
+                        vy: Math.random() * 1.5 + 0.5,
                         text: this.formulas[Math.floor(Math.random() * this.formulas.length)],
                         size: Math.random() * 12 + 10,
                         alpha: Math.random() * 0.5 + 0.1
@@ -258,16 +292,14 @@
             animate() {
                 this.ctx.fillStyle = '#050505';
                 this.ctx.fillRect(0, 0, this.width, this.height);
-
                 this.ctx.lineWidth = 0.5;
+
                 for (let i = 0; i < this.particles.length; i++) {
                     let p1 = this.particles[i];
-                    
-                    // Update Position
                     p1.x += p1.vx;
                     p1.y += p1.vy;
 
-                    // Pointer Interaction (Physics only, no visual cursor)
+                    // Physics Interaction
                     const dx = p1.x - this.pointer.x;
                     const dy = p1.y - this.pointer.y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -276,35 +308,27 @@
                     if (dist < interactionRadius) {
                         const force = (interactionRadius - dist) / interactionRadius;
                         const angle = Math.atan2(dy, dx);
-                        
-                        // Push away
                         p1.vx += Math.cos(angle) * force * 0.5;
                         p1.vy += Math.sin(angle) * force * 0.5;
-                        
-                        // Drag effect
                         p1.vx += this.pointer.vx * 0.05 * force;
                         p1.vy += this.pointer.vy * 0.05 * force;
                     }
 
-                    // Friction
                     p1.vx *= 0.98;
-                    // Reset speed limits
                     if(p1.vy < 0.5 && p1.vy > -0.5) p1.vy += 0.05;
                     p1.vy = Math.min(Math.max(p1.vy, -3), 3);
 
-                    // Boundaries (Wrap)
                     if (p1.x < -50) p1.x = this.width + 50;
                     if (p1.x > this.width + 50) p1.x = -50;
                     if (p1.y > this.height + 50) p1.y = -50;
                     if (p1.y < -50) p1.y = this.height + 50;
 
-                    // Draw Connections
+                    // Neural Connections
                     for (let j = i + 1; j < this.particles.length; j++) {
                         let p2 = this.particles[j];
                         const dxC = p1.x - p2.x;
                         const dyC = p1.y - p2.y;
                         const distC = Math.sqrt(dxC*dxC + dyC*dyC);
-                        
                         if (distC < 120) {
                             const alpha = 1 - (distC / 120);
                             this.ctx.strokeStyle = `rgba(212, 175, 55, ${alpha * 0.15})`;
@@ -315,16 +339,14 @@
                         }
                     }
 
-                    // Draw Formula
+                    // Render Formula
                     this.ctx.font = `italic ${p1.size}px "Times New Roman"`;
                     this.ctx.fillStyle = `rgba(212, 175, 55, ${p1.alpha})`;
                     this.ctx.fillText(p1.text, p1.x, p1.y);
                 }
 
-                // Decay pointer velocity
                 this.pointer.vx *= 0.9;
                 this.pointer.vy *= 0.9;
-
                 requestAnimationFrame(() => this.animate());
             }
         };
@@ -337,13 +359,19 @@
                 this.renderCards();
             },
             renderCards() {
-                document.getElementById('card-grid').innerHTML = ARTICLE_MANIFEST.map((a, i) => `
-                    <div class="article-card" style="${!a.enabled?'opacity:0.4;pointer-events:none;':''}" onclick="app.openArticle('${a.id}')">
-                        <div class="card-num">${String(i+1).padStart(2,'0')}</div>
-                        <div><div style="color:var(--dim-gold);font-size:0.75rem;margin-bottom:0.5rem;">${a.category}</div>
-                        <h3 class="card-title">${a.title}</h3></div>
-                        <p style="color:#888;">${a.excerpt}</p>
-                    </div>`).join('');
+                // Using the specific HTML structure you preferred for correct rendering
+                document.getElementById('card-grid').innerHTML = ARTICLE_MANIFEST.map((article, index) => `
+                    <div class="article-card" 
+                         style="${!article.enabled ? 'opacity: 0.3; pointer-events: none;' : ''}"
+                         onclick="${article.enabled ? `app.openArticle('${article.id}')` : ''}">
+                        <div class="card-num">${String(index + 1).padStart(2, '0')}</div>
+                        <div>
+                            <div class="card-category">${article.category}</div>
+                            <div class="card-title">${article.title}</div>
+                        </div>
+                        <div class="card-excerpt">${article.excerpt}</div>
+                    </div>
+                `).join('');
             },
             enterDeck() {
                 this.switchView('landing', 'deck');
@@ -358,7 +386,7 @@
                 setTimeout(() => {
                     fromEl.classList.add('hidden');
                     toEl.classList.remove('hidden');
-                    void toEl.offsetWidth; // Force Reflow
+                    void toEl.offsetWidth; 
                     toEl.classList.add('active');
                 }, 600);
                 this.state.view = to;
