@@ -10,12 +10,18 @@
   <link rel="preconnect" href="https://polyfill.io" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
+  <!-- Latin Modern (webfonts) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-mono.css" />
+
   <style>
     :root{
       color-scheme: light dark;
 
-      --font-main: "Times New Roman", Times, "Charter", "Cambria", serif;
-      --font-ui: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --font-main: "Latin Modern Roman", "Times New Roman", Times, serif;
+      --font-ui: "Latin Modern Sans", "Latin Modern Roman", serif;
+      --font-mono: "Latin Modern Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
       --nav-h: 64px;
       --safe-top: env(safe-area-inset-top, 0px);
@@ -34,15 +40,14 @@
       --gold-soft: #F7E7CE;
 
       --link: var(--gold-soft);
-
       --shadow: 0 18px 50px -18px rgba(0,0,0,0.75);
 
       /* Canvas */
       --canvas-bg: #050505;
-      --canvas-ink: rgba(212,175,55,0.44);
+      --canvas-ink: rgba(212,175,55,0.46);
       --canvas-ink-soft: rgba(212,175,55,0.18);
       --canvas-stroke: rgba(0,0,0,0.55);
-      --canvas-glow: rgba(212,175,55,0.30);
+      --canvas-glow: rgba(212,175,55,0.34);
     }
 
     html[data-theme="light"]{
@@ -60,7 +65,6 @@
       --gold-soft: #7A5A00;
 
       --link: #7A5A00;
-
       --shadow: 0 18px 55px -25px rgba(0,0,0,0.22);
 
       --canvas-bg: #fbfbfc;
@@ -76,7 +80,9 @@
       background: var(--bg);
       color: var(--silver);
       font-family: var(--font-main);
-      overflow: hidden;
+      overflow: hidden;         /* prevent body scroll */
+      overflow-x: hidden;       /* never allow horizontal scrolling */
+      overscroll-behavior: none;
     }
 
     a{ color: var(--link); text-decoration: none; }
@@ -85,18 +91,12 @@
     :focus-visible{
       outline: 2px solid color-mix(in oklab, var(--gold) 65%, #fff);
       outline-offset: 3px;
-      border-radius: 10px;
+      border-radius: 12px;
     }
 
     .hidden{ display:none !important; pointer-events:none; opacity:0; }
-    .sr-only{
-      position:absolute !important;
-      width:1px; height:1px;
-      padding:0; margin:-1px;
-      overflow:hidden; clip:rect(0,0,0,0);
-      white-space:nowrap; border:0;
-    }
 
+    /* Background canvas */
     #econometric-canvas{
       position: fixed;
       inset: 0;
@@ -106,6 +106,7 @@
       pointer-events: none;
     }
 
+    /* Nav */
     #global-nav{
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -128,7 +129,7 @@
 
     .brand{
       font-family: var(--font-ui);
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
@@ -157,12 +158,12 @@
       cursor: pointer;
       backdrop-filter: blur(12px);
       transition: transform 160ms ease, border-color 200ms ease, background 200ms ease;
+      white-space: nowrap;
     }
     .nav-btn:hover{
       transform: translateY(-1px);
       border-color: color-mix(in oklab, var(--gold) 45%, var(--border));
     }
-
     .nav-link-btn{
       display:inline-flex;
       align-items:center;
@@ -171,6 +172,7 @@
       text-decoration: none;
     }
 
+    /* Reading progress */
     #reading-progress{
       position: fixed;
       top: calc(var(--nav-h) + var(--safe-top));
@@ -184,21 +186,39 @@
       transition: opacity 220ms ease, width 80ms linear;
     }
 
-    #app{ position: relative; z-index: 2; height: 100%; }
+    /* Views: fixed, scrollable, constrained to viewport */
+    .view{
+      position: fixed;
+      inset: 0;
+      height: 100dvh;                 /* mobile dynamic viewport height */
+      width: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;            /* allow vertical scrolling on mobile */
+      z-index: 2;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 320ms ease, transform 320ms ease;
+      padding-bottom: calc(var(--safe-bottom) + 24px);
+    }
+    .view.active{
+      opacity: 1;
+      transform: translateY(0);
+    }
 
     /* Landing */
     #view-landing{
-      position: absolute;
-      inset: 0;
-      z-index: 100;
+      z-index: 10;
       display: grid;
       place-items: center;
-      padding: calc(var(--nav-h) + var(--safe-top) + 24px) 16px calc(var(--safe-bottom) + 24px);
+      padding-top: calc(var(--nav-h) + var(--safe-top) + 24px);
       background: radial-gradient(circle at 50% 40%, rgba(150,120,20,0.10), rgba(0,0,0,0.0) 55%);
     }
-
-    .landing{ width: min(980px, 100%); text-align: center; }
+    .landing{ width: min(980px, 100%); text-align: center; padding: 0 16px; }
     .landing h1{
+      font-family: var(--font-main);
       color: color-mix(in oklab, var(--silver) 20%, #fff);
       font-weight: 300;
       letter-spacing: 0.08em;
@@ -208,8 +228,7 @@
       margin-bottom: 14px;
     }
     .landing .divider{
-      width: 88px;
-      height: 1px;
+      width: 88px; height: 1px;
       background: color-mix(in oklab, var(--gold) 70%, transparent);
       opacity: 0.75;
       margin: 0 auto 22px;
@@ -235,26 +254,16 @@
       cursor: pointer;
       backdrop-filter: blur(10px);
       transition: transform 160ms ease, background 200ms ease, border-color 200ms ease;
+      white-space: nowrap;
     }
     .cta:hover{ transform: translateY(-2px); }
     .cta.gold{ color: var(--gold); }
 
     /* Deck */
     #view-deck{
-      position:absolute;
-      inset:0;
-      z-index: 60;
       padding-top: calc(var(--nav-h) + var(--safe-top) + 28px);
-      padding-bottom: calc(var(--safe-bottom) + 32px);
-      overflow-y:auto;
-      -webkit-overflow-scrolling: touch;
       background: color-mix(in oklab, var(--bg) 70%, transparent);
-      opacity: 0;
-      transform: scale(0.985);
-      transition: opacity 420ms ease, transform 420ms ease;
     }
-    #view-deck.active{ opacity: 1; transform: scale(1); }
-
     .deck-header{
       text-align:center;
       margin: 8px auto 26px;
@@ -262,6 +271,7 @@
       max-width: 1200px;
     }
     .deck-header h2{
+      font-family: var(--font-main);
       color: var(--gold-soft);
       font-size: clamp(2.1rem, 5.5vw, 3.3rem);
       font-weight: 300;
@@ -274,7 +284,6 @@
       background: var(--gold);
       opacity: 0.7;
     }
-
     .card-grid{
       max-width: 1300px;
       margin: 0 auto;
@@ -283,7 +292,6 @@
       grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
       gap: 18px;
     }
-
     .card{
       background: var(--panel);
       border: 1px solid var(--border);
@@ -297,14 +305,13 @@
       cursor: pointer;
       box-shadow: var(--shadow);
       transition: transform 220ms ease, border-color 240ms ease, background 240ms ease;
+      max-width: 100%;
     }
-
     .card:hover{
       transform: translateY(-6px);
       border-color: color-mix(in oklab, var(--gold) 55%, var(--border));
       background: color-mix(in oklab, var(--panel) 88%, rgba(255,255,255,0.02));
     }
-
     .card-top{
       display:flex;
       justify-content: space-between;
@@ -316,22 +323,24 @@
       color: var(--gold);
       border-bottom: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
       padding-bottom: 10px;
+      gap: 10px;
     }
-
     .card h3{
+      font-family: var(--font-main);
       font-size: 1.9rem;
       line-height: 1.15;
       font-weight: 400;
       color: var(--gold-soft);
       margin-top: 4px;
+      overflow-wrap: anywhere;
     }
-
     .card p{
+      font-family: var(--font-main);
       color: var(--silver-dim);
       font-size: 1.05rem;
       line-height: 1.6;
+      overflow-wrap: anywhere;
     }
-
     .card .read{
       margin-top:auto;
       font-family: var(--font-ui);
@@ -343,7 +352,6 @@
       gap: 8px;
       align-items: center;
     }
-
     .card[aria-disabled="true"]{
       opacity: 0.45;
       cursor: not-allowed;
@@ -352,51 +360,40 @@
 
     /* Reader */
     #view-reader{
-      position:absolute;
-      inset:0;
-      z-index: 80;
-      padding-top: calc(var(--nav-h) + var(--safe-top));
-      padding-bottom: calc(var(--safe-bottom) + 24px);
-      overflow-y:auto;
-      -webkit-overflow-scrolling: touch;
-      scroll-behavior: smooth;
+      padding-top: calc(var(--nav-h) + var(--safe-top) + 18px);
       background: var(--bg);
-      opacity: 0;
-      transform: translateY(18px);
-      transition: opacity 360ms ease, transform 360ms ease;
     }
-    #view-reader.active{ opacity: 1; transform: translateY(0); }
-
     .reader-shell{
       max-width: 1200px;
       margin: 0 auto;
-      padding: 28px clamp(16px, 4vw, 44px) 60px;
+      padding: 10px clamp(16px, 4vw, 44px) 60px;
     }
-
     .reader-layout{
       display:grid;
       grid-template-columns: 260px 1fr;
       gap: clamp(22px, 5vw, 54px);
       align-items: start;
-      margin-top: 20px;
+      margin-top: 14px;
+      max-width: 100%;
     }
     @media (max-width: 980px){
       .reader-layout{ grid-template-columns: 1fr; }
     }
 
+    /* Desktop TOC */
     .toc{
       position: sticky;
       top: calc(var(--nav-h) + var(--safe-top) + 18px);
       align-self: start;
       padding-left: 16px;
       border-left: 1px solid var(--border);
-      max-height: calc(100vh - (var(--nav-h) + var(--safe-top) + 44px));
+      max-height: calc(100dvh - (var(--nav-h) + var(--safe-top) + 44px));
       overflow: auto;
+      overflow-x: hidden;
     }
     @media (max-width: 980px){
       .toc{ display:none; }
     }
-
     .toc h4{
       font-family: var(--font-ui);
       font-size: 0.74rem;
@@ -414,6 +411,7 @@
       color: color-mix(in oklab, var(--silver) 55%, var(--silver-dim));
       display:block;
       transition: color 160ms ease, transform 160ms ease;
+      overflow-wrap: anywhere;
     }
     .toc a:hover{ color: var(--gold); transform: translateX(4px); }
     .toc a.active{
@@ -423,14 +421,16 @@
       margin-left: -12px;
     }
 
+    /* Mobile TOC */
     .mobile-toc{
       display:none;
-      margin-bottom: 18px;
+      margin: 8px 0 18px;
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 12px 14px;
       backdrop-filter: blur(14px);
+      max-width: 100%;
     }
     @media (max-width: 980px){
       .mobile-toc{ display:block; }
@@ -457,15 +457,15 @@
       font-size: 0.92rem;
       line-height: 1.35;
       color: color-mix(in oklab, var(--silver) 60%, var(--silver-dim));
+      overflow-wrap: anywhere;
     }
 
-    .article{ max-width: 760px; }
+    .article{ max-width: 760px; min-width: 0; }
     .article-header{
       padding: 14px 0 22px;
       margin-bottom: 22px;
       border-bottom: 1px solid var(--border);
     }
-
     .meta{
       font-family: var(--font-ui);
       font-size: 0.78rem;
@@ -484,33 +484,43 @@
       border-radius: 999px;
       color: var(--gold);
     }
-
     .article h1{
       margin-top: 12px;
+      font-family: var(--font-main);
       font-weight: 400;
       line-height: 1.06;
       font-size: clamp(2.2rem, 5.4vw, 4rem);
       color: var(--gold-soft);
       letter-spacing: 0.01em;
+      overflow-wrap: anywhere;
     }
 
+    /* Content: justified + constrained (never beyond screen) */
     .article .content{
       font-family: var(--font-main);
       font-size: clamp(1.08rem, 2.2vw, 1.30rem);
       line-height: 1.75;
       color: var(--silver);
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: normal;
+      hyphens: auto;
+
+      /* “justified vertical alignment” interpreted as strong justified typesetting */
+      text-align: justify;
+      text-justify: inter-word;
     }
     @media (max-width: 980px){
-      .article .content{ font-size: 1.12rem; line-height: 1.70; }
+      .article .content{
+        font-size: 1.12rem;
+        line-height: 1.70;
+        text-align: justify;
+      }
     }
 
     .article .content p{
       margin: 0 0 1.6rem;
       color: color-mix(in oklab, var(--silver) 88%, var(--silver-dim));
-      text-align: justify;
-    }
-    @media (max-width: 980px){
-      .article .content p{ text-align: left; }
     }
 
     .article .content strong,
@@ -526,6 +536,7 @@
       color: var(--gold-soft);
       padding-bottom: 0.45rem;
       border-bottom: 1px solid color-mix(in oklab, var(--gold) 22%, var(--border));
+      overflow-wrap: anywhere;
     }
 
     .article .content h3{
@@ -534,12 +545,14 @@
       font-weight: 500;
       font-style: italic;
       color: color-mix(in oklab, var(--silver) 25%, #fff);
+      overflow-wrap: anywhere;
     }
 
     .article .content ul,
     .article .content ol{
       margin: 0 0 1.6rem 1.4rem;
       color: color-mix(in oklab, var(--silver) 85%, var(--silver-dim));
+      max-width: 100%;
     }
     .article .content li{ margin: 0.35rem 0; }
 
@@ -550,8 +563,18 @@
       background: color-mix(in oklab, var(--panel) 75%, transparent);
       border-radius: 10px;
       color: color-mix(in oklab, var(--silver) 75%, var(--gold-soft));
+      max-width: 100%;
     }
 
+    .article .content img,
+    .article .content video,
+    .article .content svg{
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Tables: ensure no horizontal overflow beyond viewport */
     .article .content table{
       width: 100%;
       border-collapse: collapse;
@@ -560,6 +583,13 @@
       background: color-mix(in oklab, var(--panel) 70%, transparent);
       border-radius: 12px;
       overflow:hidden;
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .article .content thead, .article .content tbody, .article .content tr{
+      width: 100%;
     }
     .article .content th,
     .article .content td{
@@ -570,6 +600,7 @@
       font-size: 0.92rem;
       line-height: 1.35;
       color: color-mix(in oklab, var(--silver) 82%, var(--silver-dim));
+      white-space: nowrap;
     }
     .article .content th{
       text-transform: uppercase;
@@ -579,28 +610,33 @@
       background: color-mix(in oklab, var(--panel) 85%, transparent);
     }
 
+    /* Code blocks: never exceed screen */
     .article .content code{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-family: var(--font-mono);
       font-size: 0.92em;
       background: color-mix(in oklab, var(--panel) 82%, transparent);
       border: 1px solid var(--border);
       padding: 0.12em 0.34em;
       border-radius: 8px;
       color: color-mix(in oklab, var(--silver) 70%, var(--gold));
+      overflow-wrap: anywhere;
     }
     .article .content pre{
       margin: 1.6rem 0;
       padding: 14px 14px;
       overflow:auto;
+      max-width: 100%;
       border-radius: 12px;
       border: 1px solid var(--border);
       background: color-mix(in oklab, var(--panel-strong) 92%, transparent);
+      -webkit-overflow-scrolling: touch;
     }
     .article .content pre code{
       background: transparent;
       border: none;
       padding: 0;
       color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim));
+      white-space: pre;
     }
 
     .loader{
@@ -615,8 +651,7 @@
 
     @media (prefers-reduced-motion: reduce){
       *{ scroll-behavior: auto !important; }
-      .card, .cta, .nav-btn{ transition: none !important; }
-      #view-deck, #view-reader{ transition: none !important; }
+      .card, .cta, .nav-btn, .view{ transition: none !important; }
     }
   </style>
 
@@ -654,8 +689,8 @@
     </div>
   </nav>
 
-  <main id="app">
-    <section id="view-landing" aria-label="Landing">
+  <main id="app" aria-label="App">
+    <section id="view-landing" class="view active" aria-label="Landing">
       <div class="landing">
         <h1>Anıl Kaya</h1>
         <div class="divider" aria-hidden="true"></div>
@@ -663,14 +698,9 @@
           <button class="cta gold" id="btn-enter" type="button">Enter Archives</button>
         </div>
       </div>
-      <noscript>
-        <p style="max-width:680px;margin:18px auto 0;font-family:var(--font-ui);color:var(--silver-dim);text-align:center;line-height:1.5;">
-          JavaScript is required to load articles and interactive views.
-        </p>
-      </noscript>
     </section>
 
-    <section id="view-deck" class="hidden" aria-label="Archives">
+    <section id="view-deck" class="view hidden" aria-label="Archives">
       <header class="deck-header">
         <h2>Research Archives</h2>
         <div class="line" aria-hidden="true"></div>
@@ -678,7 +708,7 @@
       <div class="card-grid" id="card-grid" aria-label="Article list"></div>
     </section>
 
-    <section id="view-reader" class="hidden" aria-label="Reader">
+    <section id="view-reader" class="view hidden" aria-label="Reader">
       <div class="reader-shell" id="reader-container"></div>
     </section>
   </main>
@@ -721,7 +751,6 @@
     const Theme = (() => {
       const LS_KEY = "theme";
       const root = document.documentElement;
-      const btn = () => document.getElementById("btn-theme");
       const media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 
       function getInitialTheme() {
@@ -734,8 +763,9 @@
       function apply(theme, persist = true) {
         root.setAttribute("data-theme", theme);
         if (persist) localStorage.setItem(LS_KEY, theme);
-        const b = btn();
-        if (b) b.textContent = (theme === "dark") ? "Light" : "Dark";
+
+        const btn = document.getElementById("btn-theme");
+        if (btn) btn.textContent = (theme === "dark") ? "Light" : "Dark";
 
         const meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.setAttribute("content", theme === "dark" ? "#050505" : "#fbfbfc");
@@ -751,7 +781,7 @@
       return { apply, toggle, getInitialTheme };
     })();
 
-    /* Visuals: stronger equations */
+    /* Visuals (equations + connections) */
     const Visuals = (() => {
       const canvas = document.getElementById("econometric-canvas");
       const ctx = canvas.getContext("2d", { alpha: false });
@@ -759,10 +789,10 @@
       let w = 0, h = 0, dpr = 1;
 
       let bg = "#050505";
-      let ink = "rgba(212,175,55,0.44)";
+      let ink = "rgba(212,175,55,0.46)";
       let inkSoft = "rgba(212,175,55,0.18)";
       let stroke = "rgba(0,0,0,0.55)";
-      let glow = "rgba(212,175,55,0.30)";
+      let glow = "rgba(212,175,55,0.34)";
 
       const formulas = [
         "𝑦ₜ = 𝛽𝑥ₜ + 𝜖ₜ",
@@ -782,7 +812,6 @@
       let nodes = [];
       let drops = [];
       let hero = [];
-
       const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       function cssVar(name) {
@@ -805,7 +834,6 @@
         canvas.width = Math.floor(w * dpr);
         canvas.height = Math.floor(h * dpr);
 
-        // reset transform then scale to avoid cumulative scaling
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(dpr, dpr);
 
@@ -814,9 +842,8 @@
 
       function build() {
         const isMobile = w < 820;
-
-        const nodeCount = reduceMotion ? (isMobile ? 22 : 44) : (isMobile ? 46 : 110);
-        const dropCount = reduceMotion ? (isMobile ? 16 : 28) : (isMobile ? 26 : 62);
+        const nodeCount = reduceMotion ? (isMobile ? 18 : 36) : (isMobile ? 40 : 100);
+        const dropCount = reduceMotion ? (isMobile ? 14 : 24) : (isMobile ? 24 : 58);
 
         nodes = Array.from({ length: nodeCount }, () => ({
           x: Math.random() * w,
@@ -849,8 +876,7 @@
 
       function drawTextWithStroke(text, x, y, fontSize, alpha, isHero = false) {
         ctx.save();
-
-        ctx.font = `italic ${fontSize}px "Times New Roman"`;
+        ctx.font = `italic ${fontSize}px "Latin Modern Roman", "Times New Roman"`;
         ctx.textBaseline = "alphabetic";
 
         ctx.shadowColor = glow;
@@ -975,28 +1001,22 @@
         const from = state.view;
         if (from === to) return;
 
-        const fromEl = views[from];
-        const toEl = views[to];
+        // hide previous
+        views[from].classList.remove("active");
+        setTimeout(() => { views[from].classList.add("hidden"); }, 180);
 
-        fromEl.classList.remove("active");
+        // show next
+        views[to].classList.remove("hidden");
+        requestAnimationFrame(() => views[to].classList.add("active"));
+
+        // reset scroll on view change
+        views[to].scrollTop = 0;
 
         progress.style.opacity = (to === "reader") ? "1" : "0";
         if (to !== "reader") progress.style.width = "0%";
 
-        setTimeout(() => {
-          fromEl.classList.add("hidden");
-          toEl.classList.remove("hidden");
-
-          if (to === "deck") views.deck.scrollTop = 0;
-          if (to === "reader") views.reader.scrollTop = 0;
-
-          void toEl.offsetWidth;
-          toEl.classList.add("active");
-
-          setNavScrolled(to !== "landing");
-        }, 200);
-
         state.view = to;
+        setNavScrolled(to !== "landing");
       }
 
       function goHome() { switchView("landing"); }
@@ -1089,39 +1109,23 @@
         return headings;
       }
 
-      // Remove any in-article TOC block to avoid “double TOC” overlap
       function stripInlineTOC(articleEl) {
         if (!articleEl) return;
 
-        // common explicit TOC markers
-        const explicitSelectors = [
-          "#toc", ".toc", "nav.toc", ".table-of-contents", ".contents", "[data-toc]"
-        ];
-        explicitSelectors.forEach(sel => {
-          articleEl.querySelectorAll(sel).forEach(n => n.remove());
-        });
+        const explicitSelectors = ["#toc", ".toc", "nav.toc", ".table-of-contents", ".contents", "[data-toc]"];
+        explicitSelectors.forEach(sel => articleEl.querySelectorAll(sel).forEach(n => n.remove()));
 
-        // heuristic: if the first 1-3 blocks contain many hash links (e.g. #introduction, #literature,...),
-        // treat it as an inline TOC list and remove it.
         const candidates = Array.from(articleEl.children).slice(0, 4);
         for (const c of candidates) {
-          if (!c) continue;
           const links = Array.from(c.querySelectorAll("a[href]"));
           if (links.length < 5) continue;
 
-          const samePageHashLinks = links.filter(a => {
+          const hashLinks = links.filter(a => {
             const href = (a.getAttribute("href") || "").trim();
-            return href.startsWith("#") || href.includes("#introduction") || href.includes("#literature") || href.includes("#mathematical") || href.includes("#pitfalls") || href.includes("#extensions") || href.includes("#implementation") || href.includes("#conclusion");
+            return href.startsWith("#");
           });
 
-          // also check that most links are hash links (TOC-like)
-          if (samePageHashLinks.length >= 5 && samePageHashLinks.length / links.length > 0.7) {
-            c.remove();
-            break;
-          }
-
-          // secondary: a paragraph full of TOC anchors
-          if (c.tagName === "P" && samePageHashLinks.length >= 5) {
+          if (hashLinks.length >= 5 && hashLinks.length / links.length > 0.7) {
             c.remove();
             break;
           }
@@ -1185,13 +1189,8 @@
         let currentId = "";
         const y = scroller.scrollTop;
 
-        headings.forEach(h => {
-          if (h.offsetTop - 160 <= y) currentId = h.id;
-        });
-
-        links.forEach(a => {
-          a.classList.toggle("active", a.getAttribute("href") === `#${currentId}`);
-        });
+        headings.forEach(h => { if (h.offsetTop - 160 <= y) currentId = h.id; });
+        links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === `#${currentId}`));
       }
 
       function onReaderScroll() {
@@ -1219,11 +1218,9 @@
           const doc = new DOMParser().parseFromString(html, "text/html");
           const articleNode = doc.querySelector("article") || doc.body;
 
-          // IMPORTANT: remove any in-article TOC so our generated TOC is the only one
           stripInlineTOC(articleNode);
 
           const contentHTML = articleNode ? articleNode.innerHTML : html;
-
           readerContainer.innerHTML = buildReaderShell(article, contentHTML);
 
           const text = (readerContainer.querySelector("#article-content")?.innerText || "");
@@ -1242,7 +1239,7 @@
           updateProgressAndTOC();
         } catch (err) {
           readerContainer.innerHTML = `
-            <div style="padding: 28px 18px;">
+            <div style="padding: 22px 6px;">
               <p style="font-family: var(--font-ui); color: var(--silver-dim); line-height: 1.6;">
                 Could not load <strong style="color: var(--gold); font-weight: 800;">${article.file}</strong>.
                 Verify the path and that the file is reachable from your server.
@@ -1253,13 +1250,9 @@
       }
 
       function init() {
-        views.landing.classList.add("active");
-
         renderDeck();
 
-        views.deck.addEventListener("scroll", () => setNavScrolled(views.deck.scrollTop > 8), { passive: true });
-        views.reader.addEventListener("scroll", onReaderScroll, { passive: true });
-
+        // nav interactions
         const home = el("btn-home");
         home.addEventListener("click", goHome);
         home.addEventListener("keydown", (e) => {
@@ -1269,11 +1262,15 @@
         el("btn-archives").addEventListener("click", enterDeck);
         el("btn-enter").addEventListener("click", enterDeck);
 
-        // optional: deep-link to article sections if you ever route them
+        // scroll listeners (container scroll, not window)
+        views.deck.addEventListener("scroll", () => setNavScrolled(views.deck.scrollTop > 8), { passive: true });
+        views.reader.addEventListener("scroll", onReaderScroll, { passive: true });
+
+        // expose optional
         window.__openArticle = openArticle;
       }
 
-      return { init, goHome, enterDeck, openArticle };
+      return { init };
     })();
 
     document.addEventListener("DOMContentLoaded", () => {
