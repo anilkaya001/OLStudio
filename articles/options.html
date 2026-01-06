@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Options Pricing | Anıl Kaya</title>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-mono.css" />
+
+  <style>
+    :root{
+      color-scheme: light dark;
+      --font-main: "Latin Modern Roman", "Times New Roman", Times, serif;
+      --font-ui: "Latin Modern Sans", "Latin Modern Roman", serif;
+      --font-mono: "Latin Modern Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+      /* Dark (default) */
+      --bg: #050505;
+      --panel: rgba(18,18,18,0.72);
+      --border: rgba(255,255,255,0.10);
+      --silver: #e2e2e2;
+      --silver-dim: rgba(226,226,226,0.70);
+      --gold: #D4AF37;
+      --gold-soft: #F7E7CE;
+      --link: var(--gold-soft);
+    }
+
+    html[data-theme="light"]{
+      color-scheme: light;
+      --bg: #fbfbfc;
+      --panel: rgba(255,255,255,0.82);
+      --border: rgba(0,0,0,0.10);
+      --silver: #1b1b1c;
+      --silver-dim: rgba(27,27,28,0.72);
+      --gold: #B88A00;
+      --gold-soft: #7A5A00;
+      --link: #7A5A00;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--silver);
+      font-family: var(--font-main);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    /* Layout for standalone view */
+    .article {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 20px 100px;
+    }
+
+    /* Headers */
+    .article-header {
+      padding-bottom: 22px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .meta {
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--silver-dim);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .meta .pill {
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 999px;
+      color: var(--gold);
+      background: rgba(125,125,125,0.05);
+    }
+
+    .article h1 {
+      font-family: var(--font-main);
+      font-weight: 400;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      color: var(--gold-soft);
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    /* Content Typography */
+    .content {
+      font-size: 1.15rem;
+      line-height: 1.75;
+      text-align: justify;
+    }
+
+    .content p {
+      margin-bottom: 1.6rem;
+      color: color-mix(in oklab, var(--silver) 90%, transparent);
+    }
+
+    .content h2 {
+      margin: 2.5rem 0 1rem;
+      font-size: 1.8rem;
+      font-weight: 500;
+      color: var(--gold-soft);
+      border-bottom: 1px solid color-mix(in oklab, var(--gold) 20%, transparent);
+      padding-bottom: 5px;
+    }
+
+    .content h3 {
+      margin: 2rem 0 0.8rem;
+      font-size: 1.4rem;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--silver);
+    }
+
+    .content ul {
+      margin-bottom: 1.6rem;
+      padding-left: 1.4rem;
+      color: var(--silver-dim);
+    }
+
+    .content li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Code Blocks */
+    .content pre {
+      background: rgba(20,20,20,0.5);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      margin: 2rem 0;
+    }
+    
+    .content code {
+      font-family: var(--font-mono);
+      color: var(--gold-soft);
+      background: rgba(255,255,255,0.03);
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    
+    .content pre code {
+      background: transparent;
+      padding: 0;
+      color: var(--silver-dim);
+    }
+
+    /* MathJax */
+    .mjx-chtml { outline: 0 !important; }
+
+    .disclaimer {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      color: var(--silver-dim);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+      padding-top: 20px;
+      opacity: 0.8;
+    }
+  </style>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true
+      },
+      chtml: { displayAlign: 'center' }
+    };
+  </script>
+  <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+
+<article class="article">
+  <header class="article-header">
+    <div class="meta">
+      <span class="pill">Financial Engineering</span>
+      <span>JAN 2026</span>
+      <span>•</span>
+      <span id="readtime">14 min read</span>
+    </div>
+    <h1>Options Pricing</h1>
+  </header>
+
+  <div class="content" id="article-content">
+    <p>
+      The Black-Scholes-Merton equation sets the foundation for modern derivatives pricing, yet its assumptions (constant volatility, flat interest rates, European exercise) rarely align with market realities especially for intrigued beginners alike me who want to decently apply knowledge not to estimate something only for the sake of estimation or become a try-hard wannabe quant. When pricing equity options for volatile assets like NVIDIA (NVDA), relying on closed-form analytical solutions introduces material model risk.
+    </p>
+
+    <p>
+      To value these derivatives with any degree of confidence, we must transition from analytical approximations to numerical methods. In the following analysis I aim to implement a somewhat decent pricing pipeline that constructs a live yield curve from Treasury instruments, calculates the American early-exercise premium using Binomial Lattice methods, and attempts a Heston stochastic volatility calibration.
+    </p>
+
+    <h2 id="term-structure">The Yield Curve</h2>
+
+    <p>
+      Standard textbook models often default to a constant risk-free rate. In practice, the cost of carry is fully time-dependent. A 3-month option requires discounting via the 3-month T-bill rate, whereas a two-year LEAP demands the 2-year note yield.
+    </p>
+    
+    
+
+    <p>
+      I construct a continuous yield curve by retrieving real-time data for the 13-week T-bill (<code>^IRX</code>), and the 5, 10, and 30-year Treasury indices. We shall then interpolate the specific rate required for the option's time to maturity $T$. Small rate variances can indeed significantly impact the pricing of longer-dated options (rho risk).
+    </p>
+
+    $$r(T) \approx \text{Interp}(T, \{r_{3m}, r_{5y}, r_{10y}, r_{30y}\})$$
+
+    <h2 id="american-exercise">The American Premium</h2>
+
+    <p>
+      A critical structural distinction exists between index options (SPX) and single-stock equity options. Equity options are American style, which we now that permitting exercise at any point prior to expiration. This optionality carries a premium, particularly for deep-in-the-money puts or calls on high-dividend stocks.
+    </p>
+
+    <p>
+      We address this by utilizing the Cox-Ross-Rubinstein (CRR) Binomial Tree model. Rather than solving a differential equation at a single point, the CRR model simulates the price path over discrete steps $N$. At each node, the model evaluates whether the intrinsic value of immediate exercise exceeds the continuation value of holding the option.
+    </p>
+
+    
+
+    <p>
+      The decision logic at each node $(i, j)$ is:
+    </p>
+
+    $$V_{i,j} = \max\left( \text{Intrinsic}_{i,j}, \ e^{-r \Delta t} [p V_{i+1,j+1} + (1-p) V_{i+1,j}] \right)$$
+
+    <p>
+      For short durations, 800 steps generally provided sufficient granularity. For longer maturities, we increase this to 1,800 steps to ensure convergence.
+    </p>
+
+    <h2 id="implementation">Implementation</h2>
+
+    <p>
+      The Python code below integrates these components. It retrieves live data via <code>yfinance</code>, filters the order book for liquidity issues (such as zero bids or excessive spreads), and solves for the Implied Volatility that equates the CRR model price to the market price.
+    </p>
+
+    <pre><code class="language-python">import yfinance as yf
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from dataclasses import dataclass
+from datetime import datetime, timezone, timedelta
+from typing import Dict, List, Tuple, Optional
+
+from scipy.stats import norm
+from scipy.optimize import brentq, minimize
+from scipy.integrate import quad
+
+import warnings
+warnings.filterwarnings("ignore")
+
+
+SYMBOL = "NVDA"
+IR_SYMBOLS = {              # maturity_years: yahoo_symbol
+    0.25: "^IRX",           # 13-week T-bill yield index
+    5.0:  "^FVX",           # 5Y yield index
+    10.0: "^TNX",           # 10Y yield index
+    30.0: "^TYX",           # 30Y yield index
+}
+
+MIN_OI = 1
+MIN_PRICE = 1e-8
+TOPN = 1
+
+# keep global by default, but allow optional moneyness band
+USE_MONEYNESS_BAND = False
+MONEYNESS_LOW, MONEYNESS_HIGH = 0.70, 1.30
+
+# Quote quality controls (avoid “bid=0, huge ask” mids)
+MAX_REL_SPREAD = 0.50       # (ask-bid)/mid must be <= this to trust mid
+FALLBACK_TO_LAST_IF_WIDE = True
+
+# American CRR tree steps (more steps for longer maturities)
+CRR_STEPS_SHORT = 800
+CRR_STEPS_LONG  = 1800
+CRR_LONG_T_THRESHOLD_Y = 0.20
+
+# For inverting American IV: reuse same CRR steps
+IV_MAX = 10.0
+IV_MIN = 1e-8
+
+# Heston calibration (risk-neutral) to near-ATM calls for the contract’s expiry
+DO_HESTON_CALIBRATION = True
+HESTON_CALIB_MIN_QUOTES = 10
+HESTON_STRIKE_BAND = (0.80, 1.20)   # use calls in [0.8S, 1.2S] for calibration
+HESTON_MAX_REL_SPREAD = 0.30
+HESTON_INTEGRAL_UB = 120            # quad upper bound; increase if needed
+
+
+WATERMARK = "NOT FINANCIAL ADVICE\nEDUCATIONAL ONLY"
+
+
+plt.rcParams["figure.facecolor"] = "black"
+plt.rcParams["axes.facecolor"] = "black"
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["text.color"] = "white"
+plt.rcParams["axes.labelcolor"] = "white"
+plt.rcParams["xtick.color"] = "white"
+plt.rcParams["ytick.color"] = "white"
+plt.rcParams["axes.edgecolor"] = "white"
+plt.rcParams["axes.grid"] = False
+
+
+def now_utc() -> datetime:
+    return datetime.now(timezone.utc)
+
+def exp_to_T_years(exp_str: str) -> float:
+    # Approx close-of-session UTC to reduce negative T in some timezones
+    exp_dt = datetime.strptime(exp_str, "%Y-%m-%d").replace(tzinfo=timezone.utc) + timedelta(hours=21)
+    T = (exp_dt - now_utc()).total_seconds() / (365.25 * 24 * 3600)
+    return max(T, 1e-10)
+
+# =============================================================================
+# OCC STRIKE DECODER (8 digits = strike * 1000)
+# =============================================================================
+def occ_strike_from_symbol(contract_symbol: str) -> float:
+    try:
+        s8 = contract_symbol[-8:]
+        return int(s8) / 1000.0 if s8.isdigit() else np.nan
+    except:
+        return np.nan
+
+
+# MARKET PRICE SELECTION 
+
+def robust_market_price(row: pd.Series) -> Tuple[float, str]:
+    bid = float(row.get("bid", np.nan))
+    ask = float(row.get("ask", np.nan))
+    last = float(row.get("lastPrice", np.nan))
+
+    mid = np.nan
+    if np.isfinite(bid) and np.isfinite(ask) and ask > 0 and bid >= 0 and ask >= bid:
+        mid = 0.5 * (bid + ask)
+        if mid > 0:
+            rel_spread = (ask - bid) / mid if mid > 0 else np.inf
+            if rel_spread <= MAX_REL_SPREAD and bid > 0:
+                return float(mid), "mid"
+            # If bid=0 or spread wide, mid may be garbage -> optionally fallback
+            if FALLBACK_TO_LAST_IF_WIDE and np.isfinite(last) and last > 0:
+                return float(last), "last_fallback"
+            # else use a conservative blend
+            return float(np.median([mid, max(last, 0) if np.isfinite(last) else mid, ask*0.5])), "mid_blend"
+
+    if np.isfinite(last) and last > 0:
+        return float(last), "last"
+
+    if np.isfinite(ask) and ask > 0:
+        return float(ask), "ask_only"
+
+    return np.nan, "nan"
+
+
+# YIELD CURVE (we use simple interpolated continuous rate)
+
+def fetch_yield_points_cont(symbols: Dict[float, str]) -> Dict[float, float]:
+    pts = {}
+    for T, sym in symbols.items():
+        try:
+            y = yf.Ticker(sym).history(period="10d")["Close"].dropna().iloc[-1]
+            y = float(y) / 100.0
+            r_cont = float(np.log(1 + max(y, 0.0)))
+            pts[float(T)] = r_cont
+        except:
+            pass
+    return pts
+
+def interp_rate_cont(T: float, pts: Dict[float, float], fallback: float = 0.045) -> float:
+    if not pts:
+        return fallback
+    xs = np.array(sorted(pts.keys()), dtype=float)
+    ys = np.array([pts[x] for x in xs], dtype=float)
+    if T <= xs[0]:
+        return float(ys[0])
+    if T >= xs[-1]:
+        return float(ys[-1])
+    return float(np.interp(T, xs, ys))
+
+
+# DIVIDENDS: trailing continuous yield (simple/robust)
+
+def fetch_spot(tkr: yf.Ticker) -> float:
+    spot = np.nan
+    try:
+        spot = float(tkr.fast_info.get("last_price", np.nan))
+    except:
+        pass
+    if not np.isfinite(spot) or spot <= 0:
+        spot = float(tkr.history(period="5d")["Close"].dropna().iloc[-1])
+    return float(spot)
+
+def fetch_div_yield_cont(tkr: yf.Ticker, spot: float) -> float:
+    try:
+        div = tkr.dividends
+        if div is None or len(div) == 0 or spot <= 0:
+            return 0.0
+        cutoff = (pd.Timestamp.utcnow() - pd.Timedelta(days=365)).tz_localize(None)
+        div_1y = float(div[div.index.tz_localize(None) >= cutoff].sum())
+        y_simple = div_1y / spot
+        return float(np.log(1 + max(y_simple, 0.0)))
+    except:
+        return 0.0
+
+
+# NO-ARBITRAGE BOUNDS (European-style bounds used for clamping quotes before IV inversion)
+
+def noarb_bounds(S, K, T, r, q, opt_type):
+    df_r = np.exp(-r * T)
+    df_q = np.exp(-q * T)
+    if opt_type == "call":
+        lb = max(0.0, S * df_q - K * df_r)
+        ub = S * df_q
+    else:
+        lb = max(0.0, K * df_r - S * df_q)
+        ub = K * df_r
+    return lb, ub
+
+
+# BLACK-SCHOLES (European)
+
+def bs_price(S, K, T, r, q, sigma, opt_type):
+    if T <= 1e-12:
+        return max(0.0, S - K) if opt_type == "call" else max(0.0, K - S)
+    sigma = max(float(sigma), 1e-12)
+    vs = sigma * np.sqrt(T)
+    d1 = (np.log(S / K) + (r - q + 0.5 * sigma * sigma) * T) / vs
+    d2 = d1 - vs
+    if opt_type == "call":
+        return S * np.exp(-q * T) * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+    else:
+        return K * np.exp(-r * T) * norm.cdf(-d2) - S * np.exp(-q * T) * norm.cdf(-d1)
+
+def bs_iv_from_price(price, S, K, T, r, q, opt_type):
+    lb, ub = noarb_bounds(S, K, T, r, q, opt_type)
+    p = float(np.clip(price, lb, ub))
+    if abs(p - lb) < 1e-12:
+        return IV_MIN
+    if abs(p - ub) < 1e-12:
+        return IV_MAX
+    def f(sig):
+        return bs_price(S, K, T, r, q, sig, opt_type) - p
+    lo, hi = IV_MIN, IV_MAX
+    flo, fhi = f(lo), f(hi)
+    if flo > 0:
+        return lo
+    if fhi < 0:
+        return hi
+    try:
+        return float(brentq(f, lo, hi, maxiter=200))
+    except:
+        return np.nan
+
+
+# AMERICAN CRR BINOMIAL (benchmark, with continuous q)
+
+def american_binomial_crr(S, K, T, r, q, sigma, N, opt_type):
+    if T <= 1e-12:
+        return max(0.0, S - K) if opt_type == "call" else max(0.0, K - S)
+    sigma = max(float(sigma), 1e-12)
+    dt = T / N
+    u = np.exp(sigma * np.sqrt(dt))
+    d = 1.0 / u
+    disc = np.exp(-r * dt)
+    p = (np.exp((r - q) * dt) - d) / (u - d)
+    if not (0 < p < 1):
+        return bs_price(S, K, T, r, q, sigma, opt_type)
+
+    j = np.arange(N + 1)
+    ST = S * (u ** (N - j)) * (d ** j)
+    V = np.maximum(ST - K, 0.0) if opt_type == "call" else np.maximum(K - ST, 0.0)
+
+    for i in range(N - 1, -1, -1):
+        ST = ST[:-1] / u
+        V = disc * (p * V[:-1] + (1 - p) * V[1:])
+        intrinsic = np.maximum(ST - K, 0.0) if opt_type == "call" else np.maximum(K - ST, 0.0)
+        V = np.maximum(V, intrinsic)
+    return float(V[0])
+
+
+# AMERICAN IMPLIED VOL (invert CRR)
+# This fixes the “European IV double-counting early exercise” issue.
+
+def american_iv_from_price(price, S, K, T, r, q, opt_type, N):
+    lb, ub = noarb_bounds(S, K, T, r, q, opt_type)
+    p = float(np.clip(price, lb, ub))
+    if abs(p - lb) < 1e-12:
+        return IV_MIN
+    if abs(p - ub) < 1e-12:
+        return IV_MAX
+
+    def f(sig):
+        return american_binomial_crr(S, K, T, r, q, sig, N=N, opt_type=opt_type) - p
+
+    lo, hi = IV_MIN, IV_MAX
+    flo, fhi = f(lo), f(hi)
+    if flo > 0:
+        return lo
+    if fhi < 0:
+        return hi
+    try:
+        return float(brentq(f, lo, hi, maxiter=120))
+    except:
+        return np.nan
+
+
+# BAW (optional fast approx; diagnostic)
+def american_baw(S, K, T, r, q, sigma, opt_type):
+    if T <= 1e-12:
+        return max(0.0, S - K) if opt_type == "call" else max(0.0, K - S)
+
+    sigma = max(float(sigma), 1e-12)
+    sig2 = sigma * sigma
+    M = 2 * r / sig2
+    Nn = 2 * (r - q) / sig2
+    Kdisc = 1 - np.exp(-r * T)
+
+    # If q ~ 0, early exercise for calls is typically not optimal -> American ~ European
+    if opt_type == "call" and q <= 1e-8:
+        return bs_price(S, K, T, r, q, sigma, "call")
+
+    if opt_type == "call":
+        q2 = (-(Nn - 1) + np.sqrt((Nn - 1) ** 2 + 4 * M / Kdisc)) / 2.0
+
+        def f(Ss):
+            euro = bs_price(Ss, K, T, r, q, sigma, "call")
+            vs = sigma * np.sqrt(T)
+            d1 = (np.log(Ss / K) + (r - q + 0.5 * sig2) * T) / vs
+            A2 = (1 - np.exp(-q * T) * norm.cdf(d1)) * (Ss / q2)
+            return Ss - K - (euro + A2)
+
+        lo, hi = 1e-8, max(10 * S, 10 * K, 1.0)
+        for _ in range(60):
+            if f(lo) * f(hi) < 0:
+                break
+            hi *= 1.4
+        try:
+            Sstar = brentq(f, lo, hi, maxiter=200)
+        except:
+            return bs_price(S, K, T, r, q, sigma, "call")
+
+        if S >= Sstar:
+            return S - K
+
+        vs = sigma * np.sqrt(T)
+        d1s = (np.log(Sstar / K) + (r - q + 0.5 * sig2) * T) / vs
+        A2 = (1 - np.exp(-q * T) * norm.cdf(d1s)) * (Sstar / q2)
+        return bs_price(S, K, T, r, q, sigma, "call") + A2 * (S / Sstar) ** q2
+
+    else:
+        q1 = (-(Nn - 1) - np.sqrt((Nn - 1) ** 2 + 4 * M / Kdisc)) / 2.0
+
+        def f(Ss):
+            euro = bs_price(Ss, K, T, r, q, sigma, "put")
+            vs = sigma * np.sqrt(T)
+            d1 = (np.log(Ss / K) + (r - q + 0.5 * sig2) * T) / vs
+            A1 = (1 - np.exp(-q * T) * norm.cdf(-d1)) * (Ss / q1)
+            return K - Ss - (euro - A1)
+
+        lo, hi = 1e-10, max(10 * S, 10 * K, 1.0)
+        for _ in range(60):
+            if f(lo) * f(hi) < 0:
+                break
+            hi *= 1.4
+        try:
+            Sstar = brentq(f, lo, hi, maxiter=200)
+        except:
+            return np.nan
+
+        if S <= Sstar:
+            return K - S
+
+        vs = sigma * np.sqrt(T)
+        d1s = (np.log(Sstar / K) + (r - q + 0.5 * sig2) * T) / vs
+        A1 = (1 - np.exp(-q * T) * norm.cdf(-d1s)) * (Sstar / q1)
+        return bs_price(S, K, T, r, q, sigma, "put") - A1 * (S / Sstar) ** q1
+
+
+# HESTON (European call) + calibration (risk-neutral) to near-ATM CALLS of same expiry
+
+def heston_euro_call(S, K, T, r, q, v0, kappa, theta, sigma_v, rho, ub=HESTON_INTEGRAL_UB):
+    if T <= 1e-12:
+        return max(0.0, S - K)
+
+    x = np.log(S)
+
+    def char(u):
+        iu = 1j * u
+        a = kappa * theta
+        b = kappa
+        d = np.sqrt((rho * sigma_v * iu - b) ** 2 + sigma_v * sigma_v * (iu + u * u))
+        g = (b - rho * sigma_v * iu - d) / (b - rho * sigma_v * iu + d)
+        expd = np.exp(-d * T)
+        C = (r - q) * iu * T + (a / (sigma_v * sigma_v)) * ((b - rho * sigma_v * iu - d) * T - 2 * np.log((1 - g * expd) / (1 - g)))
+        D = ((b - rho * sigma_v * iu - d) / (sigma_v * sigma_v)) * ((1 - expd) / (1 - g * expd))
+        return np.exp(C + D * v0 + iu * x)
+
+    def integrand(u, j):
+        if j == 1:
+            cf = char(u - 1j) / (S * np.exp((r - q) * T))
+        else:
+            cf = char(u)
+        return (np.exp(-1j * u * np.log(K)) * cf / (1j * u)).real
+
+    P1 = 0.5 + (1 / np.pi) * quad(lambda uu: integrand(uu, 1), 1e-8, ub, limit=200)[0]
+    P2 = 0.5 + (1 / np.pi) * quad(lambda uu: integrand(uu, 2), 1e-8, ub, limit=200)[0]
+    return max(0.0, S * np.exp(-q * T) * P1 - K * np.exp(-r * T) * P2)
+
+def calibrate_heston_to_calls(calls_exp: pd.DataFrame, S: float, T: float, r: float, q: float) -> Optional[Dict[str, float]]:
+    # Filter: near-ATM, decent spread, positive bid/ask
+    df = calls_exp.copy()
+    df = df[(df["strike"] >= HESTON_STRIKE_BAND[0] * S) & (df["strike"] <= HESTON_STRIKE_BAND[1] * S)].copy()
+    df = df[np.isfinite(df["mkt"]) & (df["mkt"] > 0)].copy()
+
+    bid = df["bid"].astype(float)
+    ask = df["ask"].astype(float)
+    mid = df["mkt"].astype(float)
+    rel_spread = (ask - bid) / mid.replace(0, np.nan)
+    df = df[(bid > 0) & (ask > 0) & (ask >= bid) & (rel_spread <= HESTON_MAX_REL_SPREAD)].copy()
+
+    if len(df) < HESTON_CALIB_MIN_QUOTES:
+        return None
+
+    K = df["strike"].astype(float).values
+    Pmkt = df["mkt"].astype(float).values
+
+    # Initial guess from European BS IVs (only to seed optimization)
+    ivs = []
+    for kk, pp in zip(K, Pmkt):
+        iv0 = bs_iv_from_price(pp, S, kk, T, r, q, "call")
+        if np.isfinite(iv0):
+            ivs.append(iv0)
+    iv_seed = float(np.median(ivs)) if len(ivs) else 0.6
+    v_seed = max(iv_seed * iv_seed, 1e-4)
+
+    # params: v0, kappa, theta, sigma_v, rho
+    x0 = np.array([v_seed, 1.5, v_seed, 0.8, -0.6], dtype=float)
+    bnds = [(1e-5, 4.0), (0.05, 15.0), (1e-5, 4.0), (0.05, 5.0), (-0.99, 0.0)]
+
+    def loss(x):
+        v0, kappa, theta, sigma_v, rho = x
+        # penalize invalid region (basic sanity)
+        if v0 <= 0 or theta <= 0 or sigma_v <= 0 or not (-0.999 < rho < 0.001) or kappa <= 0:
+            return 1e9
+        errs = []
+        for kk, pm in zip(K, Pmkt):
+            try:
+                ph = heston_euro_call(S, kk, T, r, q, v0, kappa, theta, sigma_v, rho)
+                errs.append((ph - pm) ** 2)
+            except:
+                return 1e9
+        return float(np.mean(errs))
+
+    res = minimize(loss, x0, method="L-BFGS-B", bounds=bnds, options={"maxiter": 250})
+    if not res.success:
+        return None
+    v0, kappa, theta, sigma_v, rho = res.x
+    return {"v0": float(v0), "kappa": float(kappa), "theta": float(theta), "sigma_v": float(sigma_v), "rho": float(rho), "loss": float(res.fun)}
+
+
+# LOAD ALL OPTIONS
+
+def load_all_options(tkr: yf.Ticker, expirations: List[str]) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    calls, puts = [], []
+    for exp in expirations:
+        try:
+            ch = tkr.option_chain(exp)
+            c = ch.calls.copy()
+            p = ch.puts.copy()
+
+            c = c[c["openInterest"] >= MIN_OI].copy()
+            p = p[p["openInterest"] >= MIN_OI].copy()
+
+            if len(c):
+                c["type"] = "call"
+                c["expiration"] = exp
+                c["T"] = exp_to_T_years(exp)
+                c["occ_strike"] = c["contractSymbol"].apply(occ_strike_from_symbol)
+                c[["mkt", "mkt_src"]] = c.apply(lambda r: pd.Series(robust_market_price(r)), axis=1)
+                calls.append(c)
+
+            if len(p):
+                p["type"] = "put"
+                p["expiration"] = exp
+                p["T"] = exp_to_T_years(exp)
+                p["occ_strike"] = p["contractSymbol"].apply(occ_strike_from_symbol)
+                p[["mkt", "mkt_src"]] = p.apply(lambda r: pd.Series(robust_market_price(r)), axis=1)
+                puts.append(p)
+        except:
+            pass
+
+    calls_df = pd.concat(calls, ignore_index=True) if calls else pd.DataFrame()
+    puts_df  = pd.concat(puts, ignore_index=True) if puts else pd.DataFrame()
+
+    # Strike reconciliation using OCC symbol (safety net)
+    def reconcile(df):
+        if df is None or len(df) == 0:
+            return df
+        df = df.copy()
+        raw = df["strike"].astype(float)
+        occ = df["occ_strike"].astype(float)
+        ok = np.isfinite(raw) & (raw > 0) & np.isfinite(occ) & (occ > 0)
+        rel = np.abs(occ - raw) / raw
+        use_occ = ok & (rel > 0.05)
+        df.loc[use_occ, "strike"] = df.loc[use_occ, "occ_strike"]
+        df["strike"] = df["strike"].astype(float)
+        return df
+
+    calls_df = reconcile(calls_df)
+    puts_df  = reconcile(puts_df)
+
+    # Keep only usable quotes
+    if len(calls_df):
+        calls_df = calls_df[np.isfinite(calls_df["mkt"]) & (calls_df["mkt"] > MIN_PRICE)].copy()
+    if len(puts_df):
+        puts_df = puts_df[np.isfinite(puts_df["mkt"]) & (puts_df["mkt"] > MIN_PRICE)].copy()
+
+    return calls_df, puts_df
+
+def select_top_by_oi(df: pd.DataFrame, S: float, opt_type: str) -> pd.DataFrame:
+    if df is None or len(df) == 0:
+        return pd.DataFrame()
+    out = df.copy()
+    if USE_MONEYNESS_BAND:
+        m = out["strike"].astype(float) / S
+        out = out[(m >= MONEYNESS_LOW) & (m <= MONEYNESS_HIGH)].copy()
+    # tie-break: volume then price to avoid stale penny last prints
+    out = out.sort_values(["openInterest", "volume", "mkt"], ascending=False).head(TOPN).copy()
+    out["type"] = opt_type
+    return out
+
+# PRICING PIPELINE (per contract)
+
+def price_one(contract: pd.Series, S: float, q: float, rate_pts: Dict[float, float], calls_df: pd.DataFrame) -> Dict[str, float]:
+    opt_type = contract["type"]
+    exp = contract["expiration"]
+    K = float(contract["strike"])
+    T = float(contract["T"])
+
+    # maturity-matched rate
+    r = interp_rate_cont(T, rate_pts)
+
+    mkt = float(contract["mkt"])
+    lb, ub = noarb_bounds(S, K, T, r, q, opt_type)
+    mkt_clamped = float(np.clip(mkt, lb, ub))
+
+    steps = CRR_STEPS_LONG if T > CRR_LONG_T_THRESHOLD_Y else CRR_STEPS_SHORT
+
+    # 1) American-implied IV (kinda consistent with American pricing)
+    ivA = american_iv_from_price(mkt_clamped, S, K, T, r, q, opt_type, N=steps)
+
+    # Fallback if inversion fails (rare with extreme/garbage quotes)
+    if not np.isfinite(ivA):
+        # Use European IV as last-resort fallback (diagnostic)
+        ivE = bs_iv_from_price(mkt_clamped, S, K, T, r, q, opt_type)
+        ivA = ivE if np.isfinite(ivE) else 0.80
+
+    # 2) Benchmark American price (CRR) using ivA (should ~match market if quote is consistent)
+    amer_crr = american_binomial_crr(S, K, T, r, q, ivA, N=steps, opt_type=opt_type)
+
+    # 3) BAW diagnostic
+    baw = american_baw(S, K, T, r, q, ivA, opt_type)
+
+    # 4) European diagnostics using SAME ivA (will generally differ from market if early-ex premium exists)
+    euro_bs = bs_price(S, K, T, r, q, ivA, opt_type)
+
+    # 5) Heston risk-neutral calibration on same expiry (to near-ATM calls), then price with calibrated params
+    heston_px = np.nan
+    calib_loss = np.nan
+    if DO_HESTON_CALIBRATION:
+        calls_exp = calls_df[calls_df["expiration"] == exp].copy()
+        if len(calls_exp) > 0:
+            Texp = float(calls_exp["T"].iloc[0])
+            rexp = interp_rate_cont(Texp, rate_pts)
+            cal = calibrate_heston_to_calls(calls_exp, S, Texp, rexp, q)
+            if cal is not None:
+                calib_loss = float(cal["loss"])
+                # Price call via Heston; put via parity
+                h_call = heston_euro_call(S, K, T, r, q, cal["v0"], cal["kappa"], cal["theta"], cal["sigma_v"], cal["rho"])
+                if opt_type == "call":
+                    heston_px = h_call
+                else:
+                    heston_px = max(0.0, h_call - S*np.exp(-q*T) + K*np.exp(-r*T))
+
+    return {
+        "S": float(S), "K": float(K), "T": float(T), "r": float(r), "q": float(q),
+        "market": float(mkt), "market_clamped": float(mkt_clamped),
+        "lb": float(lb), "ub": float(ub),
+        "steps": float(steps),
+        "iv_american": float(ivA),
+        "CRR_American": float(amer_crr),
+        "BAW_American": float(baw) if np.isfinite(baw) else np.nan,
+        "BS_European_diag": float(euro_bs),
+        "Heston_Euro_diag": float(heston_px) if np.isfinite(heston_px) else np.nan,
+        "Heston_calib_loss": float(calib_loss) if np.isfinite(calib_loss) else np.nan,
+    }
+
+# =============================================================================
+# RUN
+# =============================================================================
+print("="*110)
+print(f"{SYMBOL} — maturity-matched rates + American IV inversion + calibrated Heston (diag)")
+print("="*110)
+
+tkr = yf.Ticker(SYMBOL)
+spot = fetch_spot(tkr)
+q = fetch_div_yield_cont(tkr, spot)
+
+rate_pts = fetch_yield_points_cont(IR_SYMBOLS)
+if not rate_pts:
+    print("WARNING: Yield points unavailable; using fallback constant rate.")
+print(f"\nSpot: {spot:.2f} | q(cont, trailing): {q:.4%}")
+print(f"Yield points (cont): " + ", ".join([f"T={k:g}y->{v:.3%}" for k,v in sorted(rate_pts.items())]))
+
+exps = tkr.options
+print(f"\nExpirations: {len(exps)}")
+
+calls_df, puts_df = load_all_options(tkr, exps)
+print(f"Usable calls: {len(calls_df):,} | Usable puts: {len(puts_df):,}")
+
+if len(calls_df) == 0 or len(puts_df) == 0:
+    raise RuntimeError("No usable options found after filters.")
+
+top_call = select_top_by_oi(calls_df, spot, "call").iloc[0]
+top_put  = select_top_by_oi(puts_df,  spot, "put").iloc[0]
+
+def print_contract(label, row):
+    print(f"\n{label}: {row.get('contractSymbol','')}")
+    print(f"  exp={row['expiration']} | T={float(row['T']):.6f}y | strike={float(row['strike']):.4f} | OI={float(row['openInterest']):,.0f} | vol={float(row.get('volume',0.0)):,.0f}")
+    print(f"  bid/ask/last={float(row.get('bid',np.nan)):.4f}/{float(row.get('ask',np.nan)):.4f}/{float(row.get('lastPrice',np.nan)):.4f} | mkt={float(row['mkt']):.4f} ({row.get('mkt_src','')})")
+
+print_contract("TOP CALL by OI", top_call)
+print_contract("TOP PUT  by OI", top_put)
+
+call_res = price_one(top_call, spot, q, rate_pts, calls_df)
+put_res  = price_one(top_put,  spot, q, rate_pts, calls_df)
+
+def print_results(label, res):
+    print("\n" + "-"*110)
+    print(label)
+    print("-"*110)
+    print(f"S={res['S']:.2f} K={res['K']:.4f} T={res['T']:.6f}y r(T)={res['r']:.4%} q={res['q']:.4%} steps={int(res['steps'])}")
+    print(f"Market={res['market']:.6f} clamped={res['market_clamped']:.6f} bounds=[{res['lb']:.6f},{res['ub']:.6f}]")
+    print(f"American IV (CRR-inverted) = {res['iv_american']:.4%}")
+    print(f"CRR American (benchmark)   = {res['CRR_American']:.6f}")
+    print(f"BAW American (diag)        = {res['BAW_American']:.6f}")
+    print(f"BS European (diag)         = {res['BS_European_diag']:.6f}")
+    if np.isfinite(res["Heston_Euro_diag"]):
+        print(f"Heston European (diag)     = {res['Heston_Euro_diag']:.6f} | calib loss={res['Heston_calib_loss']:.6e}")
+    else:
+        print("Heston European (diag)     = n/a (insufficient clean near-ATM quotes for calibration)")
+
+print_results("TOP CALL — PRICING", call_res)
+print_results("TOP PUT  — PRICING", put_res)
+
+def barplot(ax, title, res):
+    labels = ["Market", "CRR(A)", "BAW(A)", "BS(E)", "Heston(E)"]
+    vals = [res["market"], res["CRR_American"], res["BAW_American"], res["BS_European_diag"], res["Heston_Euro_diag"]]
+    cols = ["#FF4444", "#00FF00", "#00FFAA", "#00FFFF", "#FF00FF"]
+    bars = ax.bar(labels, vals, color=cols, alpha=0.85, edgecolor="white", linewidth=1.2)
+    ax.set_title(title, fontsize=12, weight="bold", pad=10)
+    ax.set_ylabel("Price ($)", fontsize=11, weight="bold")
+    ax.tick_params(axis="x", rotation=20, labelsize=9)
+    for spine in ["top","right"]:
+        ax.spines[spine].set_visible(False)
+    for b,v in zip(bars, vals):
+        if np.isfinite(v):
+            ax.text(b.get_x()+b.get_width()/2, max(v,0), f"{v:.3f}", ha="center", va="bottom",
+                    fontsize=9, color="white", weight="bold")
+
+fig, axes = plt.subplots(1, 2, figsize=(18, 5))
+fig.patch.set_facecolor("black")
+fig.text(0.5, 0.5, WATERMARK, ha="center", va="center",
+         fontsize=44, color="white", alpha=0.08, weight="bold", rotation=30,
+         transform=fig.transFigure)
+
+barplot(axes[0], f"TOP CALL | K={call_res['K']:.2f} | exp={top_call['expiration']} | IV_A={call_res['iv_american']:.1%}", call_res)
+barplot(axes[1], f"TOP PUT  | K={put_res['K']:.2f} | exp={top_put['expiration']} | IV_A={put_res['iv_american']:.1%}", put_res)
+
+plt.suptitle(f"{SYMBOL} — Maturity-matched rates + American IV inversion (CRR) + Heston calibration (diag)\nSpot={spot:.2f} | q={q:.2%}",
+             fontsize=13, weight="bold", y=1.04, color="white")
+plt.tight_layout()
+plt.show()
+
+print("\n" + "="*110)
+print("NOT FINANCIAL ADVICE. Educational purposes only.")
+print("="*110)
+</code></pre>
+
+    <h2 id="analysis">The Verdict</h2>
+
+    <p>
+      I ran this model against a live snapshot of NVDA. The results illustrate why retail traders often lose to market makers. We examined a Top Call (Strike $200) and a deep OTM Put (Strike $100).
+    </p>
+
+    <h3>The Skew is Real</h3>
+    <p>
+      The implied volatility for the call sat around <strong>38.4%</strong>. The deep OTM put, however, traded at an IV of <strong>124.6%</strong>.
+    </p>
+
+    
+
+    <p>
+      That is a massive skew. It indicates the market is pricing in significant downside risk; participants are paying a premium for crash protection. If one were to plug a single volatility number into a model for both contracts, the put would be mispriced by orders of magnitude.
+    </p>
+
+    <h3>When Models Break (The Heston Failure)</h3>
+    <p>
+      I also attempted to calibrate a Heston stochastic volatility model to this chain. It returned <code>NaN</code> (Not a Number).
+    </p>
+
+    <p>
+      I left that failure in the report because it’s important. The Heston calibration requires a dense, smooth strip of liquid options to solve for parameters like $\sigma_v$ (vol of vol) and $\kappa$ (mean reversion). If the chain is sparse or the spreads are wide, the optimization landscape becomes unstable and the solver fails. A <code>NaN</code> is preferable to a false number—it signals a need to examine the data quality.
+    </p>
+  </div>
+  
+  <div class="disclaimer">
+    <p><strong>Disclaimer:</strong> This content is for educational purposes only. I am far from an expert. It does not constitute financial advice, investment recommendations, or an offer to sell specific securities. Trading derivatives involves substantial risk.</p>
+  </div>
+</article>
+
+</body>
+</html>
