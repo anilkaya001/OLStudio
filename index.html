@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://polyfill.io" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
-  <!-- Latin Modern (webfonts) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-mono.css" />
@@ -81,7 +80,7 @@
       color: var(--silver);
       font-family: var(--font-main);
       overflow: hidden;         /* prevent body scroll */
-      overflow-x: hidden;       /* never allow horizontal scrolling */
+      overflow-x: hidden;      /* never allow horizontal scrolling */
       overscroll-behavior: none;
     }
 
@@ -190,7 +189,7 @@
     .view{
       position: fixed;
       inset: 0;
-      height: 100dvh;                 /* mobile dynamic viewport height */
+      height: 100dvh;               /* mobile dynamic viewport height */
       width: 100%;
       overflow-y: auto;
       overflow-x: hidden;
@@ -717,7 +716,23 @@
   <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <script defer>
+    /* * --- INPUT SECTION: ADD NEW ARTICLES HERE ---
+     * To add a new article:
+     * 1. Add a new object to the list below.
+     * 2. 'id': Unique identifier (e.g., "my-new-post").
+     * 3. 'file': The relative path to your HTML file (e.g., "./articles/my-file.html").
+     * 4. 'enabled': Set to true to display it.
+     */
     const ARTICLE_MANIFEST = [
+      {
+        id: "options-pricing",
+        file: "./articles/options.html",
+        category: "Financial Econometrics",
+        title: "Options Pricing",
+        date: "JAN 2026",
+        excerpt: "Deriving the Black-Scholes equation, analyzing the Greeks, and implementing numerical methods for derivative valuation.",
+        enabled: true
+      },
       {
         id: "bvar",
         file: "./articles/bvar.html",
