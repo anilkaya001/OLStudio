@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Forecasting | Anıl Kaya</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-mono.css" />
+
+  <style>
+    :root{
+      color-scheme: light dark;
+      --font-main: "Latin Modern Roman", "Times New Roman", Times, serif;
+      --font-ui: "Latin Modern Sans", "Latin Modern Roman", serif;
+      --font-mono: "Latin Modern Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+      /* Dark (default) */
+      --bg: #050505;
+      --panel: rgba(18,18,18,0.72);
+      --border: rgba(255,255,255,0.10);
+      --silver: #e2e2e2;
+      --silver-dim: rgba(226,226,226,0.70);
+      --gold: #D4AF37;
+      --gold-soft: #F7E7CE;
+      --link: var(--gold-soft);
+    }
+
+    html[data-theme="light"]{
+      color-scheme: light;
+      --bg: #fbfbfc;
+      --panel: rgba(255,255,255,0.82);
+      --border: rgba(0,0,0,0.10);
+      --silver: #1b1b1c;
+      --silver-dim: rgba(27,27,28,0.72);
+      --gold: #B88A00;
+      --gold-soft: #7A5A00;
+      --link: #7A5A00;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--silver);
+      font-family: var(--font-main);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    .article {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 20px 100px;
+    }
+
+    .article-header {
+      padding-bottom: 22px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .meta {
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--silver-dim);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .meta .pill {
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 999px;
+      color: var(--gold);
+      background: rgba(125,125,125,0.05);
+    }
+
+    .article h1 {
+      font-family: var(--font-main);
+      font-weight: 400;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      color: var(--gold-soft);
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    .content {
+      font-size: 1.15rem;
+      line-height: 1.75;
+      text-align: justify;
+    }
+
+    .content p {
+      margin-bottom: 1.6rem;
+      color: color-mix(in oklab, var(--silver) 90%, transparent);
+    }
+
+    .content h2 {
+      margin: 2.5rem 0 1rem;
+      font-size: 1.8rem;
+      font-weight: 500;
+      color: var(--gold-soft);
+      border-bottom: 1px solid color-mix(in oklab, var(--gold) 20%, transparent);
+      padding-bottom: 5px;
+    }
+
+    .content h3 {
+      margin: 2rem 0 0.8rem;
+      font-size: 1.4rem;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--silver);
+    }
+
+    .content ul {
+      margin-bottom: 1.6rem;
+      padding-left: 1.4rem;
+      color: var(--silver-dim);
+    }
+
+    .content li { margin-bottom: 0.5rem; }
+
+    .content pre {
+      background: rgba(20,20,20,0.5);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      margin: 2rem 0;
+    }
+
+    .content code {
+      font-family: var(--font-mono);
+      color: var(--gold-soft);
+      background: rgba(255,255,255,0.03);
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .content pre code {
+      background: transparent;
+      padding: 0;
+      color: var(--silver-dim);
+    }
+
+    a { color: var(--link); text-decoration: none; border-bottom: 1px dotted color-mix(in oklab, var(--link) 55%, transparent); }
+    a:hover { border-bottom-style: solid; }
+
+    .mjx-chtml { outline: 0 !important; }
+
+    .callout {
+      border: 1px solid var(--border);
+      background: rgba(125,125,125,0.05);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 1.8rem 0;
+      color: var(--silver-dim);
+      font-family: var(--font-ui);
+      font-size: 0.98rem;
+      line-height: 1.55;
+    }
+
+    .disclaimer {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      color: var(--silver-dim);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+      padding-top: 20px;
+      opacity: 0.85;
+    }
+
+    .refs {
+      border-top: 1px solid var(--border);
+      margin-top: 2.4rem;
+      padding-top: 1.4rem;
+      color: var(--silver-dim);
+      font-size: 0.98rem;
+    }
+    .refs ol { margin: 0.6rem 0 0; padding-left: 1.2rem; }
+    .refs li { margin: 0.55rem 0; }
+  </style>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true
+      },
+      chtml: { displayAlign: 'center' }
+    };
+  </script>
+  <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+<article class="article">
+  <header class="article-header">
+    <div class="meta">
+      <span class="pill">Forecasting</span>
+      <span>JAN 2026</span>
+      <span>•</span>
+      <span id="readtime">18 min read</span>
+    </div>
+    <h1>Why "Machine Learning for Time Series Forecasting" Is (Usually) Useless</h1>
+  </header>
+
+  <div class="content" id="article-content">
+
+    <p>
+      "Useless" is an intentionally provocative I used, sorry. The more precise claim is this:
+      for the majority of forecasting tasks encountered in business and applied research,
+      adding machine learning (ML) on top of strong statistical baselines (often) yields
+      little marginal accuracy, while increasing implementation risk, evaluation risk, and operational complexity.
+      This is repeatedly visible in large-scale empirical work and forecasting competitions,
+      where simple or hybrid statistical approaches remain difficult to beat on typical univariate series,
+      especially when the data depth-history is short, the signal-to-noise ratio is low, and the environment drifts over time.
+    </p>
+
+    <div class="callout">
+     Neither am I nor this essay is not anti-ML. I love ML,  I think it serves as one of the few concrete innovations that is fun to learn applied. I am just pro-measurement. When ML helps, it helps for identifiable reasons:
+      more data per series (or many related series), meaningful exogenous structure, stable regimes, and careful evaluation.
+      When those conditions are absent, a well-tuned baseline (ETS/ARIMA/Theta/naïve seasonals) is frequently the correct answer.
+    </div>
+
+    <h2 id="the-empirical-problem">1) The parsimony is stubbornly competitive</h2>
+
+    <p>
+      Much of the modern excitement around ML forecasting is motivated by demonstrations on curated benchmarks.
+      That enthusiasm often weakens when models are evaluated across heterogeneous, real-world series and horizons.
+      As a starter, a large empirical comparison by Makridakis, Spiliotis, and Assimakopoulos found that
+      classical statistical methods generally outperformed the ML methods evaluated across multiple horizons,
+      while being far more computationally efficient.<sup>[1]</sup>
+    </p>
+
+    <p>
+      Competition evidence also hones in on the same. The M4 competition (100,000 series across multiple frequencies)
+      reported that the most accurate entries were largely combinations of methods, and that "hybrids" and ensembles
+      were the most reliable path to improvement, rather than single sophisticated models.<sup>[2]</sup>
+      In other words, the winning recipe was not "one big model," but "many reasonable models combined. (We take a quick U-turn here but I'll lay it off :))"
+    </p>
+
+    <p>
+      Notable exception is also instructive. The M5 competition (hierarchical retail demand with many related series)
+      showed that ML-heavy solutions can outperform strong statistical benchmarks when the dataset is large, structured,
+      and cross-sectional information can be exploited effectively.<sup>[3]</sup> That is not a contradiction; it is a boundary condition and it is very important to note that real life deployment of common ML examples are out of reach in that matter.
+    </p>
+
+    <h2 id="paradigm-mismatch">2) ML is trained for interpolation, forecasting via extrapolation</h2>
+
+    <p>
+      The deepest reason ML often fails at time series forecasting is not a matter of tuning or architecture, actually it is an epistemological mismatch between what ML is designed to do and what point forecasting requires. I believe strongly this deserves careful examination.
+    </p>
+
+    <h3 id="iid-assumption">2.1 The i.i.d. fiction and its consequences</h3>
+
+    <p>
+      Modern ML is built on a foundational assumption that is almost never stated explicitly in applied work: that training and test samples are drawn independently and identically from a fixed, time-invariant distribution $\mathcal{D}$. The theoretical guarantees (generalization bounds, convergence proofs, PAC-learning results rest on this scaffold.<sup>[8]</sup> When you shuffle data, split into train/test, and compute validation loss, you are indeed invoking this assumption.
+    </p>
+
+    <p>
+      Time series data violate this assumption at every turn. Observations at time $t$ depend on observations at $t-1, t-2, \ldots$; the joint distribution $P(y_1, y_2, \ldots, y_T)$ does not factor into independent marginals. More critically, the marginal distribution $P(y_t)$ and the conditional $P(y_{t+h} | y_t, \ldots)$ are themselves functions of $t$. This is precisely what non-stationarity means: the data-generating process (DGP) is not fixed; it evolves.
+    </p>
+
+    <p>
+      This matters because ML's empirical risk minimization (ERM) assumes that minimizing loss on training data yields low loss on test data, provided both are drawn from $\mathcal{D}$. Formally:
+    </p>
+
+    $$\hat{f} = \arg\min_f \frac{1}{n}\sum_{i=1}^{n} \mathcal{L}(f(x_i), y_i) \quad \xrightarrow{\text{i.i.d.}} \quad \mathbb{E}_{(x,y)\sim\mathcal{D}}[\mathcal{L}(f(x), y)]$$
+
+    <p>
+      But in forecasting, the test distribution $\mathcal{D}_{t+h}$ is <em>different</em> from the training distribution $\mathcal{D}_{1:t}$. The arrow above does not hold. You are not estimating the same quantity. The training loss tells you about the past, where the forecast error involves a future that may obey different rules.
+    </p>
+
+    <h3 id="extrapolation-problem">2.2 Interpolation versus extrapolation of failure</h3>
+
+    <p>
+      ML excels at interpolation (predicting outputs for inputs that lie within the convex hull of the training data). Neural networks, gradient boosting, random forests are remarkably good at carving up the input space and assigning outputs to regions they have seen. But point forecasting is fundamentally an extrapolation task. You are asked to predict $y_{t+h}$ given information up to $t$, where by construction, the future state $(t+h)$ has never been observed.
+    </p>
+
+    <p>
+      Consider the input space for a time series model: lagged values, rolling statistics, calendar features. At forecast time, feature vector $\mathbf{x}_{t+h|t}$ may contain values or combinations the model has never encountered. A new regime, a structural break, a shock any of these can push the input into a region where the learned function $\hat{f}$ has no reliable guidance. The model must extrapolate, and neural networks in particular are notoriously unreliable extrapolators.<sup>[9]</sup>
+    </p>
+
+    <p>
+      This is not a failure of implementation. It is a geometric fact about high-dimensional function approximation. The curse of dimensionality ensures that the "seen" region of input space becomes vanishingly small as dimension increases. Almost every forecast is, in some sense, an extrapolation.
+    </p>
+
+    <div class="callout">
+      <strong>Hazards of extrapolation trap:</strong> A neural network trained on 2010–2019 data learns the manifold of those years. Great. When asked to forecast 2020, it encounters a point that lies outside that manifold— say COVID arrives. The network's output is not a principled extrapolation; it is a wild guess dressed in confidence. Classical methods fail too, but their failures are often more interpretable and bounded.
+    </div>
+
+    <h3 id="concept-drift">2.3 Concept drift: when the target itself is non-stationary</h3>
+
+    <p>
+      In supervised learning, we typically assume the relationship $P(y|x)$ is fixed. In time series, this assumption is often violated in a particularly cynica way: the conditional distribution itself drifts over time. This is known as <em>concept drift</em>.<sup>[10]</sup>
+    </p>
+
+    <p>
+      Formally, even if we could somehow guarantee that $P(x_t)$ were stable (covariate stationarity), the conditional $P(y_{t+h}|x_t)$ may shift due to changes in the underlying causal mechanism. Price elasticity changes when a competitor enters. Consumer behavior shifts after a policy change. The rule you learned yesterday does not govern tomorrow.
+    </p>
+
+    <p>
+      ML models are particularly vulnerable here because they are optimized to memorize the training-time conditional. When that conditional drifts, the model's predictions degrade (periliously often silently, because the model reports the same confidence). This is a form of silent model decay that is endemic to deployed ML forecasters.<sup>[11]</sup>
+    </p>
+
+    <h3 id="loss-landscape">2.4 The loss function you optimize is not the loss function you care about</h3>
+
+    <p>
+      Consider what happens during ML training. The optimizer minimizes some loss $\mathcal{L}$ over the training set (typically MSE or cross-entropy) evaluated on past data. But the quantity you care about is forecast accuracy on <em>future</em> data, under a potentially different DGP, evaluated at specific decision-relevant horizons.
+    </p>
+
+    <p>
+      These are not the same optimization targets. The training loss is a historical summary. The deployment loss is a forward-looking expectation over an unknown distribution. The gap between them is not just variance; it is the systematic bias that grows with the distance between training conditions and deployment conditions.
+    </p>
+
+    <p>
+      To make this concrete: a model that perfectly fits the 2015–2019 training window may exhibit catastrophically high loss in 2020–2021, not because of insufficient capacity, but because the loss landscape it optimized over is a mirage that evaporated when the regime changed. Overfitting to the past is not a hyperparameter problem; rather it is an ontological mismatch.
+    </p>
+
+    <h3 id="temporal-leakage">2.5 Temporal leakage in the optimization process</h3>
+
+    <p>
+      Standard ML training pipelines introduce subtle forms of temporal leakage that inflate apparent performance. Consider:
+    </p>
+
+    <ul>
+      <li><strong>Normalization leakage:</strong> Computing z-scores or min-max scaling over the entire dataset (including future observations) embeds future information into past features.</li>
+      <li><strong>Feature engineering leakage:</strong> Rolling statistics computed without strict respect for temporal ordering can look ahead.</li>
+      <li><strong>Model selection leakage:</strong> Choosing hyperparameters based on a validation set that includes future data biases the selection toward models that overfit forward.</li>
+      <li><strong>Target leakage:</strong> Using contemporaneous covariates that are not available at forecast time (a common mistake with leading indicators).</li>
+    </ul>
+
+    <p>
+      These leakages are often invisible in notebooks but devastating in production. The model appears to have skill that vanishes when deployed on genuinely out-of-sample data. This is not a bug in ML per se—it is a consequence of applying ML's standard idioms to a domain where those idioms are invalid.<sup>[7]</sup>
+    </p>
+
+    <h3 id="uncertainty-calibration">2.6 Uncertainty quantification under distribution shift</h3>
+
+    <p>
+      A well-calibrated probabilistic forecast should have the property that, say, 80% of realized values fall within the 80% prediction interval. ML models (especially deep learning) are notoriously miscalibrated, tending toward overconfidence.<sup>[12]</sup> This problem is exacerbated under distribution shift.
+    </p>
+
+    <p>
+      The uncertainty estimates produced by most ML models are conditional on the training distribution. When the test distribution differs, these estimates become meaningless. A model might report 95% confidence in a forecast that is systematically biased, because its uncertainty model was trained on a world that no longer exists.
+    </p>
+
+    <p>
+      Classical statistical methods have a different relationship with uncertainty. ETS and ARIMA models produce prediction intervals based on explicit assumptions about error structure. When those assumptions are violated, the intervals are wrong—but the violation is often detectable (residual diagnostics, parameter instability tests). ML uncertainty is typically a black box, and its failure modes are silent.
+    </p>
+
+    <h2 id="why-ml-adds-little">3) Why ML often adds little: the economics of signal</h2>
+
+    <p>
+      Most operational time series are short, noisy, and non-stationary. Under these conditions,
+      forecast error is dominated by irreducible uncertainty and regime changes, not by function approximation limitations.
+      A useful mental model is that forecast error decomposes into a reducible component (learnable structure)
+      and an irreducible component (shocks, measurement error, structural breaks):
+    </p>
+
+    $$\mathbb{E}[(y_{t+h}-\hat y_{t+h})^2] \;=\; \underbrace{\text{reducible error}}_{\text{model/estimation}} \;+\; \underbrace{\text{irreducible error}}_{\text{noise / shocks / breaks}}.$$
+
+    <p>
+      ML tends to help when the reducible component is large and stable.
+      In many business settings, the opposite is true: promotions change, catalog mixes rotate, supply constraints appear,
+      policy shifts happen, and definitions drift. The model's sophistication cannot compensate for a target that keeps moving.
+      In these environments, simple methods are not "simple because we are lazy," but "simple because complexity is fragile."
+    </p>
+
+    <h3 id="small-sample">3.1 Small samples and horizon mismatch</h3>
+
+    <p>
+      Many practitioners train models for one-step-ahead prediction (because it is easier),
+      then deploy them for multi-step decisions (because that is what the business needs).
+      This mismatch is common and damaging. Rolling-origin evaluation and horizon-specific scoring are the correct remedy,
+      and they often reveal that incremental ML gains disappear when you score the horizons that matter.<sup>[4]</sup>
+    </p>
+
+    <p>
+      There is also a straightforward sample size issue: in univariate forecasting, the effective number of independent observations
+      is much smaller than the row count suggests, due to serial dependence. This is one reason naive or exponential smoothing variants
+      are hard to beat when you only have a few seasonal cycles.
+    </p>
+
+    <h3 id="cross-sectional">3.2 ML shines when it borrows strength across many related series</h3>
+
+    <p>
+      A fair summary is: ML for <em>one</em> time series is often overkill; ML for <em>many</em> related time series can be valuable.
+      This distinction is formalized in work showing that the apparent underperformance of ML can be largely a small-sample artifact,
+      and that "size matters" for learning-based approaches.<sup>[5]</sup>
+      M5 fits this profile: huge cross-sectional structure, stable covariates, and a problem definition aligned with modern ML toolchains.<sup>[3]</sup>
+    </p>
+
+    <h2 id="stationarity-paradox">4) The stationarity paradox: training on quicksand</h2>
+
+    <p>
+      Here is a paradox that deserves explicit attention. ML training requires enough data to learn the patterns. But "enough data" in time series often means spanning multiple regimes. And spanning multiple regimes means the model is trained on a mixture of DGPs, none of which may be active at forecast time.
+    </p>
+
+    <p>
+      Consider a retail demand series with 5 years of history. Those 5 years include seasonality shifts (COVID changed holiday patterns), promotional strategy changes, competitive entry and exit, and macroeconomic variation. An ML model trained on this data learns an average over all these regimes, is a statistical monster that represents no actual state of the world.
+    </p>
+
+    <p>
+      The alternative (training only on recent data) reduces this regime mixing but leaves you with a small sample, high variance, and susceptibility to recency bias. This is a no-win situation that is intrinsic to non-stationary forecasting. The problem is not that we haven't found the right architecture; the problem is that the ground keeps shifting.
+    </p>
+
+    <div class="callout">
+      <strong>The regime mixing fallacy:</strong> Training on 2015–2023 data to forecast 2024 assumes that the patterns of 2015–2023, weighted by their sample frequencies, are informative for 2024. But if 2024's regime is novel, this assumption is false. The model has memorized the museum, but the future is not in the museum.
+    </p>
+    </div>
+
+    <h3 id="adaptivity-failure">4.1 Gradient-based learning cannot track non-stationary targets</h3>
+
+    <p>
+      Neural networks learn by gradient descent on a fixed dataset. Once trained, the model's parameters are frozen (or updated only via expensive retraining). But non-stationary time series require a model that adapts continuously to new information. There is a fundamental mismatch between the batch-learning paradigm and the online nature of real-world forecasting.
+    </p>
+
+    <p>
+      Contrast this with exponential smoothing, which is inherently adaptive. Each new observation updates the state (level, trend, seasonality) via a weighted combination that downweights the past. The model "forgets" old regimes naturally, by design. This is not a limitation; it is appropriate for a world where the past is an unreliable guide to the future.
+    </p>
+
+    <p>
+      Online learning variants of ML exist, but they are rarely used in practice—they complicate deployment, introduce stability issues, and require careful tuning of learning rates that balance adaptivity against noise-chasing. The default ML workflow is batch retraining at fixed intervals, which is always either too slow (missing regime changes) or too fast (overfitting to noise).
+    </p>
+
+    <h2 id="evaluation">5) Forecast evaluation is where most ML projects fail</h2>
+
+    <p>
+      The most common reason ML looks impressive is not that it is intrinsically superior, but that it is evaluated incorrectly.
+      Forecasting is adversarial to standard ML validation habits: random shuffles create leakage,
+      and "K-fold CV" can be invalid for dependent data unless carefully designed that I do not know any but cannot rule it out.
+      The forecasting literature has long emphasized rolling-origin evaluation, and has shown precisely why naive CV can break in time series contexts.<sup>[6]</sup>
+    </p>
+
+    <p>
+      This is not a pedantic complaint. If your evaluation is optimistic by even a small amount,
+      you will choose overly complex models and overfit operational decisions. The result is a system that looks strong in notebooks,
+      and weak in production.
+    </p>
+
+    <div class="callout">
+      A practical rule: if your backtest does not mimic the production update cycle (data availability, refit cadence, horizon, and revisions),
+      it is not a backtest. It is a story.
+    </div>
+
+    <p>
+      Recent applied surveys aimed at data scientists catalog these pitfalls clearly (leakage through preprocessing,
+      inappropriate splitting, unstable metrics, and over-tuning to a benchmark dataset).<sup>[7]</sup>
+    </p>
+
+    <h2 id="what-works">6) What usually works better than ML</h2>
+
+    <p>
+      If the objective is accuracy per unit complexity (and, frankly, sanity), the strongest first-line approach is:
+      (i) a high-quality baseline, (ii) careful evaluation, (iii) simple ensembling, and (iv) domain-driven covariates where justified.
+      This aligns with what competitions repeatedly show: combinations and robust baselines dominate across diverse series.<sup>[2]</sup>
+    </p>
+
+    <p>
+      In concrete terms, many problems are solved by a small set of tools:
+    </p>
+
+    <ul>
+      <li><strong>Seasonal naïve</strong> and <strong>drift</strong> benchmarks (as audit anchors).</li>
+      <li><strong>ETS</strong> (exponential smoothing) for stable trend/seasonality with probabilistic intervals.</li>
+      <li><strong>ARIMA/ARIMAX</strong> when autocorrelation and differencing structure is material.</li>
+      <li><strong>Theta / combination</strong> approaches, which are surprisingly robust in practice.<sup>[2]</sup></li>
+      <li><strong>Simple ensembles</strong> that reduce model risk and hedge specification error.</li>
+    </ul>
+
+    <p>
+      The common thread: these methods have explicit, interpretable assumptions about the structure of the series. When those assumptions are violated, the failure is often visible (residual patterns, parameter drift). ML's assumptions are implicit in the architecture and invisible in the outputs, making failure detection harder.
+    </p>
+
+    <h2 id="when-ml-helps">7) When ML is not useless</h2>
+
+    <p>
+      ML becomes rational when you can write down a defensible "why now" for learning:
+      many related series, meaningful exogenous signals, stable data-generating mechanisms, and a disciplined evaluation loop.
+      In other words, use ML when the problem is closer to supervised learning than to "guess the future from one noisy line."
+      M5-like settings (hierarchies, covariates, large panels) are the canonical example.<sup>[3]</sup>
+    </p>
+
+    <p>
+      Specifically, consider ML when:
+    </p>
+
+    <ul>
+      <li><strong>Cross-sectional scale:</strong> Thousands of related series where global patterns can be learned and transferred.</li>
+      <li><strong>Rich covariates:</strong> Genuine predictive features (weather, promotions, events) that are available at forecast time.</li>
+      <li><strong>Regime stability:</strong> The DGP is approximately stationary over the relevant training window.</li>
+      <li><strong>Disciplined evaluation:</strong> Proper temporal splitting, rolling-origin backtests, and production-mimicking validation.</li>
+      <li><strong>Decision tolerance:</strong> The downstream decision is robust to the specific failure modes of ML (overconfidence, silent degradation).</li>
+    </ul>
+
+    <p>
+      Even then, the goal should not be to replace forecasting discipline with architecture searching.
+      It should be to integrate ML as one component in a measured pipeline.
+      The best forecasting practice is usually boring, and that is a feature.
+    </p>
+
+    <h2 id="implementation">Implementation sketch: a baseline-first workflow</h2>
+
+    <p>
+      A minimal process that is difficult to fool yourself with:
+      use rolling-origin evaluation, set benchmark floors, and only allow complexity if it earns its keep.
+    </p>
+
+    <pre><code class="language-python"># Pseudocode sketch (baseline-first):
+# 1) Define horizons and production-like cutoffs
+cutoffs = rolling_origins(y, min_train=3*season, step=1, horizon=H)
+
+# 2) Fit baselines and score honestly
+scores = {}
+for model in ["seasonal_naive", "ets", "arima", "theta", "ensemble_simple"]:
+    scores[model] = backtest(y, model, cutoffs, metric="MASE")  # rolling-origin
+
+# 3) Only then consider ML, under the same protocol
+scores["ml_model"] = backtest(y, "ml_model", cutoffs, metric="MASE")
+
+# 4) Deploy the simplest model within an agreed accuracy tolerance band
+deploy = argmin_under_constraints(scores, constraints={"latency": "...", "maintainability": "..."})</code></pre>
+
+    <h2 id="verdict">The verdict</h2>
+
+    <p>
+      The fundamental problem is not that ML is bad at pattern recognition—it is exceptional at that. The problem is that point forecasting asks a question ML is not designed to answer: "What will happen in a future that may be structurally different from the past?"
+    </p>
+
+    <p>
+      ML's training paradigm assumes the future is a random sample from the same distribution as the past. Time series reality is that the future is often a sample from a different distribution entirely. This is not a bug to be fixed with more data or better architectures; it is a fundamental mismatch between the tool and the task.
+    </p>
+
+    <p>
+      If your series are few, short, noisy, and subject to frequent structural breaks, ML for forecasting is usually unnecessary.
+      You can often achieve comparable or better accuracy with robust statistical baselines and simple combinations,
+      while reducing the risk of silent leakage, unstable tuning, and operational fragility.<sup>[1]</sup><sup>[2]</sup>
+    </p>
+
+    <p>
+      If your setting looks like M5 (you are most probably not going to come across that depth of an access unless you pay a lot for that quality of datum) (large panels, consistent covariates, hierarchical constraints),
+      then ML is not only defensible; it can be the best tool available.<sup>[3]</sup>
+      Okay, its been fun to emit so many things, to sum, the practical lesson is not "never use ML," but "treat forecasting as an empirical science:
+      earn complexity with verified gains, not with hope."
+    </p>
+
+    <div class="refs">
+      <p><strong>References</strong></p>
+      <ol>
+        <li>
+          Makridakis, Spiliotis, Assimakopoulos (2018). "Statistical and Machine Learning forecasting methods: Concerns and ways forward."
+          <em>PLOS ONE</em>.
+          <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0194889" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Makridakis et al. (2018). "The M4 Competition: Results, findings, conclusion and way forward."
+          <em>International Journal of Forecasting</em>.
+          <a href="https://www.sciencedirect.com/science/article/abs/pii/S0169207018300785" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Makridakis et al. (2022). "M5 accuracy competition: Results, findings, and conclusions."
+          <em>International Journal of Forecasting</em>.
+          <a href="https://www.sciencedirect.com/science/article/pii/S0169207021001874" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Hyndman (2016). "Cross-validation for time series."
+          <a href="https://robjhyndman.com/hyndsight/tscv/" target="_blank" rel="noopener">link</a>
+          (See also <em>Forecasting: Principles and Practice</em>, time series CV chapter:
+          <a href="https://otexts.com/fpp3/tscv.html" target="_blank" rel="noopener">link</a>)
+        </li>
+        <li>
+          "Machine Learning vs Statistical Methods for Time Series Forecasting: Size Matters" (2019).
+          <a href="https://www.researchgate.net/publication/336146790_Machine_Learning_vs_Statistical_Methods_for_Time_Series_Forecasting_Size_Matters" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Bergmeir, Hyndman, Koo (2018). "A note on the validity of cross-validation for evaluating autoregressive time series prediction."
+          <em>Computational Statistics &amp; Data Analysis</em>.
+          <a href="https://www.sciencedirect.com/science/article/abs/pii/S0167947317302384" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Hewamalage et al. (2022). "Forecast evaluation for data scientists: common pitfalls and best practices."
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9718476/" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Shalev-Shwartz & Ben-David (2014). "Understanding Machine Learning: From Theory to Algorithms."
+          Cambridge University Press. (Foundational treatment of i.i.d. assumptions in learning theory.)
+        </li>
+        <li>
+          Xu et al. (2020). "Neural Networks Fail to Learn Periodic Functions and How to Fix It."
+          <em>NeurIPS</em>.
+          <a href="https://arxiv.org/abs/2006.08195" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Gama et al. (2014). "A Survey on Concept Drift Adaptation."
+          <em>ACM Computing Surveys</em>.
+          <a href="https://dl.acm.org/doi/10.1145/2523813" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Sculley et al. (2015). "Hidden Technical Debt in Machine Learning Systems."
+          <em>NeurIPS</em>.
+          <a href="https://papers.nips.cc/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Guo et al. (2017). "On Calibration of Modern Neural Networks."
+          <em>ICML</em>.
+          <a href="https://arxiv.org/abs/1706.04599" target="_blank" rel="noopener">link</a>
+        </li>
+      </ol>
+    </div>
+
+  </div>
+
+  <div class="disclaimer">
+    <p><strong>Disclaimer:</strong> This content is for educational purposes only. It is an opinionated synthesis of published empirical findings and common evaluation pitfalls. It does not constitute professional advice, and it should not be treated as a substitute for careful experimentation in your own domain.</p>
+  </div>
+</article>
+</body>
+</html>
