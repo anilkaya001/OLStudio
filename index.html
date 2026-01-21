@@ -1097,6 +1097,8 @@
           let h = window.innerHeight;
           if (!w || !h) { w = 1024; h = 768; }
 
+          const isMobile = w < 800; // Mobile detection breakpoint
+
           const aspect = w / h;
           const dist = 220; 
           const vH = 2 * dist * Math.tan((52 * Math.PI / 180) / 2); // approx 215
@@ -1112,8 +1114,8 @@
           const finalScale = Math.max(scale, 0.22);
 
           // Orbit ring radii in world units - X-Y plane now
-          // Reduced base from 200 to 155 to pull closer to center
-          const orbitRadius = 155 * finalScale; 
+          // Reduced base from 155 to 140 to pull closer to center
+          const orbitRadius = 140 * finalScale; 
           const orbitA = orbitRadius;      // x radius
           const orbitB = orbitRadius;      // y radius (Circular)
 
@@ -1122,13 +1124,18 @@
           // Update visual orbit line y position (centered)
           orbitLines.children.forEach(c => c.position.y = 0);
 
+          // Mobile-specific sizing multipliers
+          // Boost element size on mobile relative to orbit
+          const planetBaseRadius = isMobile ? 35 : 25; 
+          const labelScaleMult = isMobile ? 1.5 : 1.0; 
+
           // Place planets at evenly spaced angles with jitter
           const n = ARTICLES.length;
           for (let i=0;i<n;i++){
             const art = ARTICLES[i];
             const st = STYLES[i % STYLES.length];
-            // Increased planet radius from 16 to 25
-            const radius = 25 * finalScale; 
+            
+            const radius = planetBaseRadius * finalScale; 
 
             const geo = new THREE.SphereGeometry(radius, 64, 64);
             const mat = planetMaterial(st);
@@ -1140,9 +1147,11 @@
               new THREE.SphereGeometry(radius*1.06, 64, 64),
               atmosphereMaterial(st.at)
             );
+            atmo.userData.article = art; // Make atmosphere clickable
 
             const label = labelSprite(art.title);
-            label.scale.multiplyScalar(finalScale); // Scale label to match world scale
+            label.scale.multiplyScalar(finalScale * labelScaleMult); // Scale label to match world scale + mobile boost
+            label.userData.article = art; // Make label clickable
 
             // Orbit params
             // Phase shift added to avoid vertical alignment overlap
@@ -1155,7 +1164,8 @@
               rMod: 0,
               orbitA, orbitB, orbitY: 0,
               hoverPull: 0,
-              scale: finalScale
+              scale: finalScale,
+              labelScaleMult // Store for dynamic update
             });
 
             planets.add(mesh);
@@ -1183,8 +1193,10 @@
           p.atmo.position.copy(p.mesh.position);
 
           p.label.position.copy(p.mesh.position);
-          // Push label down further to avoid overlap (adjusted for larger planets)
-          p.label.position.y -= (p.radius + 45 * p.scale); 
+          // Push label down further to avoid overlap (adjusted for larger planets and labels)
+          // We need more clearance if label is scaled up
+          const offset = (p.radius + 45 * p.scale * p.labelScaleMult); 
+          p.label.position.y -= offset; 
           p.label.quaternion.copy(camera.quaternion);
         }
 
