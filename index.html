@@ -3,1298 +3,1303 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-  <meta name="description" content="Econometric research and independent analysis by Anıl Kaya, specializing in Bayesian Vector Autoregression, time series, and macroeconomic modeling." />
   <meta name="theme-color" content="#050505" />
-  <title>Anıl Kaya | Econometric Insights</title>
+  <title>Anıl Kaya</title>
 
-  <link rel="preconnect" href="https://polyfill.io" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-mono.css" />
+
+  <!-- KaTeX for equation rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
 
   <style>
     :root{
-      color-scheme: light dark;
+      color-scheme: dark;
+      --font-main: "Latin Modern Roman","Times New Roman",Times,serif;
+      --font-ui: "Latin Modern Sans","Latin Modern Roman",serif;
 
-      --font-main: "Latin Modern Roman", "Times New Roman", Times, serif;
-      --font-ui: "Latin Modern Sans", "Latin Modern Roman", serif;
-      --font-mono: "Latin Modern Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-
-      --nav-h: 64px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --nav-h: 64px;
 
-      /* Dark (default) */
       --bg: #050505;
-      --panel: rgba(18,18,18,0.72);
-      --panel-strong: rgba(10,10,10,0.92);
+      --panel: rgba(18,18,18,0.62);
+      --panel-strong: rgba(10,10,10,0.86);
       --border: rgba(255,255,255,0.10);
 
-      --silver: #e2e2e2;
-      --silver-dim: rgba(226,226,226,0.70);
+      --silver: #e8e8ea;
+      --silver-dim: rgba(232,232,234,0.72);
 
       --gold: #D4AF37;
       --gold-soft: #F7E7CE;
-
-      --link: var(--gold-soft);
-      --shadow: 0 18px 50px -18px rgba(0,0,0,0.75);
-
-      /* Canvas */
-      --canvas-bg: #050505;
-      --canvas-ink: rgba(212,175,55,0.46);
-      --canvas-ink-soft: rgba(212,175,55,0.18);
-      --canvas-stroke: rgba(0,0,0,0.55);
-      --canvas-glow: rgba(212,175,55,0.34);
     }
 
-    html[data-theme="light"]{
-      color-scheme: light;
-
-      --bg: #fbfbfc;
-      --panel: rgba(255,255,255,0.82);
-      --panel-strong: rgba(255,255,255,0.94);
-      --border: rgba(0,0,0,0.10);
-
-      --silver: #1b1b1c;
-      --silver-dim: rgba(27,27,28,0.72);
-
-      --gold: #B88A00;
-      --gold-soft: #7A5A00;
-
-      --link: #7A5A00;
-      --shadow: 0 18px 55px -25px rgba(0,0,0,0.22);
-
-      --canvas-bg: #fbfbfc;
-      --canvas-ink: rgba(184,138,0,0.26);
-      --canvas-ink-soft: rgba(184,138,0,0.10);
-      --canvas-stroke: rgba(255,255,255,0.70);
-      --canvas-glow: rgba(184,138,0,0.12);
-    }
-
-    *{ margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing: antialiased; }
     html, body{ height:100%; }
     body{
+      margin:0;
       background: var(--bg);
       color: var(--silver);
       font-family: var(--font-main);
-      overflow: hidden;         /* prevent body scroll */
-      overflow-x: hidden;      /* never allow horizontal scrolling */
+      overflow: hidden; /* full-page unscrollable */
       overscroll-behavior: none;
+      -webkit-font-smoothing: antialiased;
     }
-
-    a{ color: var(--link); text-decoration: none; }
-    a:hover{ opacity: 0.88; }
-
+    *{ box-sizing: border-box; }
+    a{ color: var(--gold-soft); text-decoration: none; }
+    a:hover{ opacity: 0.9; }
     :focus-visible{
       outline: 2px solid color-mix(in oklab, var(--gold) 65%, #fff);
       outline-offset: 3px;
-      border-radius: 12px;
+      border-radius: 14px;
     }
 
-    .hidden{ display:none !important; pointer-events:none; opacity:0; }
-
-    /* Background canvas */
-    #econometric-canvas{
+    /* NAV */
+    #nav{
       position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    /* Nav */
-    #global-nav{
-      position: fixed;
-      top: 0; left: 0; right: 0;
+      top:0; left:0; right:0;
       height: calc(var(--nav-h) + var(--safe-top));
       padding-top: var(--safe-top);
-      padding-left: clamp(14px, 4vw, 40px);
-      padding-right: clamp(14px, 4vw, 40px);
+      padding-left: clamp(14px, 4vw, 44px);
+      padding-right: clamp(14px, 4vw, 44px);
       display:flex;
       align-items:center;
       justify-content:space-between;
       z-index: 1000;
-      background: rgba(0,0,0,0.01);
-      transition: background 240ms ease, backdrop-filter 240ms ease, border-color 240ms ease;
-    }
-    #global-nav.scrolled{
-      background: var(--panel-strong);
-      backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.11), rgba(0,0,0,0.0) 60%),
+        linear-gradient(135deg, rgba(10,10,10,0.80), rgba(18,18,18,0.58));
+      backdrop-filter: blur(18px);
     }
-
-    .brand{
+    #brand{
       font-family: var(--font-ui);
       font-size: 0.92rem;
-      font-weight: 700;
+      font-weight: 900;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--gold);
-      cursor: pointer;
-      user-select: none;
+      color: color-mix(in oklab, var(--gold) 70%, var(--silver));
+      user-select:none;
       white-space: nowrap;
+      cursor: pointer;
     }
-
-    .nav-actions{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-    }
-
-    .nav-btn{
+    #actions{ display:flex; align-items:center; gap:10px; }
+    .btn{
       font-family: var(--font-ui);
       font-size: 0.82rem;
       letter-spacing: 1.2px;
       text-transform: uppercase;
       padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: var(--panel);
+      border-radius: 14px;
+      border: 1px solid rgba(212,175,55,0.25);
+      background: linear-gradient(135deg, rgba(18,18,18,0.58), rgba(18,18,18,0.34));
       color: var(--silver);
       cursor: pointer;
-      backdrop-filter: blur(12px);
-      transition: transform 160ms ease, border-color 200ms ease, background 200ms ease;
-      white-space: nowrap;
+      backdrop-filter: blur(14px);
+      transition: all 0.3s ease;
     }
-    .nav-btn:hover{
-      transform: translateY(-1px);
-      border-color: color-mix(in oklab, var(--gold) 45%, var(--border));
-    }
-    .nav-link-btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap: 8px;
-      text-decoration: none;
+    .btn:hover {
+      background: rgba(212,175,55,0.15);
+      border-color: rgba(212,175,55,0.5);
     }
 
-    /* Reading progress */
-    #reading-progress{
-      position: fixed;
-      top: calc(var(--nav-h) + var(--safe-top));
-      left: 0;
-      height: 2px;
-      width: 0%;
-      z-index: 1001;
-      opacity: 0;
-      background: linear-gradient(90deg, var(--gold), color-mix(in oklab, var(--gold) 35%, #fff));
-      box-shadow: 0 0 12px color-mix(in oklab, var(--gold) 55%, transparent);
-      transition: opacity 220ms ease, width 80ms linear;
-    }
-
-    /* Views: fixed, scrollable, constrained to viewport */
-    .view{
+    /* WebGL */
+    #gl{
       position: fixed;
       inset: 0;
-      height: 100dvh;               /* mobile dynamic viewport height */
       width: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      touch-action: pan-y;            /* allow vertical scrolling on mobile */
-      z-index: 2;
-      opacity: 0;
-      transform: translateY(14px);
-      transition: opacity 320ms ease, transform 320ms ease;
-      padding-bottom: calc(var(--safe-bottom) + 24px);
-    }
-    .view.active{
-      opacity: 1;
-      transform: translateY(0);
+      height: 100%;
+      display:block;
+      z-index: 1;
     }
 
-    /* Landing */
-    #view-landing{
-      z-index: 10;
-      display: grid;
-      place-items: center;
-      padding-top: calc(var(--nav-h) + var(--safe-top) + 24px);
-      background: radial-gradient(circle at 50% 40%, rgba(150,120,20,0.10), rgba(0,0,0,0.0) 55%);
+    /* KaTeX equation layer */
+    #eqLayer{
+      position: fixed;
+      inset: 0;
+      z-index: 700;
+      pointer-events: none;
+      overflow: hidden;
     }
-    .landing{ width: min(980px, 100%); text-align: center; padding: 0 16px; }
-    .landing h1{
+    .eq{
+      position: absolute;
+      will-change: transform, opacity, filter;
+      opacity: 0.0;
+      transform: translate3d(0,0,0);
+      filter: drop-shadow(0 0 14px rgba(212,175,55,0.24));
+      color: rgba(232,232,234,0.92);
+      mix-blend-mode: screen;
+    }
+    .eq .katex{ font-size: clamp(18px, 2.1vw, 28px); }
+
+    /* Depth text behind center */
+    #depthName{
+      position: fixed;
+      left: 50%;
+      top: 54%;
+      transform: translate(-50%, -50%);
+      z-index: 650;
+      pointer-events: none;
       font-family: var(--font-main);
-      color: color-mix(in oklab, var(--silver) 20%, #fff);
       font-weight: 300;
       letter-spacing: 0.08em;
-      line-height: 1.05;
-      font-size: clamp(2.6rem, 10vw, 6rem);
-      text-shadow: 0 0 30px color-mix(in oklab, var(--gold) 25%, transparent);
-      margin-bottom: 14px;
-    }
-    .landing .divider{
-      width: 88px; height: 1px;
-      background: color-mix(in oklab, var(--gold) 70%, transparent);
-      opacity: 0.75;
-      margin: 0 auto 22px;
-    }
-    .landing-actions{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 8px;
-    }
-    .cta{
-      font-family: var(--font-ui);
-      font-size: 0.86rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      padding: 14px 18px;
-      border-radius: 14px;
-      border: 1px solid color-mix(in oklab, var(--gold) 55%, var(--border));
-      background: color-mix(in oklab, var(--panel) 78%, transparent);
-      color: var(--silver);
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: transform 160ms ease, background 200ms ease, border-color 200ms ease;
+      /* text-transform removed to show mixed case */
+      font-size: clamp(3.0rem, 9.0vw, 7.6rem);
+      color: rgba(212,175,55,0.24);
+      text-shadow: 0 0 55px rgba(212,175,55,0.18);
+      filter: blur(0.2px);
+      opacity: 0.95;
       white-space: nowrap;
+      transition: color 0.5s ease;
     }
-    .cta:hover{ transform: translateY(-2px); }
-    .cta.gold{ color: var(--gold); }
-
-    /* Deck */
-    #view-deck{
-      padding-top: calc(var(--nav-h) + var(--safe-top) + 28px);
-      background: color-mix(in oklab, var(--bg) 70%, transparent);
-    }
-    .deck-header{
-      text-align:center;
-      margin: 8px auto 26px;
-      padding: 0 16px;
-      max-width: 1200px;
-    }
-    .deck-header h2{
-      font-family: var(--font-main);
-      color: var(--gold-soft);
-      font-size: clamp(2.1rem, 5.5vw, 3.3rem);
-      font-weight: 300;
-      letter-spacing: 0.02em;
-      margin-bottom: 10px;
-    }
-    .deck-header .line{
-      width: 68px; height: 1px;
-      margin: 0 auto;
-      background: var(--gold);
-      opacity: 0.7;
-    }
-    .card-grid{
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 18px clamp(16px, 4vw, 44px);
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
-      gap: 18px;
-    }
-    .card{
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      backdrop-filter: blur(14px);
-      padding: 22px;
-      min-height: 320px;
-      display:flex;
-      flex-direction: column;
-      gap: 12px;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-      transition: transform 220ms ease, border-color 240ms ease, background 240ms ease;
-      max-width: 100%;
-    }
-    .card:hover{
-      transform: translateY(-6px);
-      border-color: color-mix(in oklab, var(--gold) 55%, var(--border));
-      background: color-mix(in oklab, var(--panel) 88%, rgba(255,255,255,0.02));
-    }
-    .card-top{
-      display:flex;
-      justify-content: space-between;
-      align-items: baseline;
-      font-family: var(--font-ui);
-      font-size: 0.72rem;
-      letter-spacing: 1.6px;
-      text-transform: uppercase;
-      color: var(--gold);
-      border-bottom: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
-      padding-bottom: 10px;
-      gap: 10px;
-    }
-    .card h3{
-      font-family: var(--font-main);
-      font-size: 1.9rem;
-      line-height: 1.15;
-      font-weight: 400;
-      color: var(--gold-soft);
-      margin-top: 4px;
-      overflow-wrap: anywhere;
-    }
-    .card p{
-      font-family: var(--font-main);
-      color: var(--silver-dim);
-      font-size: 1.05rem;
-      line-height: 1.6;
-      overflow-wrap: anywhere;
-    }
-    .card .read{
-      margin-top:auto;
-      font-family: var(--font-ui);
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 1.4px;
-      color: var(--gold);
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .card[aria-disabled="true"]{
-      opacity: 0.45;
-      cursor: not-allowed;
-      transform: none !important;
+    #depthName::after{
+      content:"";
+      position:absolute; inset:-30px -80px;
+      background: radial-gradient(closest-side, rgba(232,232,234,0.10), rgba(0,0,0,0.0) 70%);
+      z-index:-1;
+      filter: blur(10px);
+      opacity: 0.55;
     }
 
-    /* Reader */
-    #view-reader{
-      padding-top: calc(var(--nav-h) + var(--safe-top) + 18px);
-      background: var(--bg);
-    }
-    .reader-shell{
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 10px clamp(16px, 4vw, 44px) 60px;
-    }
-    .reader-layout{
-      display:grid;
-      grid-template-columns: 260px 1fr;
-      gap: clamp(22px, 5vw, 54px);
-      align-items: start;
-      margin-top: 14px;
-      max-width: 100%;
-    }
-    @media (max-width: 980px){
-      .reader-layout{ grid-template-columns: 1fr; }
-    }
-
-    /* Desktop TOC */
-    .toc{
-      position: sticky;
-      top: calc(var(--nav-h) + var(--safe-top) + 18px);
-      align-self: start;
-      padding-left: 16px;
-      border-left: 1px solid var(--border);
-      max-height: calc(100dvh - (var(--nav-h) + var(--safe-top) + 44px));
-      overflow: auto;
-      overflow-x: hidden;
-    }
-    @media (max-width: 980px){
-      .toc{ display:none; }
-    }
-    .toc h4{
-      font-family: var(--font-ui);
-      font-size: 0.74rem;
-      letter-spacing: 1.6px;
-      text-transform: uppercase;
-      color: var(--silver-dim);
-      margin-bottom: 12px;
-    }
-    .toc ul{ list-style:none; }
-    .toc li{ margin: 0 0 10px; }
-    .toc a{
-      font-family: var(--font-ui);
-      font-size: 0.88rem;
-      line-height: 1.35;
-      color: color-mix(in oklab, var(--silver) 55%, var(--silver-dim));
-      display:block;
-      transition: color 160ms ease, transform 160ms ease;
-      overflow-wrap: anywhere;
-    }
-    .toc a:hover{ color: var(--gold); transform: translateX(4px); }
-    .toc a.active{
-      color: var(--gold);
-      border-left: 2px solid var(--gold);
-      padding-left: 10px;
-      margin-left: -12px;
+    /* Orbit hint ring (visual only) */
+    #orbitHint{
+      position: fixed;
+      inset: 0;
+      z-index: 600;
+      pointer-events: none;
+      opacity: 0.55;
+      background:
+        radial-gradient(circle at 50% 55%,
+          rgba(212,175,55,0.10) 0%,
+          rgba(212,175,55,0.06) 20%,
+          rgba(232,232,234,0.04) 34%,
+          rgba(0,0,0,0.0) 60%),
+        conic-gradient(from 220deg at 50% 55%,
+          rgba(212,175,55,0.12),
+          rgba(122,166,255,0.06),
+          rgba(232,232,234,0.08),
+          rgba(212,175,55,0.12));
+      mask: radial-gradient(circle at 50% 55%, rgba(0,0,0,0) 0 26%, rgba(0,0,0,1) 34% 42%, rgba(0,0,0,0) 60%);
+      filter: blur(0.6px);
     }
 
-    /* Mobile TOC */
-    .mobile-toc{
+    /* Modal reader */
+    #modal{
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
       display:none;
-      margin: 8px 0 18px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      background: rgba(0,0,0,0.56);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    #modal.open{ display:block; opacity: 1; }
+    #modalCard{
+      position:absolute;
+      left: 50%;
+      top: calc(var(--nav-h) + var(--safe-top) + 18px);
+      transform: translateX(-50%) translateY(20px);
+      width: min(1120px, calc(100vw - 28px));
+      height: min(calc(100dvh - (var(--nav-h) + var(--safe-top) + var(--safe-bottom) + 36px)), 920px);
+      border-radius: 22px;
+      border: 1px solid rgba(212,175,55,0.24);
+      background:
+        radial-gradient(900px 650px at 22% 22%, rgba(232,232,234,0.10), rgba(212,175,55,0.08) 40%, rgba(0,0,0,0.0) 70%),
+        linear-gradient(135deg, rgba(10,10,10,0.84), rgba(18,18,18,0.56));
+      box-shadow: 0 26px 90px -46px rgba(0,0,0,0.92);
+      overflow: hidden;
+      display:grid;
+      grid-template-rows: auto 1fr;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #modal.open #modalCard {
+      transform: translateX(-50%) translateY(0);
+    }
+    #modalTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
       padding: 12px 14px;
-      backdrop-filter: blur(14px);
-      max-width: 100%;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(135deg, rgba(10,10,10,0.72), rgba(18,18,18,0.40));
     }
-    @media (max-width: 980px){
-      .mobile-toc{ display:block; }
-    }
-    .mobile-toc summary{
+    #modalMeta{
       font-family: var(--font-ui);
-      color: var(--gold);
+      color: var(--silver-dim);
       letter-spacing: 1.2px;
       text-transform: uppercase;
-      font-weight: 700;
-      font-size: 0.82rem;
-      cursor: pointer;
-      list-style:none;
-      user-select:none;
-    }
-    .mobile-toc summary::-webkit-details-marker{ display:none; }
-    .mobile-toc .toc-links{
-      margin-top: 12px;
-      display:grid;
-      gap: 10px;
-    }
-    .mobile-toc .toc-links a{
-      font-family: var(--font-ui);
-      font-size: 0.92rem;
-      line-height: 1.35;
-      color: color-mix(in oklab, var(--silver) 60%, var(--silver-dim));
-      overflow-wrap: anywhere;
-    }
-
-    .article{ max-width: 760px; min-width: 0; }
-    .article-header{
-      padding: 14px 0 22px;
-      margin-bottom: 22px;
-      border-bottom: 1px solid var(--border);
-    }
-    .meta{
-      font-family: var(--font-ui);
-      font-size: 0.78rem;
-      letter-spacing: 1.6px;
-      text-transform: uppercase;
-      color: var(--silver-dim);
+      font-size: 0.76rem;
       display:flex;
-      flex-wrap: wrap;
       gap: 10px;
+      flex-wrap: wrap;
       align-items:center;
     }
-    .meta .pill{
-      border: 1px solid var(--border);
-      background: color-mix(in oklab, var(--panel) 70%, transparent);
-      padding: 6px 10px;
-      border-radius: 999px;
-      color: var(--gold);
-    }
-    .article h1{
-      margin-top: 12px;
-      font-family: var(--font-main);
-      font-weight: 400;
-      line-height: 1.06;
-      font-size: clamp(2.2rem, 5.4vw, 4rem);
-      color: var(--gold-soft);
-      letter-spacing: 0.01em;
-      overflow-wrap: anywhere;
-    }
-
-    /* Content: justified + constrained (never beyond screen) */
-    .article .content{
-      font-family: var(--font-main);
-      font-size: clamp(1.08rem, 2.2vw, 1.30rem);
-      line-height: 1.75;
+    #modalMeta strong{ color: var(--gold); font-weight: 900; }
+    #close{
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(18,18,18,0.46);
       color: var(--silver);
-      max-width: 100%;
-      overflow-wrap: anywhere;
-      word-break: normal;
-      hyphens: auto;
-
-      /* “justified vertical alignment” interpreted as strong justified typesetting */
-      text-align: justify;
-      text-justify: inter-word;
+      font-family: var(--font-ui);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      padding: 10px 12px;
+      cursor:pointer;
+      transition: background 0.2s;
     }
-    @media (max-width: 980px){
-      .article .content{
-        font-size: 1.12rem;
-        line-height: 1.70;
-        text-align: justify;
-      }
+    #close:hover{ background: rgba(255,255,255,0.15); }
+    #modalBody{
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 18px clamp(14px, 3vw, 28px) 28px;
     }
-
-    .article .content p{
-      margin: 0 0 1.6rem;
+    #modalBody article{
+      max-width: 820px;
+      margin: 0 auto;
+      line-height: 1.75;
+      font-size: 1.14rem;
       color: color-mix(in oklab, var(--silver) 88%, var(--silver-dim));
     }
+    #modalBody h1, #modalBody h2, #modalBody h3{
+      color: color-mix(in oklab, var(--gold-soft) 70%, var(--silver));
+      line-height: 1.15;
+      margin: 1.2rem 0 0.6rem;
+    }
+    #modalBody h1{ font-size: clamp(1.8rem, 3.6vw, 2.8rem); margin-top: 0; }
+    #modalBody h2{ font-size: clamp(1.35rem, 2.8vw, 1.9rem); }
+    #modalBody h3{ font-size: 1.2rem; font-style: italic; }
+    #modalBody p{ margin: 0 0 1.25rem; }
 
-    .article .content strong,
-    .article .content b{
-      color: var(--gold);
-      font-weight: 700;
-    }
-
-    .article .content h2{
-      margin: 2.6rem 0 1rem;
-      font-size: clamp(1.55rem, 3.5vw, 2.2rem);
-      font-weight: 500;
-      color: var(--gold-soft);
-      padding-bottom: 0.45rem;
-      border-bottom: 1px solid color-mix(in oklab, var(--gold) 22%, var(--border));
-      overflow-wrap: anywhere;
-    }
-
-    .article .content h3{
-      margin: 2.0rem 0 0.8rem;
-      font-size: clamp(1.25rem, 2.8vw, 1.55rem);
-      font-weight: 500;
-      font-style: italic;
-      color: color-mix(in oklab, var(--silver) 25%, #fff);
-      overflow-wrap: anywhere;
-    }
-
-    .article .content ul,
-    .article .content ol{
-      margin: 0 0 1.6rem 1.4rem;
-      color: color-mix(in oklab, var(--silver) 85%, var(--silver-dim));
-      max-width: 100%;
-    }
-    .article .content li{ margin: 0.35rem 0; }
-
-    .article .content blockquote{
-      margin: 1.8rem 0;
-      padding: 1.1rem 1.2rem;
-      border-left: 3px solid var(--gold);
-      background: color-mix(in oklab, var(--panel) 75%, transparent);
-      border-radius: 10px;
-      color: color-mix(in oklab, var(--silver) 75%, var(--gold-soft));
-      max-width: 100%;
-    }
-
-    .article .content img,
-    .article .content video,
-    .article .content svg{
-      max-width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    /* Tables: ensure no horizontal overflow beyond viewport */
-    .article .content table{
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1.8rem 0;
-      border: 1px solid var(--border);
-      background: color-mix(in oklab, var(--panel) 70%, transparent);
-      border-radius: 12px;
-      overflow:hidden;
-      display: block;
-      max-width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .article .content thead, .article .content tbody, .article .content tr{
-      width: 100%;
-    }
-    .article .content th,
-    .article .content td{
-      padding: 12px 12px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
+    /* Error overlay */
+    #err{
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display:none;
+      padding: 96px 18px 18px;
+      background: #050505;
+      color: #e8e8ea;
       font-family: var(--font-ui);
-      font-size: 0.92rem;
-      line-height: 1.35;
-      color: color-mix(in oklab, var(--silver) 82%, var(--silver-dim));
-      white-space: nowrap;
     }
-    .article .content th{
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      font-size: 0.78rem;
-      color: var(--gold);
-      background: color-mix(in oklab, var(--panel) 85%, transparent);
-    }
-
-    /* Code blocks: never exceed screen */
-    .article .content code{
-      font-family: var(--font-mono);
-      font-size: 0.92em;
-      background: color-mix(in oklab, var(--panel) 82%, transparent);
-      border: 1px solid var(--border);
-      padding: 0.12em 0.34em;
-      border-radius: 8px;
-      color: color-mix(in oklab, var(--silver) 70%, var(--gold));
-      overflow-wrap: anywhere;
-    }
-    .article .content pre{
-      margin: 1.6rem 0;
-      padding: 14px 14px;
+    #err h2{ margin:0 0 12px; font-weight: 900; letter-spacing: 1px; color: #D4AF37; text-transform: uppercase; }
+    #err pre{
+      margin: 12px 0 0;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(18,18,18,0.6);
       overflow:auto;
-      max-width: 100%;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: color-mix(in oklab, var(--panel-strong) 92%, transparent);
-      -webkit-overflow-scrolling: touch;
-    }
-    .article .content pre code{
-      background: transparent;
-      border: none;
-      padding: 0;
-      color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim));
-      white-space: pre;
-    }
-
-    .loader{
-      width: 38px; height: 38px;
-      border-radius: 999px;
-      border: 2px solid color-mix(in oklab, var(--gold) 55%, var(--border));
-      border-top-color: transparent;
-      margin: 42px auto;
-      animation: spin 0.85s linear infinite;
-    }
-    @keyframes spin{ to{ transform: rotate(360deg); } }
-
-    @media (prefers-reduced-motion: reduce){
-      *{ scroll-behavior: auto !important; }
-      .card, .cta, .nav-btn, .view{ transition: none !important; }
+      max-height: 55vh;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      opacity: 0.9;
     }
   </style>
-
-  <script>
-    window.MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$'], ['\\[', '\\]']],
-        processEscapes: true
-      },
-      options: { ignoreHtmlClass: 'tex2jax_ignore', processHtmlClass: 'tex2jax_process' },
-      chtml: { displayAlign: 'center' }
-    };
-  </script>
 </head>
 
 <body>
-  <canvas id="econometric-canvas" aria-hidden="true"></canvas>
-  <div id="reading-progress" aria-hidden="true"></div>
-
-  <nav id="global-nav" aria-label="Primary">
-    <div class="brand" id="btn-home" role="button" tabindex="0">Anıl Kaya</div>
-    <div class="nav-actions">
-      <button class="nav-btn" id="btn-archives" type="button">Archives</button>
-
-      <a class="nav-btn nav-link-btn"
-         href="https://www.linkedin.com/in/anillkaya"
-         target="_blank"
-         rel="noopener noreferrer"
-         aria-label="Open LinkedIn profile in a new tab">
-        LinkedIn
-      </a>
-
-      <button class="nav-btn" id="btn-theme" type="button" aria-label="Toggle theme">Light</button>
+  <nav id="nav" aria-label="Primary">
+    <div id="brand" role="button" tabindex="0">Anıl Kaya</div>
+    <div id="actions">
+      <a class="btn" href="https://www.linkedin.com/in/anillkaya" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <button class="btn" id="theme" type="button" aria-label="Toggle theme">Light</button>
     </div>
   </nav>
 
-  <main id="app" aria-label="App">
-    <section id="view-landing" class="view active" aria-label="Landing">
-      <div class="landing">
-        <h1>Anıl Kaya</h1>
-        <div class="divider" aria-hidden="true"></div>
-        <div class="landing-actions">
-          <button class="cta gold" id="btn-enter" type="button">Enter Archives</button>
-        </div>
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="orbitHint" aria-hidden="true"></div>
+  <div id="depthName" aria-hidden="true">Anıl Kaya</div>
+  <div id="eqLayer" aria-hidden="true"></div>
+
+  <div id="modal" role="dialog" aria-modal="true" aria-label="Article reader">
+    <div id="modalCard">
+      <div id="modalTop">
+        <div id="modalMeta">Loading…</div>
+        <button id="close" type="button">Close</button>
       </div>
-    </section>
+      <div id="modalBody">Loading…</div>
+    </div>
+  </div>
 
-    <section id="view-deck" class="view hidden" aria-label="Archives">
-      <header class="deck-header">
-        <h2>Research Archives</h2>
-        <div class="line" aria-hidden="true"></div>
-      </header>
-      <div class="card-grid" id="card-grid" aria-label="Article list"></div>
-    </section>
+  <div id="err">
+    <h2>Render error</h2>
+    <div>WebGL or external scripts may be blocked by this editor environment. Error details:</div>
+    <pre id="errText"></pre>
+  </div>
 
-    <section id="view-reader" class="view hidden" aria-label="Reader">
-      <div class="reader-shell" id="reader-container"></div>
-    </section>
-  </main>
+  <script>
+    (function(){
+      "use strict";
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
-  <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      /* Articles = planets */
+      const ARTICLES = [
+        { id:"options-pricing", file:"./articles/options.html", category:"Financial Econometrics", title:"Options Pricing", date:"JAN 2026", enabled:true },
+        { id:"bvar", file:"./articles/bvar.html", category:"Core Theory", title:"Bayesian Vector Autoregression", date:"DEC 2025", enabled:true },
+        { id:"stoch-vol", file:"./articles/forecasting.html", category:"Time Series", title:"Why ML is (almost) useless in Time Series Forecasting ?", date:"JAN 2026", enabled:true },
+        { id:"sign-rest", file:"./articles/ERPT.html", category:"Macroeconometrics", title:"ERPT", date:"JAN 2026", enabled:true }
+      ].filter(x=>x.enabled);
 
-  <script defer>
-    /* * --- INPUT SECTION: ADD NEW ARTICLES HERE ---
-     * To add a new article:
-     * 1. Add a new object to the list below.
-     * 2. 'id': Unique identifier (e.g., "my-new-post").
-     * 3. 'file': The relative path to your HTML file (e.g., "./articles/my-file.html").
-     * 4. 'enabled': Set to true to display it.
-     */
-    const ARTICLE_MANIFEST = [
-      {
-        id: "options-pricing",
-        file: "./articles/options.html",
-        category: "Financial Econometrics",
-        title: "Options Pricing",
-        date: "JAN 2026",
-        excerpt: "Deriving the Black-Scholes equation, analyzing the Greeks, and implementing numerical methods for derivative valuation.",
-        enabled: true
-      },
-      {
-        id: "bvar",
-        file: "./articles/bvar.html",
-        category: "Core Theory",
-        title: "Bayesian Vector Autoregression",
-        date: "DEC 2025",
-        excerpt: "A comprehensive guide covering Minnesota priors, hierarchical estimation, and large-scale forecasting algorithms.",
-        enabled: true
-      },
-      {
-        id: "stoch-vol",
-        file: "./articles/forecasting.html",
-        category: "Time Series",
-        title: "Why ML is (almost) useless in Time Series Forecasting ?",
-        date: "JAN 2026",
-        excerpt: "Modeling structural breaks and changing error variance in post-pandemic macroeconomic data using state-space methods.",
-        enabled: true
-      },
-      {
-        id: "sign-rest",
-        file: "./articles/ERPT.html",
-        category: "MACROECONOMETRICS",
-        title: "ERPT",
-        date: "JAN 2026",
-        excerpt: "Exchange Rate Pass-Through Estimation",
-        enabled: true
-      }
-    ];
+      const TEX = [
+        String.raw`Y_t = A_1Y_{t-1}+\cdots+A_pY_{t-p}+u_t`,
+        String.raw`u_t\sim\mathcal{N}(0,\Sigma)`,
+        String.raw`p(\theta\mid Y)\propto p(Y\mid\theta)p(\theta)`,
+        String.raw`E[y_t\mid\mathcal{I}_{t-1}]`,
+        String.raw`h_t=\mu+\phi(h_{t-1}-\mu)+\sigma_h\xi_t,\ \ y_t=e^{h_t/2}\varepsilon_t`,
+        String.raw`\nabla\mathcal{L}(\theta)`,
+        String.raw`\Sigma = A^{-1}\Lambda A^{-1\prime}`
+      ];
 
-    /* Theme */
-    const Theme = (() => {
-      const LS_KEY = "theme";
+      const $ = (id)=>document.getElementById(id);
       const root = document.documentElement;
-      const media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+      const themeBtn = $("theme");
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
 
-      function getInitialTheme() {
-        const saved = localStorage.getItem(LS_KEY);
-        if (saved === "light" || saved === "dark") return saved;
-        if (media && media.matches) return "dark";
-        return "light";
+      const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
+      const lerp  = (a,b,t)=>a+(b-a)*t;
+
+      function cssVar(name){
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      }
+      function showErr(e){
+        $("errText").textContent = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
+        $("err").style.display = "block";
+      }
+      function isWebGLAvailable(){
+        try{
+          const c = document.createElement("canvas");
+          return !!(window.WebGLRenderingContext && (c.getContext("webgl") || c.getContext("experimental-webgl")));
+        }catch(_){ return false; }
       }
 
-      function apply(theme, persist = true) {
+      /* Theme (simple override) */
+      const LS_KEY = "theme";
+      function applyTheme(theme, persist){
         root.setAttribute("data-theme", theme);
         if (persist) localStorage.setItem(LS_KEY, theme);
 
-        const btn = document.getElementById("btn-theme");
-        if (btn) btn.textContent = (theme === "dark") ? "Light" : "Dark";
-
-        const meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute("content", theme === "dark" ? "#050505" : "#fbfbfc");
-
-        Visuals.syncTheme();
-      }
-
-      function toggle() {
-        const current = root.getAttribute("data-theme") || "dark";
-        apply(current === "dark" ? "light" : "dark");
-      }
-
-      return { apply, toggle, getInitialTheme };
-    })();
-
-    /* Visuals (equations + connections) */
-    const Visuals = (() => {
-      const canvas = document.getElementById("econometric-canvas");
-      const ctx = canvas.getContext("2d", { alpha: false });
-
-      let w = 0, h = 0, dpr = 1;
-
-      let bg = "#050505";
-      let ink = "rgba(212,175,55,0.46)";
-      let inkSoft = "rgba(212,175,55,0.18)";
-      let stroke = "rgba(0,0,0,0.55)";
-      let glow = "rgba(212,175,55,0.34)";
-
-      const formulas = [
-        "𝑦ₜ = 𝛽𝑥ₜ + 𝜖ₜ",
-        "Σ = 𝐴⁻¹Λ𝐴⁻¹′",
-        "∇ℒ(𝜃)",
-        "𝑃(𝐴|𝐵)",
-        "∫ 𝑒⁻ˣ² 𝑑𝑥",
-        "𝜎²ₜ",
-        "Δ𝑦ₜ",
-        "𝜖 ∼ 𝑁(0,1)",
-        "ℍ₀: 𝛽 = 0",
-        "𝐸[𝑦ₜ|ℐₜ₋₁]",
-        "𝑌ₜ = 𝐴₁𝑌ₜ₋₁ + ⋯ + 𝐴ₚ𝑌ₜ₋ₚ + 𝑢ₜ",
-        "𝑝(𝜃|𝑌) ∝ 𝑝(𝑌|𝜃)𝑝(𝜃)"
-      ];
-
-      let nodes = [];
-      let drops = [];
-      let hero = [];
-      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      function cssVar(name) {
-        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-      }
-
-      function syncTheme() {
-        bg = cssVar("--canvas-bg") || bg;
-        ink = cssVar("--canvas-ink") || ink;
-        inkSoft = cssVar("--canvas-ink-soft") || inkSoft;
-        stroke = cssVar("--canvas-stroke") || stroke;
-        glow = cssVar("--canvas-glow") || glow;
-      }
-
-      function resize() {
-        dpr = Math.min(window.devicePixelRatio || 1, 2);
-        w = window.innerWidth;
-        h = window.innerHeight;
-
-        canvas.width = Math.floor(w * dpr);
-        canvas.height = Math.floor(h * dpr);
-
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.scale(dpr, dpr);
-
-        build();
-      }
-
-      function build() {
-        const isMobile = w < 820;
-        const nodeCount = reduceMotion ? (isMobile ? 18 : 36) : (isMobile ? 40 : 100);
-        const dropCount = reduceMotion ? (isMobile ? 14 : 24) : (isMobile ? 24 : 58);
-
-        nodes = Array.from({ length: nodeCount }, () => ({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vx: (Math.random() - 0.5) * (isMobile ? 0.55 : 0.75),
-          vy: (Math.random() - 0.5) * (isMobile ? 0.55 : 0.75),
-          r: Math.random() * (isMobile ? 1.4 : 1.8) + 0.6
-        }));
-
-        drops = Array.from({ length: dropCount }, () => ({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vy: Math.random() * (isMobile ? 0.85 : 1.05) + 0.25,
-          size: Math.random() * (isMobile ? 14 : 18) + (isMobile ? 12 : 13),
-          a: Math.random() * 0.28 + 0.18,
-          text: formulas[(Math.random() * formulas.length) | 0]
-        }));
-
-        const heroCount = reduceMotion ? 2 : (isMobile ? 3 : 5);
-        hero = Array.from({ length: heroCount }, () => ({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.10,
-          vy: (Math.random() - 0.5) * 0.10,
-          size: Math.random() * (isMobile ? 18 : 26) + (isMobile ? 22 : 30),
-          a: Math.random() * 0.10 + 0.10,
-          text: formulas[(Math.random() * formulas.length) | 0]
-        }));
-      }
-
-      function drawTextWithStroke(text, x, y, fontSize, alpha, isHero = false) {
-        ctx.save();
-        ctx.font = `italic ${fontSize}px "Latin Modern Roman", "Times New Roman"`;
-        ctx.textBaseline = "alphabetic";
-
-        ctx.shadowColor = glow;
-        ctx.shadowBlur = isHero ? 18 : 12;
-
-        ctx.globalAlpha = Math.min(1, alpha * (isHero ? 0.95 : 0.85));
-        ctx.lineWidth = isHero ? 2.0 : 1.25;
-        ctx.strokeStyle = stroke;
-        ctx.strokeText(text, x, y);
-
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = ink;
-        ctx.fillText(text, x, y);
-
-        ctx.restore();
-      }
-
-      function step() {
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, w, h);
-
-        for (const e of hero) {
-          e.x += e.vx; e.y += e.vy;
-          if (e.x < -400) e.x = w + 200;
-          if (e.x > w + 400) e.x = -200;
-          if (e.y < -200) e.y = h + 120;
-          if (e.y > h + 200) e.y = -120;
-          drawTextWithStroke(e.text, e.x, e.y, e.size, e.a, true);
+        if (theme === "light"){
+          root.style.setProperty("--bg", "#fbfbfc");
+          root.style.setProperty("--panel", "rgba(255,255,255,0.82)");
+          root.style.setProperty("--panel-strong", "rgba(255,255,255,0.94)");
+          root.style.setProperty("--border", "rgba(0,0,0,0.10)");
+          root.style.setProperty("--silver", "#1b1b1c");
+          root.style.setProperty("--silver-dim", "rgba(27,27,28,0.72)");
+          root.style.setProperty("--gold", "#B88A00");
+          root.style.setProperty("--gold-soft", "#7A5A00");
+          themeBtn.textContent = "Dark";
+          metaTheme && metaTheme.setAttribute("content", "#fbfbfc");
+          $("depthName").style.color = "rgba(184,138,0,0.20)";
+          $("depthName").style.textShadow = "0 0 55px rgba(184,138,0,0.14)";
+        } else {
+          root.removeAttribute("style");
+          themeBtn.textContent = "Light";
+          metaTheme && metaTheme.setAttribute("content", "#050505");
+          $("depthName").style.color = "rgba(212,175,55,0.24)";
+          $("depthName").style.textShadow = "0 0 55px rgba(212,175,55,0.18)";
         }
 
-        for (const d of drops) {
-          d.y += d.vy;
-          if (d.y > h + 80) {
-            d.y = -80;
-            d.x = Math.random() * w;
-            d.text = formulas[(Math.random() * formulas.length) | 0];
-            d.size = Math.random() * (w < 820 ? 14 : 18) + (w < 820 ? 12 : 13);
-            d.a = Math.random() * 0.28 + 0.18;
-            d.vy = Math.random() * (w < 820 ? 0.85 : 1.05) + 0.25;
-          }
-          drawTextWithStroke(d.text, d.x, d.y, d.size, d.a, false);
-        }
-
-        const isMobile = w < 820;
-        const maxDist = isMobile ? 105 : 150;
-        const maxDist2 = maxDist * maxDist;
-
-        for (const n of nodes) {
-          n.x += n.vx; n.y += n.vy;
-          if (n.x < -20) n.x = w + 20;
-          if (n.x > w + 20) n.x = -20;
-          if (n.y < -20) n.y = h + 20;
-          if (n.y > h + 20) n.y = -20;
-        }
-
-        ctx.save();
-        ctx.lineWidth = 1;
-
-        for (let i = 0; i < nodes.length; i++) {
-          for (let j = i + 1; j < nodes.length; j++) {
-            const a = nodes[i], b = nodes[j];
-            const dx = a.x - b.x, dy = a.y - b.y;
-            const d2 = dx*dx + dy*dy;
-            if (d2 < maxDist2) {
-              const t = 1 - d2 / maxDist2;
-              ctx.globalAlpha = Math.min(0.42, t * 0.28);
-              ctx.strokeStyle = inkSoft;
-              ctx.beginPath();
-              ctx.moveTo(a.x, a.y);
-              ctx.lineTo(b.x, b.y);
-              ctx.stroke();
-            }
-          }
-        }
-
-        ctx.globalAlpha = 1;
-        for (const n of nodes) {
-          ctx.beginPath();
-          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-          ctx.fillStyle = inkSoft;
-          ctx.globalAlpha = 0.9;
-          ctx.fill();
-        }
-
-        ctx.restore();
-        requestAnimationFrame(step);
-      }
-
-      function init() {
-        syncTheme();
-        resize();
-        window.addEventListener("resize", resize, { passive: true });
-        requestAnimationFrame(step);
-      }
-
-      return { init, syncTheme };
-    })();
-
-    /* App */
-    const App = (() => {
-      const el = (id) => document.getElementById(id);
-
-      const views = {
-        landing: el("view-landing"),
-        deck: el("view-deck"),
-        reader: el("view-reader")
-      };
-
-      const nav = el("global-nav");
-      const progress = el("reading-progress");
-      const deckGrid = el("card-grid");
-      const readerContainer = el("reader-container");
-
-      let state = { view: "landing" };
-      let rafScrollPending = false;
-
-      function setNavScrolled(scrolled) {
-        nav.classList.toggle("scrolled", !!scrolled);
-      }
-
-      function switchView(to) {
-        const from = state.view;
-        if (from === to) return;
-
-        // hide previous
-        views[from].classList.remove("active");
-        setTimeout(() => { views[from].classList.add("hidden"); }, 180);
-
-        // show next
-        views[to].classList.remove("hidden");
-        requestAnimationFrame(() => views[to].classList.add("active"));
-
-        // reset scroll on view change
-        views[to].scrollTop = 0;
-
-        progress.style.opacity = (to === "reader") ? "1" : "0";
-        if (to !== "reader") progress.style.width = "0%";
-
-        state.view = to;
-        setNavScrolled(to !== "landing");
-      }
-
-      function goHome() { switchView("landing"); }
-      function enterDeck() { switchView("deck"); }
-
-      function renderDeck() {
-        deckGrid.innerHTML = ARTICLE_MANIFEST.map((a, i) => {
-          const disabled = !a.enabled;
-          return `
-            <article class="card" role="button" tabindex="${disabled ? -1 : 0}"
-              aria-disabled="${disabled ? "true" : "false"}"
-              data-article-id="${a.id}">
-              <div class="card-top">
-                <span>${String(i + 1).padStart(2, "0")} · ${a.category}</span>
-                <span>${a.date}</span>
-              </div>
-              <h3>${a.title}</h3>
-              <p>${a.excerpt}</p>
-              <div class="read"><span>Read</span><span aria-hidden="true">→</span></div>
-            </article>
-          `;
-        }).join("");
-
-        deckGrid.querySelectorAll(".card").forEach(card => {
-          const id = card.getAttribute("data-article-id");
-          const article = ARTICLE_MANIFEST.find(x => x.id === id);
-          if (!article || !article.enabled) return;
-
-          card.addEventListener("click", () => openArticle(id));
-          card.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              openArticle(id);
-            }
-          });
+        // Recolor equation DOM layer
+        const eqs = document.querySelectorAll(".eq");
+        const isLight = theme==="light";
+        eqs.forEach(n=>{
+          n.style.color = isLight ? "rgba(20,20,20,0.92)" : "rgba(232,232,234,0.92)";
+          n.style.filter = isLight
+            ? "drop-shadow(0 0 14px rgba(184,138,0,0.20))"
+            : "drop-shadow(0 0 14px rgba(212,175,55,0.24))";
         });
+
+        if (window.__RECOLOR__) window.__RECOLOR__();
+      }
+      function getInitialTheme(){
+        const saved = localStorage.getItem(LS_KEY);
+        return (saved === "light" || saved === "dark") ? saved : "dark";
       }
 
-      function estimateReadTime(text) {
-        const words = (text || "").trim().split(/\s+/).filter(Boolean).length;
-        const minutes = Math.max(1, Math.round(words / 220));
-        return `${minutes} min read`;
+      /* Modal reader */
+      const modal = $("modal");
+      const modalMeta = $("modalMeta");
+      const modalBody = $("modalBody");
+      const closeBtn = $("close");
+      const cache = new Map();
+
+      function escapeHTML(s){
+        return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       }
+      async function openArticle(a){
+        modalMeta.innerHTML =
+          "<span><strong>"+escapeHTML(a.title)+"</strong></span>" +
+          "<span>•</span><span>"+escapeHTML(a.date)+"</span>" +
+          "<span>•</span><span>"+escapeHTML(a.category)+"</span>";
+        modalBody.innerHTML = '<div style="opacity:.72;font-family:var(--font-ui);letter-spacing:1px">Loading…</div>';
+        modal.classList.add("open");
 
-      function buildReaderShell(article, contentHTML) {
-        return `
-          <details class="mobile-toc" id="mobile-toc">
-            <summary>Contents</summary>
-            <div class="toc-links" id="mobile-toc-links"></div>
-          </details>
-
-          <div class="reader-layout">
-            <aside class="toc" aria-label="Table of contents">
-              <h4>Contents</h4>
-              <ul id="toc-list"></ul>
-            </aside>
-
-            <article class="article">
-              <header class="article-header">
-                <div class="meta">
-                  <span class="pill">${article.category}</span>
-                  <span>${article.date}</span>
-                  <span>•</span>
-                  <span id="readtime">…</span>
-                </div>
-                <h1>${article.title}</h1>
-              </header>
-              <div class="content" id="article-content">
-                ${contentHTML}
-              </div>
-            </article>
-          </div>
-        `;
-      }
-
-      function ensureHeadingIds(scope) {
-        const headings = scope.querySelectorAll("h2, h3");
-        let k = 0;
-        headings.forEach(h => {
-          if (!h.id) {
-            const slug = h.textContent
-              .toLowerCase()
-              .trim()
-              .replace(/[^\w\s-]/g, "")
-              .replace(/\s+/g, "-")
-              .slice(0, 60);
-            h.id = slug ? `${slug}-${k++}` : `section-${k++}`;
+        try{
+          let html = cache.get(a.file);
+          if (!html){
+            const res = await fetch(a.file, { cache:"default" });
+            if (!res.ok) throw new Error("Fetch failed: "+res.status);
+            html = await res.text();
+            cache.set(a.file, html);
           }
-        });
-        return headings;
-      }
-
-      function stripInlineTOC(articleEl) {
-        if (!articleEl) return;
-
-        const explicitSelectors = ["#toc", ".toc", "nav.toc", ".table-of-contents", ".contents", "[data-toc]"];
-        explicitSelectors.forEach(sel => articleEl.querySelectorAll(sel).forEach(n => n.remove()));
-
-        const candidates = Array.from(articleEl.children).slice(0, 4);
-        for (const c of candidates) {
-          const links = Array.from(c.querySelectorAll("a[href]"));
-          if (links.length < 5) continue;
-
-          const hashLinks = links.filter(a => {
-            const href = (a.getAttribute("href") || "").trim();
-            return href.startsWith("#");
-          });
-
-          if (hashLinks.length >= 5 && hashLinks.length / links.length > 0.7) {
-            c.remove();
-            break;
-          }
-        }
-      }
-
-      function buildTOC(readerRoot) {
-        const tocList = readerRoot.querySelector("#toc-list");
-        const mobileLinks = readerRoot.querySelector("#mobile-toc-links");
-        if (!tocList || !mobileLinks) return;
-
-        tocList.innerHTML = "";
-        mobileLinks.innerHTML = "";
-
-        const content = readerRoot.querySelector("#article-content");
-        if (!content) return;
-
-        const headings = ensureHeadingIds(content);
-        const h2s = Array.from(headings).filter(h => h.tagName.toLowerCase() === "h2");
-
-        if (h2s.length === 0) {
-          const toc = readerRoot.querySelector(".toc");
-          const mtoc = readerRoot.querySelector(".mobile-toc");
-          if (toc) toc.style.display = "none";
-          if (mtoc) mtoc.style.display = "none";
-          return;
-        }
-
-        for (const h of h2s) {
-          const li = document.createElement("li");
-          li.innerHTML = `<a href="#${h.id}" class="toc-link">${h.textContent}</a>`;
-          li.querySelector("a").addEventListener("click", (e) => {
-            e.preventDefault();
-            h.scrollIntoView({ behavior: "smooth", block: "start" });
-          });
-          tocList.appendChild(li);
-
-          const a2 = document.createElement("a");
-          a2.href = `#${h.id}`;
-          a2.textContent = h.textContent;
-          a2.addEventListener("click", (e) => {
-            e.preventDefault();
-            h.scrollIntoView({ behavior: "smooth", block: "start" });
-            const mtoc = readerRoot.querySelector("#mobile-toc");
-            if (mtoc) mtoc.open = false;
-          });
-          mobileLinks.appendChild(a2);
-        }
-      }
-
-      function updateProgressAndTOC() {
-        const scroller = views.reader;
-        const total = scroller.scrollHeight - scroller.clientHeight;
-        const pct = total > 0 ? Math.min(100, Math.max(0, (scroller.scrollTop / total) * 100)) : 0;
-        progress.style.width = pct.toFixed(2) + "%";
-
-        const links = readerContainer.querySelectorAll(".toc-link");
-        const headings = readerContainer.querySelectorAll("#article-content h2[id]");
-        if (!links.length || !headings.length) return;
-
-        let currentId = "";
-        const y = scroller.scrollTop;
-
-        headings.forEach(h => { if (h.offsetTop - 160 <= y) currentId = h.id; });
-        links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === `#${currentId}`));
-      }
-
-      function onReaderScroll() {
-        if (rafScrollPending) return;
-        rafScrollPending = true;
-        requestAnimationFrame(() => {
-          rafScrollPending = false;
-          updateProgressAndTOC();
-          setNavScrolled(true);
-        });
-      }
-
-      async function openArticle(id) {
-        const article = ARTICLE_MANIFEST.find(a => a.id === id);
-        if (!article || !article.enabled) return;
-
-        switchView("reader");
-        readerContainer.innerHTML = `<div class="loader" aria-label="Loading"></div>`;
-
-        try {
-          const res = await fetch(article.file, { cache: "no-store" });
-          if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-          const html = await res.text();
-
           const doc = new DOMParser().parseFromString(html, "text/html");
-          const articleNode = doc.querySelector("article") || doc.body;
-
-          stripInlineTOC(articleNode);
-
-          const contentHTML = articleNode ? articleNode.innerHTML : html;
-          readerContainer.innerHTML = buildReaderShell(article, contentHTML);
-
-          const text = (readerContainer.querySelector("#article-content")?.innerText || "");
-          const rt = readerContainer.querySelector("#readtime");
-          if (rt) rt.textContent = estimateReadTime(text);
-
-          buildTOC(readerContainer);
-
-          views.reader.scrollTop = 0;
-          progress.style.width = "0%";
-
-          if (window.MathJax && window.MathJax.typesetPromise) {
-            try { await window.MathJax.typesetPromise([readerContainer]); } catch (_) {}
-          }
-
-          updateProgressAndTOC();
-        } catch (err) {
-          readerContainer.innerHTML = `
-            <div style="padding: 22px 6px;">
-              <p style="font-family: var(--font-ui); color: var(--silver-dim); line-height: 1.6;">
-                Could not load <strong style="color: var(--gold); font-weight: 800;">${article.file}</strong>.
-                Verify the path and that the file is reachable from your server.
-              </p>
-            </div>
-          `;
+          const node = doc.querySelector("article") || doc.body;
+          node.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
+          modalBody.innerHTML = "<article>"+node.innerHTML+"</article>";
+        }catch(e){
+          modalBody.innerHTML = '<div style="font-family:var(--font-ui);opacity:.82">Could not load <strong>'+escapeHTML(a.file)+'</strong>. Check the file path in your hosting environment.</div>';
         }
       }
+      function closeModal(){ modal.classList.remove("open"); }
+      closeBtn.addEventListener("click", closeModal);
+      modal.addEventListener("click", (e)=>{ if (e.target === modal) closeModal(); });
+      window.addEventListener("keydown", (e)=>{ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
 
-      function init() {
-        renderDeck();
+      /* KaTeX equations (DOM) */
+      function buildEquationLayer(){
+        const layer = $("eqLayer");
+        layer.innerHTML = "";
+        const isLight = (root.getAttribute("data-theme")==="light");
+        const color = isLight ? "rgba(20,20,20,0.92)" : "rgba(232,232,234,0.92)";
 
-        // nav interactions
-        const home = el("btn-home");
-        home.addEventListener("click", goHome);
-        home.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goHome(); }
-        });
+        const count = 16;
+        const items = [];
+        for (let i=0;i<count;i++){
+          const el = document.createElement("div");
+          el.className = "eq";
+          el.style.color = color;
 
-        el("btn-archives").addEventListener("click", enterDeck);
-        el("btn-enter").addEventListener("click", enterDeck);
+          const tex = TEX[i % TEX.length];
+          try{
+            el.innerHTML = window.katex.renderToString(tex, { throwOnError:false, displayMode:false });
+          }catch(_){
+            el.textContent = tex;
+          }
 
-        // scroll listeners (container scroll, not window)
-        views.deck.addEventListener("scroll", () => setNavScrolled(views.deck.scrollTop > 8), { passive: true });
-        views.reader.addEventListener("scroll", onReaderScroll, { passive: true });
+          items.push({
+            el,
+            a: Math.random()*Math.PI*2,
+            r: 0.18 + Math.random()*0.82,
+            s: 0.08 + Math.random()*0.18,
+            ph: Math.random()*10,
+            ox: (Math.random()-0.5)*140,
+            oy: (Math.random()-0.5)*140
+          });
 
-        // expose optional
-        window.__openArticle = openArticle;
+          layer.appendChild(el);
+        }
+        return items;
       }
 
-      return { init };
+      /* WebGL */
+      if (!window.THREE || !isWebGLAvailable()){
+        showErr(new Error("WebGL or Three.js unavailable (blocked by editor / CSP)."));
+        return;
+      }
+
+      try{
+        const canvas = $("gl");
+        const renderer = new THREE.WebGLRenderer({
+          canvas,
+          antialias: true,
+          alpha: false,
+          powerPreference: "high-performance"
+        });
+
+        const DPR = ()=>Math.min(window.devicePixelRatio || 1, 2);
+        renderer.setPixelRatio(DPR());
+        renderer.setSize(window.innerWidth, window.innerHeight, false);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.08;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(cssVar("--bg") || "#050505");
+
+        const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 5000);
+        camera.position.set(0, 22, 220);
+
+        // Lights
+        scene.add(new THREE.AmbientLight(0xffffff, 0.34));
+        const key = new THREE.DirectionalLight(0xffffff, 1.75);
+        key.position.set(160, 190, 130);
+        scene.add(key);
+        const fill = new THREE.DirectionalLight(0xfff1cc, 0.72);
+        fill.position.set(-210, 70, 160);
+        scene.add(fill);
+        const rim = new THREE.PointLight(0xd4af37, 1.35, 1200, 1.4);
+        rim.position.set(0, 0, -320);
+        scene.add(rim);
+
+        // Pointer
+        const pointer = new THREE.Vector2(0,0);
+        let px=0, py=0, pointerActive=false;
+        window.addEventListener("pointermove", (e)=>{
+          pointerActive = true;
+          px = e.clientX; py = e.clientY;
+          pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+          pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        }, { passive:true });
+        window.addEventListener("pointerleave", ()=>{ pointerActive=false; }, { passive:true });
+
+        /* Milky Way background (stars + nebula shell) */
+        const galaxy = new THREE.Group();
+        scene.add(galaxy);
+
+        function buildStars(){
+          const starCount = 38000;
+          const geom = new THREE.BufferGeometry();
+          const pos = new Float32Array(starCount*3);
+          const col = new Float32Array(starCount*3);
+          const size = new Float32Array(starCount);
+
+          const gold = new THREE.Color(cssVar("--gold") || "#D4AF37");
+          const silv = new THREE.Color(cssVar("--silver") || "#e8e8ea");
+          const blue = new THREE.Color("#7aa6ff");
+
+          const arms = 4;
+          for (let i=0;i<starCount;i++){
+            const r = Math.pow(Math.random(), 0.42) * 900;
+            const arm = (i % arms) * (Math.PI*2/arms);
+            const theta = Math.random() * Math.PI*2;
+            const twist = (r/900) * 6.6;
+            const a = theta + arm + twist;
+
+            const thickness = (1 - r/900);
+            const y = (Math.random()-0.5) * (22 + 160*(1-thickness)) * (0.32 + 0.68*Math.random());
+
+            pos[i*3+0] = Math.cos(a)*r + (Math.random()-0.5)*14;
+            pos[i*3+1] = y;
+            pos[i*3+2] = Math.sin(a)*r + (Math.random()-0.5)*14;
+
+            const t = clamp(0.16 + 0.84*(1 - r/900), 0, 1);
+            const c = silv.clone().lerp(gold, t);
+            if (Math.random() < 0.10) c.lerp(blue, 0.55);
+
+            col[i*3+0]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
+
+            size[i] = 0.6 + Math.random()*2.4;
+            if (Math.random() < 0.02) size[i] *= 3.0;
+          }
+
+          geom.setAttribute("position", new THREE.BufferAttribute(pos,3));
+          geom.setAttribute("color", new THREE.BufferAttribute(col,3));
+          geom.setAttribute("aSize", new THREE.BufferAttribute(size,1));
+
+          const mat = new THREE.ShaderMaterial({
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            uniforms: {
+              uTime: { value: 0 },
+              uDpr: { value: DPR() }
+            },
+            vertexShader: `
+              attribute float aSize;
+              attribute vec3 color;
+              varying vec3 vColor;
+              uniform float uTime;
+              uniform float uDpr;
+              void main(){
+                vColor = color;
+                vec3 p = position;
+                float tw = sin(uTime*0.18 + p.x*0.01 + p.z*0.01) * 0.30;
+                p.y += tw;
+                vec4 mv = modelViewMatrix * vec4(p, 1.0);
+                gl_Position = projectionMatrix * mv;
+                float s = aSize * (300.0 / -mv.z);
+                gl_PointSize = clamp(s * uDpr, 1.0, 10.0);
+              }
+            `,
+            fragmentShader: `
+              varying vec3 vColor;
+              void main(){
+                vec2 uv = gl_PointCoord.xy - 0.5;
+                float d = dot(uv, uv);
+                float a = smoothstep(0.25, 0.0, d);
+                float halo = smoothstep(0.48, 0.10, d) * 0.55;
+                vec3 c = vColor * (1.2*a + 0.9*halo);
+                gl_FragColor = vec4(c, (a + halo) * 0.85);
+              }
+            `
+          });
+
+          return new THREE.Points(geom, mat);
+        }
+
+        const stars = buildStars();
+        stars.rotation.x = -0.34;
+        galaxy.add(stars);
+
+        const nebula = new THREE.Mesh(
+          new THREE.SphereGeometry(1900, 48, 48),
+          new THREE.ShaderMaterial({
+            side: THREE.BackSide,
+            uniforms: {
+              uTime: { value: 0 },
+              uPointer: { value: new THREE.Vector2(0,0) },
+              uGold: { value: new THREE.Color(cssVar("--gold") || "#D4AF37") },
+              uSilver: { value: new THREE.Color(cssVar("--silver") || "#e8e8ea") },
+              uBg: { value: new THREE.Color(cssVar("--bg") || "#050505") }
+            },
+            vertexShader: `
+              varying vec3 vP;
+              uniform float uTime;
+              uniform vec2 uPointer;
+              void main(){
+                vec3 p = position;
+                float band = exp(-abs(p.y) / 240.0);
+                float swirl = sin(uTime*0.08 + p.x*0.002 + p.z*0.002) * 22.0 * band;
+                p.x += swirl;
+                p.z -= swirl * 0.55;
+                p.x += uPointer.x * 40.0 * band;
+                p.y += uPointer.y * 18.0 * band;
+                vP = p;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+              }
+            `,
+            fragmentShader: `
+              varying vec3 vP;
+              uniform float uTime;
+              uniform vec3 uGold;
+              uniform vec3 uSilver;
+              uniform vec3 uBg;
+
+              float noise(vec3 p){
+                vec3 i = floor(p);
+                vec3 f = fract(p);
+                f = f*f*(3.0-2.0*f);
+                float n000 = fract(sin(dot(i, vec3(1.0,57.0,113.0))) * 43758.5453);
+                float n100 = fract(sin(dot(i+vec3(1,0,0), vec3(1.0,57.0,113.0))) * 43758.5453);
+                float n010 = fract(sin(dot(i+vec3(0,1,0), vec3(1.0,57.0,113.0))) * 43758.5453);
+                float n110 = fract(sin(dot(i+vec3(1,1,0), vec3(1.0,57.0,113.0))) * 43758.5453);
+                float n001 = fract(sin(dot(i+vec3(0,0,1), vec3(1.0,57.0,113.0))) * 43758.5453);
+                float n101 = fract(sin(dot(i+vec3(1,0,1), vec3(1.0,57.0,113.0))) * 43758.5453);
+                float n011 = fract(sin(dot(i+vec3(0,1,1), vec3(1.0,57.0,113.0))) * 43758.5453);
+                float n111 = fract(sin(dot(i+vec3(1,1,1), vec3(1.0,57.0,113.0))) * 43758.5453);
+                float n00 = mix(n000, n100, f.x);
+                float n10 = mix(n010, n110, f.x);
+                float n01 = mix(n001, n101, f.x);
+                float n11 = mix(n011, n111, f.x);
+                float n0 = mix(n00, n10, f.y);
+                float n1 = mix(n01, n11, f.y);
+                return mix(n0, n1, f.z);
+              }
+              float fbm(vec3 p){
+                float v = 0.0;
+                float a = 0.5;
+                for(int i=0;i<5;i++){
+                  v += a * noise(p);
+                  p *= 2.02;
+                  a *= 0.5;
+                }
+                return v;
+              }
+              void main(){
+                float band = exp(-abs(vP.y) / 170.0);
+                vec3 q = vP * 0.0018 + vec3(0.0, 0.0, uTime*0.015);
+                float n = fbm(q*3.0);
+                float m = fbm(q*6.0 + 12.3);
+                float cloud = smoothstep(0.35, 0.92, n) * band;
+                float dust  = smoothstep(0.25, 0.85, m) * band;
+                float grad = clamp(0.5 + 0.5*sin(vP.x*0.002 + uTime*0.06), 0.0, 1.0);
+                vec3 mixc = mix(uSilver, uGold, grad);
+                vec3 c = uBg;
+                c += mixc * (0.18*cloud + 0.12*dust);
+                c += uGold * (0.06 * band);
+                c = clamp(c, 0.0, 1.0);
+                gl_FragColor = vec4(c, 1.0);
+              }
+            `
+          })
+        );
+        scene.add(nebula);
+
+        /* Planets group */
+        const planets = new THREE.Group();
+        planets.rotation.x = 0; // Flat facing camera (X-Y plane)
+        scene.add(planets);
+
+        // Visual orbit lines group
+        const orbitLines = new THREE.Group();
+        planets.add(orbitLines);
+
+        // planet palettes (real-planet-inspired)
+        const STYLES = [
+          { seed: 2,  a:"#0b1220", b:"#2f6be3", c:"#3c6e5f", at:"#6bb0ff", rough:0.70 }, // Earth-ish
+          { seed: 5,  a:"#2a2321", b:"#b08d5a", c:"#d8c9b0", at:"#f7e7ce", rough:0.60 }, // Jupiter-ish
+          { seed: 8,  a:"#3a2f26", b:"#d1b27a", c:"#f0eadf", at:"#f7e7ce", rough:0.58 }, // Saturn-ish
+          { seed: 13, a:"#281a12", b:"#b35c2a", c:"#efe7df", at:"#ffb07a", rough:0.82 }, // Mars-ish
+          { seed: 21, a:"#081024", b:"#2f6be3", c:"#7aa6ff", at:"#7aa6ff", rough:0.66 }, // Neptune-ish
+          { seed: 34, a:"#1f1f22", b:"#9b9aa0", c:"#f2f2f4", at:"#e8e8ea", rough:0.92 }  // Mercury-ish
+        ];
+
+        function labelSprite(text){
+          const w=1024, h=260;
+          const c=document.createElement("canvas");
+          c.width=w; c.height=h;
+          const g=c.getContext("2d");
+
+          const bg = g.createLinearGradient(0,0,w,h);
+          bg.addColorStop(0,"rgba(232,232,234,0.16)");
+          bg.addColorStop(0.55,"rgba(212,175,55,0.12)");
+          bg.addColorStop(1,"rgba(232,232,234,0.08)");
+
+          const r=48;
+          g.beginPath();
+          g.moveTo(r,0); g.lineTo(w-r,0); g.quadraticCurveTo(w,0,w,r);
+          g.lineTo(w,h-r); g.quadraticCurveTo(w,h,w-r,h);
+          g.lineTo(r,h); g.quadraticCurveTo(0,h,0,h-r);
+          g.lineTo(0,r); g.quadraticCurveTo(0,0,r,0);
+          g.closePath();
+
+          g.fillStyle = bg;
+          g.fill();
+          g.strokeStyle = "rgba(255,255,255,0.18)";
+          g.lineWidth = 2;
+          g.stroke();
+
+          g.shadowColor = "rgba(212,175,55,0.28)";
+          g.shadowBlur = 18;
+
+          g.fillStyle = "rgba(255,255,255,0.94)";
+          g.font = "700 62px Latin Modern Sans, system-ui, sans-serif";
+          g.textAlign = "center";
+          g.textBaseline = "middle";
+
+          // wrap title
+          const pad=22;
+          const maxW=w-pad*2;
+          const words=String(text).split(/\s+/).filter(Boolean);
+          let line="", lines=[];
+          for(let i=0;i<words.length;i++){
+            const test=line? (line+" "+words[i]) : words[i];
+            if(g.measureText(test).width<=maxW) line=test;
+            else{ lines.push(line); line=words[i]; }
+          }
+          if(line) lines.push(line);
+
+          const lineH=72;
+          const y0=h/2 - ((lines.length-1)*lineH)/2;
+          for(let i=0;i<lines.length;i++) g.fillText(lines[i], w/2, y0+i*lineH);
+
+          const tex=new THREE.CanvasTexture(c);
+          tex.colorSpace = THREE.SRGBColorSpace;
+          tex.anisotropy = 8;
+
+          const spr=new THREE.Sprite(new THREE.SpriteMaterial({
+            map: tex,
+            transparent:true,
+            depthWrite:false
+          }));
+          spr.scale.set(78, 20, 1);
+          return spr;
+        }
+
+        // Planet shading: procedural bands + noise
+        function planetMaterial(style){
+          return new THREE.ShaderMaterial({
+            uniforms:{
+              uTime: { value: 0 },
+              uSeed: { value: style.seed },
+              uA: { value: new THREE.Color(style.a) },
+              uB: { value: new THREE.Color(style.b) },
+              uC: { value: new THREE.Color(style.c) },
+              uGold: { value: new THREE.Color(cssVar("--gold") || "#D4AF37") },
+              uRough: { value: style.rough }
+            },
+            vertexShader: `
+              varying vec3 vN;
+              varying vec3 vW;
+              void main(){
+                vN = normalize(normalMatrix * normal);
+                vec4 wpos = modelMatrix * vec4(position,1.0);
+                vW = wpos.xyz;
+                gl_Position = projectionMatrix * viewMatrix * wpos;
+              }
+            `,
+            fragmentShader: `
+              varying vec3 vN;
+              varying vec3 vW;
+
+              uniform float uTime;
+              uniform float uSeed;
+              uniform vec3 uA;
+              uniform vec3 uB;
+              uniform vec3 uC;
+              uniform vec3 uGold;
+              uniform float uRough;
+
+              float hash(vec3 p){
+                p = fract(p*0.3183099 + uSeed*0.07);
+                p *= 17.0;
+                return fract(p.x*p.y*p.z*(p.x+p.y+p.z));
+              }
+
+              float noise(vec3 p){
+                vec3 i = floor(p);
+                vec3 f = fract(p);
+                f = f*f*(3.0-2.0*f);
+
+                float n000 = hash(i);
+                float n100 = hash(i+vec3(1,0,0));
+                float n010 = hash(i+vec3(0,1,0));
+                float n110 = hash(i+vec3(1,1,0));
+                float n001 = hash(i+vec3(0,0,1));
+                float n101 = hash(i+vec3(1,0,1));
+                float n011 = hash(i+vec3(0,1,1));
+                float n111 = hash(i+vec3(1,1,1));
+
+                float n00 = mix(n000, n100, f.x);
+                float n10 = mix(n010, n110, f.x);
+                float n01 = mix(n001, n101, f.x);
+                float n11 = mix(n011, n111, f.x);
+
+                float n0 = mix(n00, n10, f.y);
+                float n1 = mix(n01, n11, f.y);
+                return mix(n0, n1, f.z);
+              }
+
+              float fbm(vec3 p){
+                float v=0.0;
+                float a=0.5;
+                for(int i=0;i<5;i++){
+                  v += a*noise(p);
+                  p *= 2.02;
+                  a *= 0.5;
+                }
+                return v;
+              }
+
+              void main(){
+                vec3 N = normalize(vN);
+                vec3 V = normalize(cameraPosition - vW);
+
+                float lat = N.y * 0.5 + 0.5;
+                float bands = sin((lat*12.0 + uSeed*0.13 + uTime*0.02) * 6.28318) * 0.5 + 0.5;
+
+                vec3 p = N * 3.2 + vec3(0.0, 0.0, uTime*0.03);
+                float n = fbm(p + uSeed*0.1);
+                float m = fbm(p*2.0 + 10.0);
+
+                float t2 = smoothstep(0.35, 0.90, m);
+
+                vec3 base = mix(uA, uB, bands*0.75 + 0.15*n);
+                base = mix(base, uC, t2*0.35);
+
+                float glint = pow(max(0.0, dot(reflect(-V,N), normalize(vec3(0.2,0.7,0.6)))), 18.0);
+                base += uGold * (0.16 * glint);
+
+                vec3 L = normalize(vec3(0.35, 0.72, 0.58));
+                float diff = max(0.0, dot(N,L));
+                float fres = pow(1.0 - max(0.0, dot(V,N)), 3.0);
+                float spec = pow(max(0.0, dot(reflect(-L,N), V)), 28.0) * (1.0 - uRough);
+
+                vec3 c = base * (0.22 + 1.05*diff) + vec3(1.0)*spec*0.38;
+                c += uGold * fres * 0.08;
+
+                gl_FragColor = vec4(clamp(c,0.0,1.0), 1.0);
+              }
+            `
+          });
+        }
+
+        function atmosphereMaterial(hex){
+          return new THREE.ShaderMaterial({
+            transparent:true,
+            depthWrite:false,
+            blending:THREE.AdditiveBlending,
+            uniforms:{
+              uColor:{ value:new THREE.Color(hex) },
+              uIntensity:{ value:0.85 }
+            },
+            vertexShader: `
+              varying vec3 vN;
+              varying vec3 vW;
+              void main(){
+                vN = normalize(normalMatrix * normal);
+                vec4 wpos = modelMatrix * vec4(position,1.0);
+                vW = wpos.xyz;
+                gl_Position = projectionMatrix * viewMatrix * wpos;
+              }
+            `,
+            fragmentShader: `
+              varying vec3 vN;
+              varying vec3 vW;
+              uniform vec3 uColor;
+              uniform float uIntensity;
+              void main(){
+                vec3 V = normalize(cameraPosition - vW);
+                float fres = pow(1.0 - max(0.0, dot(V, vN)), 3.0);
+                float a = fres * uIntensity;
+                gl_FragColor = vec4(uColor, a);
+              }
+            `
+          });
+        }
+
+        /* Orbit constraint:
+           - Planets move on an elliptical ring (Milky-Way-like disc)
+           - Hover/pointer changes their angle & slight radius, but always projected back to the ring
+           - No planet can escape the orbit; no overlap via angular spacing + soft repulsion
+        */
+        const entries = [];
+        const raycaster = new THREE.Raycaster();
+        let hovered = null;
+
+        function buildOrbitVisuals(a, b){
+            orbitLines.clear();
+            const points = [];
+            const segments = 128;
+            for(let i=0; i<=segments; i++){
+                const theta = (i/segments)*Math.PI*2;
+                // Switch to X-Y plane
+                points.push(new THREE.Vector3(Math.cos(theta)*a, Math.sin(theta)*b, 0));
+            }
+            const geo = new THREE.BufferGeometry().setFromPoints(points);
+            const mat = new THREE.LineBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.08,
+                blending: THREE.AdditiveBlending
+            });
+            const loop = new THREE.LineLoop(geo, mat);
+            // Centered in X-Y
+            loop.position.y = 0;
+            orbitLines.add(loop);
+        }
+
+        function buildPlanets(){
+          planets.children = planets.children.filter(c => c === orbitLines); // keep orbit lines
+          entries.length = 0;
+
+          // Responsive Scaling Logic
+          let w = window.innerWidth;
+          let h = window.innerHeight;
+          // Fallback if dimensions are missing or zero (prevent NaN)
+          if (!w || !h) { w = 1024; h = 768; }
+
+          const aspect = w / h;
+          // Calculate visible height at z=0 given camera z=220 and fov=52
+          // vH = 2 * dist * tan(fov/2)
+          const dist = 220; 
+          const vH = 2 * dist * Math.tan((52 * Math.PI / 180) / 2); // approx 215
+          const vW = vH * aspect;
+
+          // Scale factor to fit orbit within visible area
+          // We want orbit width (approx 480 base) to fit in vW with padding
+          // and orbit height (approx 300 base) to fit in vH with padding
+          let scale = Math.min(vW / 650, vH / 550); 
+          
+          if (!Number.isFinite(scale)) scale = 1.0;
+
+          // Clamp minimum scale to avoid vanishing on tiny screens
+          const finalScale = Math.max(scale, 0.42);
+
+          // Orbit ring radii in world units - X-Y plane now
+          const orbitRadius = 200 * finalScale; 
+          const orbitA = orbitRadius;      // x radius
+          const orbitB = orbitRadius;      // y radius (Circular)
+
+          buildOrbitVisuals(orbitA, orbitB);
+          
+          // Update visual orbit line y position (centered)
+          orbitLines.children.forEach(c => c.position.y = 0);
+
+          // Place planets at evenly spaced angles with jitter
+          const n = ARTICLES.length;
+          for (let i=0;i<n;i++){
+            const art = ARTICLES[i];
+            const st = STYLES[i % STYLES.length];
+            const radius = 16 * finalScale; // Equal size for all planets
+
+            const geo = new THREE.SphereGeometry(radius, 64, 64);
+            const mat = planetMaterial(st);
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.userData.article = art;
+            mesh.userData.radius = radius;
+
+            const atmo = new THREE.Mesh(
+              new THREE.SphereGeometry(radius*1.06, 64, 64),
+              atmosphereMaterial(st.at)
+            );
+
+            const label = labelSprite(art.title);
+
+            // Orbit params
+            // Phase shift added to avoid vertical alignment overlap
+            const baseAngle = (i / n) * Math.PI*2 + Math.PI/4;
+            entries.push({
+              mesh, atmo, label,
+              radius,
+              angle: baseAngle,
+              angVel: 0,
+              rMod: 0,
+              orbitA, orbitB, orbitY: 0,
+              hoverPull: 0,
+              scale: finalScale
+            });
+
+            planets.add(mesh);
+            planets.add(atmo);
+            planets.add(label);
+          }
+
+          // Initial solve: enforce non-overlapping angular gaps
+          // enforceAngularSeparation(); // REMOVED to ensure strict equal spacing
+          // Apply positions
+          for (const p of entries) applyOrbitPosition(p);
+        }
+
+        function applyOrbitPosition(p){
+          // Radius modulation is small; always stays on ring
+          const a = p.orbitA * (1.0 + p.rMod);
+          const b = p.orbitB * (1.0 + p.rMod);
+
+          // Planar X-Y orbit
+          const x = Math.cos(p.angle) * a;
+          const y = Math.sin(p.angle) * b; 
+          const z = 0; // Same depth for all
+
+          p.mesh.position.set(x,y,z);
+          p.atmo.position.copy(p.mesh.position);
+
+          p.label.position.copy(p.mesh.position);
+          // Push label down further to avoid overlap
+          // With uniform size, we can push by a fixed scale-relative amount
+          p.label.position.y -= (p.radius + 30 * p.scale); 
+          p.label.quaternion.copy(camera.quaternion);
+        }
+
+        function wrapAngle(a){
+          const two = Math.PI*2;
+          a = a % two;
+          return a < 0 ? a + two : a;
+        }
+
+        function angleDist(a,b){
+          const two = Math.PI*2;
+          let d = Math.abs(a-b) % two;
+          return d > Math.PI ? two - d : d;
+        }
+
+        function enforceAngularSeparation(){
+          // Determine minimum angular spacing based on biggest projected size.
+          // Larger planets require more angle separation.
+          const n = entries.length;
+          if (n <= 1) return;
+
+          // Base minimum gap (tuned for the orbit radii + camera distance)
+          const minGapBase = 0.55; // radians
+
+          // Iterative angular relaxation
+          for (let it=0; it<26; it++){
+            let moved = 0;
+            // sort by angle for neighbor checks
+            const idx = entries.map((p,i)=>({p,i})).sort((a,b)=>a.p.angle - b.p.angle);
+            for (let k=0;k<n;k++){
+              const A = idx[k].p;
+              const B = idx[(k+1)%n].p;
+
+              const gapNeed = minGapBase + 0.010*(A.radius + B.radius);
+              let d = angleDist(A.angle, B.angle);
+
+              if (d < gapNeed){
+                // push apart
+                const push = (gapNeed - d) * 0.5;
+                // determine direction in circular order
+                // A before B in sorted list, so move A backward, B forward
+                A.angle = wrapAngle(A.angle - push);
+                B.angle = wrapAngle(B.angle + push);
+                moved++;
+              }
+            }
+            if (!moved) break;
+          }
+        }
+
+        buildPlanets();
+
+        /* click open */
+        window.addEventListener("pointerdown", ()=>{
+          raycaster.setFromCamera(pointer, camera);
+          const hits = raycaster.intersectObjects(planets.children, true)
+            .filter(h=>h.object && h.object.userData && h.object.userData.article);
+          if (hits.length){
+            openArticle(hits[0].object.userData.article);
+          }
+        }, { passive:true });
+
+        /* animation */
+        const clock = new THREE.Clock();
+        let eqItems = buildEquationLayer();
+
+        window.__RECOLOR__ = function(){
+          nebula.material.uniforms.uGold.value.set(cssVar("--gold") || "#D4AF37");
+          nebula.material.uniforms.uSilver.value.set(cssVar("--silver") || "#e8e8ea");
+          nebula.material.uniforms.uBg.value.set(cssVar("--bg") || "#050505");
+          scene.background.set(cssVar("--bg") || "#050505");
+        };
+
+        // Reuse vectors for 60FPS optimization
+        const _vec3 = new THREE.Vector3();
+        const _targetScale = new THREE.Vector3();
+
+        function tick(){
+          const t = clock.getElapsedTime();
+          const dt = Math.min(0.033, clock.getDelta());
+
+          // Camera parallax
+          const nx = pointerActive ? (px / window.innerWidth - 0.5) : 0.0;
+          const ny = pointerActive ? (py / window.innerHeight - 0.5) : 0.0;
+          camera.position.x = lerp(camera.position.x, nx * 26, 0.06);
+          camera.position.y = lerp(camera.position.y, 22 + (-ny) * 12, 0.06);
+          camera.lookAt(0,0,0);
+
+          // background uniforms
+          nebula.material.uniforms.uTime.value = t;
+          nebula.material.uniforms.uPointer.value.set(nx, -ny);
+          stars.material.uniforms.uTime.value = t;
+          stars.material.uniforms.uDpr.value = DPR();
+
+          galaxy.rotation.y = Math.sin(t*0.06)*0.12;
+          galaxy.rotation.z = Math.cos(t*0.04)*0.06;
+
+          // Hover detection (planets only)
+          raycaster.setFromCamera(pointer, camera);
+          const hits = raycaster.intersectObjects(planets.children, true);
+          const hit = hits.find(h=>h.object && h.object.userData && h.object.userData.article);
+          const newHover = hit ? hit.object : null;
+          if (hovered !== newHover){
+            hovered = newHover;
+            document.body.style.cursor = hovered ? "pointer" : "default";
+          }
+
+          // Planets: always constrained to orbit ring
+          // Pointer influence adjusts angles (never breaks orbit)
+          const n = entries.length;
+          for (let i=0;i<n;i++){
+            const p = entries[i];
+            const m = p.mesh;
+
+            // spin
+            m.rotation.y += dt * (0.12 + i*0.01);
+            m.rotation.x += dt * 0.012;
+
+            // determine if this is the hovered mesh
+            const isHover = hovered && hovered === m;
+
+            // hover pull factor
+            p.hoverPull = lerp(p.hoverPull, isHover ? 1 : 0, 0.12);
+
+            // target angle drift + pointer field
+            // mild continuous orbit motion + pointer steering
+            const baseSpin = 0.06;
+            const steer = pointerActive ? (nx * 0.25) : 0.0;
+            const hoverSteer = p.hoverPull * (nx*0.85) * 0.12;
+
+            p.angVel = lerp(p.angVel, baseSpin + steer + hoverSteer, 0.05);
+
+            // add local wobble but bounded
+            const wob = Math.sin(t*0.7 + i*1.7) * 0.004;
+            p.angle = wrapAngle(p.angle + (p.angVel + wob) * dt * 8.0);
+
+            // small radial modulation (bounded) + hover brings it slightly "out" but still on ring
+            const rTarget = isHover ? 0.06 : 0.0;
+            p.rMod = lerp(p.rMod, rTarget, 0.08);
+
+            // subtle vertical breathing via orbitY (bounded) removed for flat XY orbit
+            // p.orbitY = ... 
+
+            // enforce angular separation each frame (cheap for small n)
+            // do a light pass every frame to prevent overlap during interaction
+          }
+
+          // light separation pass
+          for (let it=0; it<3; it++) enforceAngularSeparation();
+
+          // apply positions + label facing + hover scaling
+          for (let i=0;i<n;i++){
+            const p = entries[i];
+            const isHover = hovered && hovered === p.mesh;
+
+            applyOrbitPosition(p);
+
+            const s = isHover ? 1.12 : 1.0;
+            _targetScale.set(s, s, s);
+            p.mesh.scale.lerp(_targetScale, 0.10);
+
+            _targetScale.set(s*1.05, s*1.05, s*1.05);
+            p.atmo.scale.lerp(_targetScale, 0.10);
+
+            // material time
+            if (p.mesh.material && p.mesh.material.uniforms){
+              p.mesh.material.uniforms.uTime.value = t;
+              p.mesh.material.uniforms.uGold.value.set(cssVar("--gold") || "#D4AF37");
+            }
+          }
+
+          // Depth-name parallax (DOM)
+          const dn = $("depthName");
+          dn.style.transform = `translate(-50%, -50%) translate(${nx*18}px, ${-ny*10}px)`;
+
+          // Equations DOM motion (parallax)
+          const w = window.innerWidth, h = window.innerHeight;
+          for (let i=0;i<eqItems.length;i++){
+            const it = eqItems[i];
+            it.a += dt * it.s;
+            const rr = (0.18 + it.r*0.82);
+            const x = (0.5 + 0.46*Math.cos(it.a) * rr) * w + it.ox;
+            const y = (0.5 + 0.36*Math.sin(it.a*0.92 + it.ph) * rr) * h + it.oy;
+            const op = 0.18 + 0.12*(0.5+0.5*Math.sin(t*0.35 + i));
+            it.el.style.opacity = String(op);
+            it.el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${Math.sin(it.a)*2.0}deg)`;
+          }
+
+          renderer.render(scene, camera);
+          requestAnimationFrame(tick);
+        }
+
+        function onResize(){
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setPixelRatio(DPR());
+          renderer.setSize(window.innerWidth, window.innerHeight, false);
+
+          // rebuild planets (orbit radii depend on viewport)
+          buildPlanets();
+
+          // rebuild equations
+          eqItems = buildEquationLayer();
+        }
+        window.addEventListener("resize", onResize, { passive:true });
+
+        // Brand resets camera
+        const brand = $("brand");
+        brand.addEventListener("click", ()=>camera.position.set(0,22,220));
+        brand.addEventListener("keydown", (e)=>{ if (e.key==="Enter"||e.key===" "){ e.preventDefault(); camera.position.set(0,22,220); } });
+
+        themeBtn.addEventListener("click", ()=>{
+          const cur = root.getAttribute("data-theme") || "dark";
+          applyTheme(cur === "dark" ? "light" : "dark", true);
+        });
+
+        // start
+        applyTheme(getInitialTheme(), false);
+        tick();
+
+      }catch(e){
+        showErr(e);
+      }
     })();
-
-    document.addEventListener("DOMContentLoaded", () => {
-      Theme.apply(Theme.getInitialTheme(), false);
-      document.getElementById("btn-theme").addEventListener("click", Theme.toggle);
-
-      Visuals.init();
-      App.init();
-    });
   </script>
 </body>
 </html>
