@@ -16,10 +16,10 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-  <!-- GSAP for Animations -->
+  <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
-  <!-- KaTeX for equation rendering -->
+  <!-- KaTeX -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
@@ -159,7 +159,6 @@
       filter: blur(0.2px);
       opacity: 0.95;
       white-space: nowrap;
-      transition: color 0.5s ease;
     }
     #depthName::after{
       content:"";
@@ -198,7 +197,6 @@
       display:none;
       background: rgba(0,0,0,0.56);
       backdrop-filter: blur(10px);
-      opacity: 1;
     }
     #modal.open{ display:block; }
 
@@ -254,6 +252,7 @@
       transition: background 0.2s;
     }
     #close:hover{ background: rgba(255,255,255,0.15); }
+
     #modalBody{
       overflow: auto;
       -webkit-overflow-scrolling: touch;
@@ -292,6 +291,7 @@
       padding: 6px 10px;
       border-radius: 999px;
       font-weight: 800;
+      font-family: var(--font-ui);
     }
 
     #err{
@@ -340,47 +340,15 @@
 
   <div id="err">
     <h2>Render error</h2>
-    <div>WebGL or external scripts may be blocked by this editor environment. Error details:</div>
+    <div>Error details:</div>
     <pre id="errText"></pre>
   </div>
-
-  <!-- Inline fallback articles (used only if fetch fails or is blocked) -->
-  <template id="article-options-pricing">
-    <article>
-      <h1>Options Pricing</h1>
-      <p>Fallback content. Replace by serving <code>/articles/options.html</code> over HTTP(S), or paste your full article HTML here.</p>
-      <p>Inline math test: \\(C = S_0 N(d_1) - K e^{-rT} N(d_2)\\)</p>
-    </article>
-  </template>
-
-  <template id="article-bvar">
-    <article>
-      <h1>Bayesian Vector Autoregression</h1>
-      <p>Fallback content. Replace by serving <code>/articles/bvar.html</code> over HTTP(S), or paste your full article HTML here.</p>
-      <p>Inline math test: \\(Y_t = A_1Y_{t-1} + \\cdots + A_pY_{t-p} + u_t\\)</p>
-    </article>
-  </template>
-
-  <template id="article-stoch-vol">
-    <article>
-      <h1>Why ML is (almost) useless in Time Series Forecasting ?</h1>
-      <p>Fallback content. Replace by serving <code>/articles/forecasting.html</code> over HTTP(S), or paste your full article HTML here.</p>
-      <p>Inline math test: \\(E[y_t\\mid\\mathcal{I}_{t-1}]\\)</p>
-    </article>
-  </template>
-
-  <template id="article-sign-rest">
-    <article>
-      <h1>ERPT</h1>
-      <p>Fallback content. Replace by serving <code>/articles/ERPT.html</code> over HTTP(S), or paste your full article HTML here.</p>
-    </article>
-  </template>
 
   <script>
     (function(){
       "use strict";
 
-      /* React Components */
+      /* React components */
       const ArticleHeader = ({ title, category, date }) => {
         return React.createElement('header', { className: 'article-header' },
           React.createElement('div', { className: 'meta' },
@@ -433,8 +401,8 @@
           React.createElement('div', { id: 'modalTop' },
             React.createElement('div', { id: 'modalMeta' },
               React.createElement('strong', {}, 'Reading Mode'),
-              article && React.createElement('span', {}, "•"),
-              article && React.createElement('span', {}, article.category || "")
+              article ? React.createElement('span', {}, "•") : null,
+              article ? React.createElement('span', {}, article.category || "") : null
             ),
             React.createElement('button', { id: 'close', onClick: onClose }, 'Close')
           ),
@@ -444,14 +412,15 @@
               : errorText
                 ? React.createElement('article', null,
                     React.createElement('h1', null, 'Could not load article'),
-                    React.createElement('p', null, 'Details:'),
+                    React.createElement('p', null, 'Resolved URL / error:'),
                     React.createElement('pre', { style: {
                       border:'1px solid rgba(255,255,255,0.12)',
                       background:'rgba(18,18,18,0.55)',
                       borderRadius:'14px',
                       padding:'12px',
                       overflow:'auto'
-                    }}, errorText)
+                    }}, errorText),
+                    React.createElement('p', null, 'Common GitHub Pages causes: wrong repo base path or case-sensitive filename mismatch.')
                   )
                 : React.createElement(React.Fragment, null,
                     React.createElement(ArticleHeader, {
@@ -465,12 +434,12 @@
         );
       };
 
-      /* Articles = planets */
+      /* Articles */
       const ARTICLES = [
-        { id:"options-pricing", file:"./articles/options.html", category:"Financial Econometrics", title:"Options Pricing", date:"JAN 2026", enabled:true, fallbackTpl:"article-options-pricing" },
-        { id:"bvar", file:"./articles/bvar.html", category:"Core Theory", title:"Bayesian Vector Autoregression", date:"DEC 2025", enabled:true, fallbackTpl:"article-bvar" },
-        { id:"stoch-vol", file:"./articles/forecasting.html", category:"Time Series", title:"Why ML is (almost) useless in Time Series Forecasting ?", date:"JAN 2026", enabled:true, fallbackTpl:"article-stoch-vol" },
-        { id:"sign-rest", file:"./articles/ERPT.html", category:"Macroeconometrics", title:"ERPT", date:"JAN 2026", enabled:true, fallbackTpl:"article-sign-rest" }
+        { id:"options-pricing", file:"articles/options.html", category:"Financial Econometrics", title:"Options Pricing", date:"JAN 2026", enabled:true },
+        { id:"bvar", file:"articles/bvar.html", category:"Core Theory", title:"Bayesian Vector Autoregression", date:"DEC 2025", enabled:true },
+        { id:"stoch-vol", file:"articles/forecasting.html", category:"Time Series", title:"Why ML is (almost) useless in Time Series Forecasting ?", date:"JAN 2026", enabled:true },
+        { id:"sign-rest", file:"articles/ERPT.html", category:"Macroeconometrics", title:"ERPT", date:"JAN 2026", enabled:true }
       ].filter(x=>x.enabled);
 
       const TEX = [
@@ -548,88 +517,80 @@
         return (saved === "light" || saved === "dark") ? saved : "dark";
       }
 
-      /* Modal reader (UMD-safe: ReactDOM.render) */
+      /* Modal reader */
       const modal = $("modal");
+      const cache = new Map(); // key: resolved URL -> html
       const container = document.getElementById('react-app');
-      const cache = new Map(); // key: resolved URL string, value: html text
-
-      function renderModal(props){
-        ReactDOM.render(React.createElement(ArticleModal, props), container);
+      let reactRoot = null;
+      function ensureRoot(){
+        if (!reactRoot){
+          if (ReactDOM && ReactDOM.createRoot) reactRoot = ReactDOM.createRoot(container);
+          else reactRoot = { render: (el)=>ReactDOM.render(el, container), unmount: ()=>ReactDOM.unmountComponentAtNode(container) };
+        }
+        return reactRoot;
       }
 
       function closeModal(){
         modal.classList.remove("open");
-        ReactDOM.unmountComponentAtNode(container);
+        if (reactRoot && reactRoot.unmount) reactRoot.unmount();
+        reactRoot = null;
       }
-
       modal.addEventListener("click", (e)=>{ if (e.target === modal) closeModal(); });
       window.addEventListener("keydown", (e)=>{ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
 
-      function getInlineFallbackHTML(article){
-        const tplId = article.fallbackTpl;
-        const tpl = tplId ? document.getElementById(tplId) : null;
-        if (tpl && tpl.content) {
-          const div = document.createElement("div");
-          div.appendChild(tpl.content.cloneNode(true));
-          return div.innerHTML;
-        }
-        return `<article><h1>${article.title || "Article"}</h1><p>No fallback template found.</p></article>`;
+      // GitHub Pages-safe base directory:
+      // e.g. https://user.github.io/repo/index.html -> baseDir = https://user.github.io/repo/
+      function getBaseDir(){
+        const baseTag = document.querySelector("base");
+        if (baseTag && baseTag.href) return baseTag.href;
+        const path = location.pathname.endsWith("/") ? location.pathname : location.pathname.replace(/[^\/]*$/, "");
+        return location.origin + path;
       }
 
       async function openArticle(a){
         modal.classList.add("open");
+        const rr = ensureRoot();
 
-        renderModal({
+        rr.render(React.createElement(ArticleModal, {
           article: a,
           content: '',
           onClose: closeModal,
           isLoading: true,
           errorText: ''
-        });
+        }));
 
-        const resolvedURL = new URL(a.file, window.location.href).href;
+        const baseDir = getBaseDir();
+        const resolvedURL = new URL(a.file, baseDir).href;
 
         try{
           let html = cache.get(resolvedURL);
           if (!html){
-            const res = await fetch(resolvedURL, { cache:"no-store", mode:"same-origin" });
-            if (!res.ok) {
-              throw new Error(`Fetch failed (${res.status} ${res.statusText})\nURL: ${resolvedURL}`);
-            }
+            const res = await fetch(resolvedURL, { cache:"no-store" });
+            if (!res.ok) throw new Error(`Fetch failed (${res.status} ${res.statusText})\nResolved URL: ${resolvedURL}`);
             html = await res.text();
             cache.set(resolvedURL, html);
           }
 
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, "text/html");
-
+          const doc = new DOMParser().parseFromString(html, "text/html");
           const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
-
           contentNode.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
 
-          const contentHTML = contentNode.innerHTML;
-
-          renderModal({
+          rr.render(React.createElement(ArticleModal, {
             article: a,
-            content: contentHTML,
+            content: contentNode.innerHTML,
             onClose: closeModal,
             isLoading: false,
             errorText: ''
-          });
+          }));
 
         }catch(e){
-          const msg = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
-
-          // If fetch is blocked (common on file:// or restrictive previews), use inline fallback.
-          const fallbackHTML = getInlineFallbackHTML(a);
-
-          renderModal({
+          rr.render(React.createElement(ArticleModal, {
             article: a,
-            content: fallbackHTML,
+            content: '',
             onClose: closeModal,
             isLoading: false,
-            errorText: msg + "\n\nShowing inline fallback content. To load external files, serve the site over HTTP(S) so the articles are on the same origin."
-          });
+            errorText: (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e)
+          }));
         }
       }
 
@@ -671,7 +632,7 @@
 
       /* WebGL */
       if (!window.THREE || !isWebGLAvailable()){
-        showErr(new Error("WebGL or Three.js unavailable (blocked by editor / CSP)."));
+        showErr(new Error("WebGL or Three.js unavailable (blocked by environment)."));
         return;
       }
 
@@ -697,6 +658,7 @@
         const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 5000);
         camera.position.set(0, 0, 220);
 
+        // Lights
         scene.add(new THREE.AmbientLight(0xffffff, 0.34));
         const key = new THREE.DirectionalLight(0xffffff, 1.75);
         key.position.set(160, 190, 130);
@@ -708,6 +670,7 @@
         rim.position.set(0, 0, -320);
         scene.add(rim);
 
+        // Pointer
         const pointer = new THREE.Vector2(0,0);
         let px=0, py=0, pointerActive=false;
         window.addEventListener("pointermove", (e)=>{
@@ -718,7 +681,7 @@
         }, { passive:true });
         window.addEventListener("pointerleave", ()=>{ pointerActive=false; }, { passive:true });
 
-        /* Milky Way background */
+        /* Milky Way background (stars + nebula shell) */
         const galaxy = new THREE.Group();
         scene.add(galaxy);
 
@@ -858,8 +821,8 @@
                 float n01 = mix(n001, n101, f.x);
                 float n11 = mix(n011, n111, f.x);
                 float n0 = mix(n00, n10, f.y);
-                float n1 = mix(n01, n1, f.z); /* (unused; keep compiler calm) */
-                return mix(mix(n00, n10, f.y), mix(n01, n11, f.y), f.z);
+                float n1 = mix(n01, n11, f.y);
+                return mix(n0, n1, f.z);
               }
               float fbm(vec3 p){
                 float v = 0.0;
@@ -893,13 +856,11 @@
 
         /* Planets */
         const planets = new THREE.Group();
-        planets.rotation.x = 0;
         scene.add(planets);
 
         const orbitLines = new THREE.Group();
         planets.add(orbitLines);
 
-        const entries = [];
         const raycaster = new THREE.Raycaster();
         let hovered = null;
 
@@ -913,7 +874,7 @@
         ];
 
         function labelSprite(text){
-          const w=1200, h=400;
+          const w=1200, h=420;
           const c=document.createElement("canvas");
           c.width=w; c.height=h;
           const g=c.getContext("2d");
@@ -923,7 +884,7 @@
           bg.addColorStop(0.55,"rgba(212,175,55,0.12)");
           bg.addColorStop(1,"rgba(232,232,234,0.08)");
 
-          const r=48;
+          const r=52;
           g.beginPath();
           g.moveTo(r,0); g.lineTo(w-r,0); g.quadraticCurveTo(w,0,w,r);
           g.lineTo(w,h-r); g.quadraticCurveTo(w,h,w-r,h);
@@ -937,15 +898,16 @@
           g.lineWidth = 2;
           g.stroke();
 
-          g.shadowColor = "rgba(212,175,55,0.28)";
-          g.shadowBlur = 18;
+          g.shadowColor = "rgba(212,175,55,0.26)";
+          g.shadowBlur = 16;
 
           g.fillStyle = "rgba(255,255,255,0.94)";
-          g.font = "700 100px Latin Modern Sans, system-ui, sans-serif";
           g.textAlign = "center";
           g.textBaseline = "middle";
+          // Canvas font: force Latin Modern (loaded via CSS)
+          g.font = "800 94px 'Latin Modern Sans','Latin Modern Roman',system-ui,sans-serif";
 
-          const pad=40;
+          const pad=46;
           const maxW=w-pad*2;
           const words=String(text).split(/\s+/).filter(Boolean);
           let line="", lines=[];
@@ -956,7 +918,7 @@
           }
           if(line) lines.push(line);
 
-          const lineH=110;
+          const lineH=112;
           const y0=h/2 - ((lines.length-1)*lineH)/2;
           for(let i=0;i<lines.length;i++) g.fillText(lines[i], w/2, y0+i*lineH);
 
@@ -969,7 +931,7 @@
             transparent:true,
             depthWrite:false
           }));
-          spr.scale.set(110, 42, 1);
+          spr.scale.set(110, 44, 1);
           return spr;
         }
 
@@ -979,8 +941,8 @@
               uTime: { value: 0 },
               uSeed: { value: style.seed },
               uA: { value: new THREE.Color(style.a) },
-              uB: hookupColor(style.b),
-              uC: hookupColor(style.c),
+              uB: { value: new THREE.Color(style.b) },
+              uC: { value: new THREE.Color(style.c) },
               uGold: { value: new THREE.Color(cssVar("--gold") || "#D4AF37") },
               uRough: { value: style.rough }
             },
@@ -1044,6 +1006,7 @@
                 }
                 return v;
               }
+
               void main(){
                 vec3 N = normalize(vN);
                 vec3 V = normalize(cameraPosition - vW);
@@ -1061,24 +1024,20 @@
                 base = mix(base, uC, t2*0.35);
 
                 float glint = pow(max(0.0, dot(reflect(-V,N), normalize(vec3(0.2,0.7,0.6)))), 18.0);
-                base += uGold * (0.16 * glint);
+                base += uGold * (0.14 * glint);
 
                 vec3 L = normalize(vec3(0.35, 0.72, 0.58));
                 float diff = max(0.0, dot(N,L));
                 float fres = pow(1.0 - max(0.0, dot(V,N)), 3.0);
                 float spec = pow(max(0.0, dot(reflect(-L,N), V)), 28.0) * (1.0 - uRough);
 
-                vec3 c = base * (0.22 + 1.05*diff) + vec3(1.0)*spec*0.38;
+                vec3 c = base * (0.22 + 1.05*diff) + vec3(1.0)*spec*0.34;
                 c += uGold * fres * 0.08;
 
                 gl_FragColor = vec4(clamp(c,0.0,1.0), 1.0);
               }
             `
           });
-        }
-
-        function hookupColor(hex){
-          return { value: new THREE.Color(hex) };
         }
 
         function atmosphereMaterial(hex){
@@ -1088,7 +1047,7 @@
             blending:THREE.AdditiveBlending,
             uniforms:{
               uColor:{ value:new THREE.Color(hex) },
-              uIntensity:{ value:0.85 }
+              uIntensity:{ value:0.78 }
             },
             vertexShader: `
               varying vec3 vN;
@@ -1115,10 +1074,12 @@
           });
         }
 
+        const entries = [];
+
         function buildOrbitVisuals(a, b){
           orbitLines.clear();
           const points = [];
-          const segments = 128;
+          const segments = 140;
           for(let i=0; i<=segments; i++){
             const theta = (i/segments)*Math.PI*2;
             points.push(new THREE.Vector3(Math.cos(theta)*a, Math.sin(theta)*b, 0));
@@ -1127,11 +1088,65 @@
           const mat = new THREE.LineBasicMaterial({
             color: 0xffffff,
             transparent: true,
-            opacity: 0.08,
+            opacity: 0.085,
             blending: THREE.AdditiveBlending
           });
-          const loop = new THREE.LineLoop(geo, mat);
-          orbitLines.add(loop);
+          orbitLines.add(new THREE.LineLoop(geo, mat));
+        }
+
+        function wrapAngle(a){
+          const two = Math.PI*2;
+          a = a % two;
+          return a < 0 ? a + two : a;
+        }
+        function angleDist(a,b){
+          const two = Math.PI*2;
+          let d = Math.abs(a-b) % two;
+          return d > Math.PI ? two - d : d;
+        }
+        function enforceAngularSeparation(){
+          const n = entries.length;
+          if (n <= 1) return;
+          const minGapBase = 0.60;
+
+          for (let it=0; it<22; it++){
+            let moved = 0;
+            const idx = entries.map((p,i)=>({p,i})).sort((a,b)=>a.p.angle - b.p.angle);
+            for (let k=0;k<n;k++){
+              const A = idx[k].p;
+              const B = idx[(k+1)%n].p;
+              const gapNeed = minGapBase + 0.010*(A.radius + B.radius);
+              const d = angleDist(A.angle, B.angle);
+              if (d < gapNeed){
+                const push = (gapNeed - d) * 0.5;
+                A.angle = wrapAngle(A.angle - push);
+                B.angle = wrapAngle(B.angle + push);
+                moved++;
+              }
+            }
+            if (!moved) break;
+          }
+        }
+
+        function applyOrbitPosition(p){
+          const a = p.orbitA * (1.0 + p.rMod);
+          const b = p.orbitB * (1.0 + p.rMod);
+          const x = Math.cos(p.angle) * a;
+          const y = Math.sin(p.angle) * b;
+          const z = p.zMod;
+
+          p.mesh.position.set(x,y,z);
+          p.atmo.position.copy(p.mesh.position);
+
+          p.label.position.copy(p.mesh.position);
+
+          // Labels: put ABOVE for top-half planets (two upper planets will be above),
+          // BELOW for bottom-half planets.
+          const offset = (p.radius + 64 * p.scale * p.labelScaleMult);
+          if (y >= 0) p.label.position.y += offset;
+          else p.label.position.y -= offset;
+
+          p.label.quaternion.copy(camera.quaternion);
         }
 
         function disposeObject(obj){
@@ -1146,13 +1161,10 @@
         }
 
         function buildPlanets(){
-          // Remove all children except orbitLines (do NOT assign planets.children)  [oai_citation:2‡Stack Overflow](https://stackoverflow.com/questions/36706110/remove-child-objects-from-object3d?utm_source=chatgpt.com)
+          // remove all children except orbitLines
           for (let i = planets.children.length - 1; i >= 0; i--) {
             const ch = planets.children[i];
-            if (ch !== orbitLines) {
-              planets.remove(ch);
-              try{ disposeObject(ch); }catch(_){}
-            }
+            if (ch !== orbitLines) { planets.remove(ch); try{ disposeObject(ch); }catch(_){} }
           }
           orbitLines.clear();
           entries.length = 0;
@@ -1160,25 +1172,26 @@
           let w = window.innerWidth;
           let h = window.innerHeight;
           if (!w || !h) { w = 1024; h = 768; }
-
           const isMobile = w < 800;
+
           const aspect = w / h;
           const dist = 220;
           const vH = 2 * dist * Math.tan((52 * Math.PI / 180) / 2);
           const vW = vH * aspect;
 
-          let scale = Math.min(vW / 550, vH / 550);
+          let scale = Math.min(vW / 560, vH / 560);
           if (!Number.isFinite(scale)) scale = 1.0;
           const finalScale = Math.max(scale, 0.22);
 
-          const orbitRadius = 130 * finalScale;
-          const orbitA = orbitRadius;
-          const orbitB = orbitRadius;
+          // Wider horizontally: ellipse with larger X radius
+          const orbitRadius = 128 * finalScale;
+          const orbitA = orbitRadius * 1.22; // horizontal
+          const orbitB = orbitRadius * 0.92; // vertical
 
           buildOrbitVisuals(orbitA, orbitB);
 
           const planetBaseRadius = isMobile ? 50 : 25;
-          const labelScaleMult = isMobile ? 2.2 : 1.0;
+          const labelScaleMult = isMobile ? 2.15 : 1.0;
 
           const n = ARTICLES.length;
           for (let i=0;i<n;i++){
@@ -1187,9 +1200,10 @@
 
             const radius = planetBaseRadius * finalScale;
 
-            const geo = new THREE.SphereGeometry(radius, 64, 64);
-            const mat = planetMaterial(st);
-            const mesh = new THREE.Mesh(geo, mat);
+            const mesh = new THREE.Mesh(
+              new THREE.SphereGeometry(radius, 64, 64),
+              planetMaterial(st)
+            );
             mesh.userData.article = art;
             mesh.userData.radius = radius;
 
@@ -1222,82 +1236,29 @@
             planets.add(label);
           }
 
+          // settle once
+          enforceAngularSeparation();
           for (const p of entries) applyOrbitPosition(p);
-        }
-
-        function applyOrbitPosition(p){
-          const a = p.orbitA * (1.0 + p.rMod);
-          const b = p.orbitB * (1.0 + p.rMod);
-
-          const x = Math.cos(p.angle) * a;
-          const y = Math.sin(p.angle) * b;
-          const z = p.zMod;
-
-          p.mesh.position.set(x,y,z);
-          p.atmo.position.copy(p.mesh.position);
-
-          p.label.position.copy(p.mesh.position);
-          const offset = (p.radius + 60 * p.scale * p.labelScaleMult);
-          p.label.position.y -= offset;
-          p.label.quaternion.copy(camera.quaternion);
-        }
-
-        function wrapAngle(a){
-          const two = Math.PI*2;
-          a = a % two;
-          return a < 0 ? a + two : a;
-        }
-
-        function angleDist(a,b){
-          const two = Math.PI*2;
-          let d = Math.abs(a-b) % two;
-          return d > Math.PI ? two - d : d;
-        }
-
-        function enforceAngularSeparation(){
-          const n = entries.length;
-          if (n <= 1) return;
-          const minGapBase = 0.55;
-
-          for (let it=0; it<26; it++){
-            let moved = 0;
-            const idx = entries.map((p,i)=>({p,i})).sort((a,b)=>a.p.angle - b.p.angle);
-            for (let k=0;k<n;k++){
-              const A = idx[k].p;
-              const B = idx[(k+1)%n].p;
-
-              const gapNeed = minGapBase + 0.010*(A.radius + B.radius);
-              let d = angleDist(A.angle, B.angle);
-
-              if (d < gapNeed){
-                const push = (gapNeed - d) * 0.5;
-                A.angle = wrapAngle(A.angle - push);
-                B.angle = wrapAngle(B.angle + push);
-                moved++;
-              }
-            }
-            if (!moved) break;
-          }
         }
 
         buildPlanets();
 
+        // Click handler
         window.addEventListener("pointerdown", (e)=>{
-          if (modal.classList.contains("open")) return; // ignore clicks when modal open
+          if (modal.classList.contains("open")) return;
 
           pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
           pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
           raycaster.setFromCamera(pointer, camera);
-
           const hits = raycaster.intersectObjects(planets.children, true)
             .filter(h => h.object && h.object.userData && h.object.userData.article);
-
           if (hits.length > 0){
             openArticle(hits[0].object.userData.article);
           }
         }, { passive:true });
 
+        /* animation */
         const clock = new THREE.Clock();
         let eqItems = buildEquationLayer();
 
@@ -1314,12 +1275,14 @@
           const t = clock.getElapsedTime();
           const dt = Math.min(0.033, clock.getDelta());
 
+          // Camera parallax
           const nx = pointerActive ? (px / window.innerWidth - 0.5) : 0.0;
           const ny = pointerActive ? (py / window.innerHeight - 0.5) : 0.0;
           camera.position.x = lerp(camera.position.x, nx * 26, 0.06);
           camera.position.y = lerp(camera.position.y, (-ny) * 12, 0.06);
           camera.lookAt(0,0,0);
 
+          // background uniforms
           nebula.material.uniforms.uTime.value = t;
           nebula.material.uniforms.uPointer.value.set(nx, -ny);
           stars.material.uniforms.uTime.value = t;
@@ -1328,45 +1291,47 @@
           galaxy.rotation.y = Math.sin(t*0.06)*0.12;
           galaxy.rotation.z = Math.cos(t*0.04)*0.06;
 
+          // Hover detection
           raycaster.setFromCamera(pointer, camera);
           const hits = raycaster.intersectObjects(planets.children, true);
           const hit = hits.find(h => h.object && h.object.userData && h.object.userData.article);
           const newHover = hit ? hit.object : null;
-
           if (hovered !== newHover){
             hovered = newHover;
             document.body.style.cursor = hovered ? "pointer" : "default";
           }
 
+          // Planets
           const n = entries.length;
           for (let i=0;i<n;i++){
             const p = entries[i];
             const m = p.mesh;
 
-            m.rotation.y += dt * (0.12 + i*0.01);
-            m.rotation.x += dt * 0.012;
+            m.rotation.y += dt * (0.11 + i*0.008);
+            m.rotation.x += dt * 0.010;
 
             const isHover = hovered && hovered.userData.article === m.userData.article;
 
             p.hoverPull = lerp(p.hoverPull, isHover ? 1 : 0, 0.12);
 
-            const baseSpin = 0.06;
-            const steer = pointerActive ? (nx * 0.25) : 0.0;
-            const hoverSteer = p.hoverPull * (nx*0.85) * 0.12;
-
+            const baseSpin = 0.055;
+            const steer = pointerActive ? (nx * 0.18) : 0.0;           // reduced
+            const hoverSteer = p.hoverPull * (nx*0.55) * 0.09;         // reduced
             p.angVel = lerp(p.angVel, baseSpin + steer + hoverSteer, 0.05);
 
-            const wob = Math.sin(t*0.7 + i*1.7) * 0.004;
+            const wob = Math.sin(t*0.7 + i*1.7) * 0.0035;
             p.angle = wrapAngle(p.angle + (p.angVel + wob) * dt * 8.0);
 
-            const rTarget = isHover ? 0.06 : 0.0;
-            p.rMod = lerp(p.rMod, rTarget, 0.08);
+            // smaller hover push
+            const rTarget = isHover ? 0.035 : 0.0;
+            p.rMod = lerp(p.rMod, rTarget, 0.09);
 
-            const zTarget = isHover ? 50.0 : 0.0;
-            p.zMod = lerp(p.zMod, zTarget, 0.1);
+            // smaller pop-out
+            const zTarget = isHover ? 28.0 : 0.0;
+            p.zMod = lerp(p.zMod, zTarget, 0.10);
           }
 
-          for (let it=0; it<3; it++) enforceAngularSeparation();
+          for (let it=0; it<2; it++) enforceAngularSeparation();
 
           for (let i=0;i<n;i++){
             const p = entries[i];
@@ -1374,11 +1339,12 @@
 
             applyOrbitPosition(p);
 
-            const s = isHover ? 1.3 : 1.0;
+            // reduced magnification
+            const s = isHover ? 1.12 : 1.0;
             _targetScale.set(s, s, s);
             p.mesh.scale.lerp(_targetScale, 0.10);
 
-            _targetScale.set(s*1.05, s*1.05, s*1.05);
+            _targetScale.set(s*1.03, s*1.03, s*1.03);
             p.atmo.scale.lerp(_targetScale, 0.10);
 
             if (p.mesh.material && p.mesh.material.uniforms){
@@ -1387,9 +1353,10 @@
             }
           }
 
-          const dn = $("depthName");
-          dn.style.transform = `translate(-50%, -50%) translate(${nx*18}px, ${-ny*10}px)`;
+          // Depth-name parallax
+          $("depthName").style.transform = `translate(-50%, -50%) translate(${nx*18}px, ${-ny*10}px)`;
 
+          // Equations parallax
           const w = window.innerWidth, h = window.innerHeight;
           for (let i=0;i<eqItems.length;i++){
             const it = eqItems[i];
@@ -1416,6 +1383,7 @@
         }
         window.addEventListener("resize", onResize, { passive:true });
 
+        // Brand resets camera
         const brand = $("brand");
         brand.addEventListener("click", ()=>camera.position.set(0,0,220));
         brand.addEventListener("keydown", (e)=>{ if (e.key==="Enter"||e.key===" "){ e.preventDefault(); camera.position.set(0,0,220); } });
@@ -1425,6 +1393,7 @@
           applyTheme(cur === "dark" ? "light" : "dark", true);
         });
 
+        // start
         applyTheme(getInitialTheme(), false);
         tick();
 
