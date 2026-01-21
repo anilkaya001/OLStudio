@@ -15,6 +15,8 @@
   <!-- KaTeX for equation rendering -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <!-- KaTeX Auto-Render Extension -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 
   <!-- Three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
@@ -454,6 +456,20 @@
           const node = doc.querySelector("article") || doc.body;
           node.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
           modalBody.innerHTML = "<article>"+node.innerHTML+"</article>";
+
+          // Render math in the loaded content
+          if(window.renderMathInElement){
+            window.renderMathInElement(modalBody, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError: false
+            });
+          }
+
         }catch(e){
           modalBody.innerHTML = '<div style="font-family:var(--font-ui);opacity:.82">Could not load <strong>'+escapeHTML(a.file)+'</strong>. Check the file path in your hosting environment.</div>';
         }
@@ -997,12 +1013,12 @@
           // Scale factor to fit orbit within visible area
           // We want orbit width (approx 480 base) to fit in vW with padding
           // and orbit height (approx 300 base) to fit in vH with padding
-          let scale = Math.min(vW / 650, vH / 550); 
+          let scale = Math.min(vW / 580, vH / 500); 
           
           if (!Number.isFinite(scale)) scale = 1.0;
 
           // Clamp minimum scale to avoid vanishing on tiny screens
-          const finalScale = Math.max(scale, 0.42);
+          const finalScale = Math.max(scale, 0.22);
 
           // Orbit ring radii in world units - X-Y plane now
           const orbitRadius = 200 * finalScale; 
@@ -1033,6 +1049,7 @@
             );
 
             const label = labelSprite(art.title);
+            label.scale.multiplyScalar(finalScale); // Scale label to match world scale
 
             // Orbit params
             // Phase shift added to avoid vertical alignment overlap
