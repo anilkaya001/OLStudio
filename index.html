@@ -207,15 +207,15 @@
       display:none;
       background: rgba(0,0,0,0.56);
       backdrop-filter: blur(10px);
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      /* Default state is visible, GSAP handles entrance */
+      opacity: 1; 
     }
-    #modal.open{ display:block; opacity: 1; }
+    #modal.open{ display:block; }
     #modalCard{
       position:absolute;
       left: 50%;
       top: calc(var(--nav-h) + var(--safe-top) + 18px);
-      transform: translateX(-50%) translateY(20px);
+      transform: translateX(-50%);
       width: min(1120px, calc(100vw - 28px));
       height: min(calc(100dvh - (var(--nav-h) + var(--safe-top) + var(--safe-bottom) + 36px)), 920px);
       border-radius: 22px;
@@ -227,10 +227,6 @@
       overflow: hidden;
       display:grid;
       grid-template-rows: auto 1fr;
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    #modal.open #modalCard {
-      transform: translateX(-50%) translateY(0);
     }
     #modalTop{
       display:flex;
@@ -383,13 +379,16 @@
       };
 
       const ArticleModal = ({ article, content, onClose, isLoading }) => {
-        // GSAP Animation
+        // GSAP Animation: using "from" ensures we animate into visibility
         React.useEffect(() => {
            if(window.gsap) {
-              window.gsap.fromTo("#modalCard", 
-                { y: 40, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }
-              );
+              window.gsap.from("#modalCard", { 
+                y: 40, 
+                opacity: 0, 
+                duration: 0.4, 
+                ease: "power3.out",
+                clearProps: "all" // Clear styles after animation to prevent issues
+              });
            }
         }, []); 
 
@@ -507,6 +506,7 @@
       function closeModal(){ 
         modal.classList.remove("open");
         if(reactRoot) {
+            // We can choose to unmount or just hide. Unmounting cleans up.
             reactRoot.unmount();
             reactRoot = null;
         }
@@ -517,6 +517,11 @@
       window.addEventListener("keydown", (e)=>{ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
 
       async function openArticle(a){
+        if (!window.ReactDOM) {
+            console.error("ReactDOM not loaded");
+            return;
+        }
+
         modal.classList.add("open");
         const container = document.getElementById('react-app');
         if(!reactRoot) reactRoot = ReactDOM.createRoot(container);
@@ -540,11 +545,10 @@
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, "text/html");
           
-          // Extract just the content part to avoid double headers
+          // Robust content extraction: try specific class, then article, then body
           const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
           
-          // If we found a full article but grabbed .content, we are good.
-          // If we grabbed doc.body, cleanup TOC
+          // Cleanup TOC if present in raw HTML
           contentNode.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
           
           const contentHTML = contentNode.innerHTML;
@@ -559,15 +563,13 @@
 
         }catch(e){
            console.error(e);
-           // Render error state
+           // Render error state inside the modal structure
            reactRoot.render(React.createElement('div', { 
              id: 'modalCard',
-             style: { padding: '20px', color: 'var(--silver)' }
+             style: { padding: '20px', color: 'var(--silver)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }
            }, 
-             React.createElement('div', { id: 'modalTop' },
-               React.createElement('button', { id: 'close', onClick: closeModal }, 'Close')
-             ),
-             React.createElement('div', { style: { padding: '20px' } }, `Could not load ${a.file}.`)
+             React.createElement('div', { style: { padding: '20px' } }, `Could not load ${a.file}.`),
+             React.createElement('button', { onClick: closeModal, className: 'btn' }, 'Close')
            ));
         }
       }
@@ -881,7 +883,7 @@
           g.shadowBlur = 18;
 
           g.fillStyle = "rgba(255,255,255,0.94)";
-          g.font = "700 86px Latin Modern Sans, system-ui, sans-serif";
+          g.font = "700 100px Latin Modern Sans, system-ui, sans-serif";
           g.textAlign = "center";
           g.textBaseline = "middle";
 
@@ -897,7 +899,7 @@
           }
           if(line) lines.push(line);
 
-          const lineH=100;
+          const lineH=110;
           const y0=h/2 - ((lines.length-1)*lineH)/2;
           for(let i=0;i<lines.length;i++) g.fillText(lines[i], w/2, y0+i*lineH);
 
@@ -1114,8 +1116,8 @@
           const finalScale = Math.max(scale, 0.22);
 
           // Orbit ring radii in world units - X-Y plane now
-          // Reduced base from 155 to 140 to pull closer to center
-          const orbitRadius = 140 * finalScale; 
+          // Reduced base from 155 to 130 to pull closer to center
+          const orbitRadius = 130 * finalScale; 
           const orbitA = orbitRadius;      // x radius
           const orbitB = orbitRadius;      // y radius (Circular)
 
@@ -1126,8 +1128,8 @@
 
           // Mobile-specific sizing multipliers
           // Boost element size on mobile relative to orbit
-          const planetBaseRadius = isMobile ? 40 : 25; 
-          const labelScaleMult = isMobile ? 2.0 : 1.0; 
+          const planetBaseRadius = isMobile ? 50 : 25; 
+          const labelScaleMult = isMobile ? 2.2 : 1.0; 
 
           // Place planets at evenly spaced angles with jitter
           const n = ARTICLES.length;
@@ -1198,7 +1200,7 @@
           p.label.position.copy(p.mesh.position);
           // Push label down further to avoid overlap (adjusted for larger planets and labels)
           // We need more clearance if label is scaled up
-          const offset = (p.radius + 45 * p.scale * p.labelScaleMult); 
+          const offset = (p.radius + 60 * p.scale * p.labelScaleMult); 
           p.label.position.y -= offset; 
           p.label.quaternion.copy(camera.quaternion);
         }
@@ -1252,16 +1254,21 @@
 
         buildPlanets();
 
-        /* click open */
+        // Consolidated click/tap handler
         window.addEventListener("pointerdown", (e)=>{
-          // Update pointer coordinates on click/tap
+          // Directly calculate pointer position from event
+          // This fixes issues where 'pointermove' didn't fire before 'click' on some touch devices
           pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
           pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
           raycaster.setFromCamera(pointer, camera);
+          
+          // Check all clickable objects: Mesh (planet), Atmosphere, and Label Sprite
           const hits = raycaster.intersectObjects(planets.children, true)
-            .filter(h=>h.object && h.object.userData && h.object.userData.article);
-          if (hits.length){
+            .filter(h => h.object && h.object.userData && h.object.userData.article);
+            
+          if (hits.length > 0){
+            // Use the closest hit
             openArticle(hits[0].object.userData.article);
           }
         }, { passive:true });
@@ -1304,8 +1311,11 @@
           // Hover detection (planets only)
           raycaster.setFromCamera(pointer, camera);
           const hits = raycaster.intersectObjects(planets.children, true);
-          const hit = hits.find(h=>h.object && h.object.userData && h.object.userData.article);
+          
+          // Find first hit that has article data
+          const hit = hits.find(h => h.object && h.object.userData && h.object.userData.article);
           const newHover = hit ? hit.object : null;
+          
           if (hovered !== newHover){
             hovered = newHover;
             document.body.style.cursor = hovered ? "pointer" : "default";
