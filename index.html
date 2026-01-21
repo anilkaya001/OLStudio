@@ -12,6 +12,14 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" />
 
+  <!-- React & ReactDOM (CDN) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel for JSX (optional future use) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- GSAP for Animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
   <!-- KaTeX for equation rendering -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
@@ -144,7 +152,7 @@
     #depthName{
       position: fixed;
       left: 50%;
-      top: 54%;
+      top: 50%;
       transform: translate(-50%, -50%);
       z-index: 650;
       pointer-events: none;
@@ -177,17 +185,17 @@
       pointer-events: none;
       opacity: 0.55;
       background:
-        radial-gradient(circle at 50% 55%,
+        radial-gradient(circle at 50% 50%,
           rgba(212,175,55,0.10) 0%,
           rgba(212,175,55,0.06) 20%,
           rgba(232,232,234,0.04) 34%,
           rgba(0,0,0,0.0) 60%),
-        conic-gradient(from 220deg at 50% 55%,
+        conic-gradient(from 220deg at 50% 50%,
           rgba(212,175,55,0.12),
           rgba(122,166,255,0.06),
           rgba(232,232,234,0.08),
           rgba(212,175,55,0.12));
-      mask: radial-gradient(circle at 50% 55%, rgba(0,0,0,0) 0 26%, rgba(0,0,0,1) 34% 42%, rgba(0,0,0,0) 60%);
+      mask: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0 26%, rgba(0,0,0,1) 34% 42%, rgba(0,0,0,0) 60%);
       filter: blur(0.6px);
     }
 
@@ -323,13 +331,8 @@
   <div id="eqLayer" aria-hidden="true"></div>
 
   <div id="modal" role="dialog" aria-modal="true" aria-label="Article reader">
-    <div id="modalCard">
-      <div id="modalTop">
-        <div id="modalMeta">Loading…</div>
-        <button id="close" type="button">Close</button>
-      </div>
-      <div id="modalBody">Loading…</div>
-    </div>
+    <!-- React app will mount here -->
+    <div id="react-app"></div>
   </div>
 
   <div id="err">
@@ -341,6 +344,76 @@
   <script>
     (function(){
       "use strict";
+
+      /* React Components */
+      
+      const ArticleHeader = ({ title, category, date }) => {
+        return React.createElement('header', { className: 'article-header' },
+          React.createElement('div', { className: 'meta' },
+            React.createElement('span', { className: 'pill' }, category),
+            React.createElement('span', {}, "•"),
+            React.createElement('span', {}, date)
+          ),
+          React.createElement('h1', {}, title)
+        );
+      };
+
+      const ArticleBody = ({ content }) => {
+        const containerRef = React.useRef(null);
+
+        React.useEffect(() => {
+          if (containerRef.current && window.renderMathInElement) {
+            window.renderMathInElement(containerRef.current, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError: false
+            });
+          }
+        }, [content]);
+
+        return React.createElement('div', {
+          className: 'content',
+          ref: containerRef,
+          dangerouslySetInnerHTML: { __html: content }
+        });
+      };
+
+      const ArticleModal = ({ article, content, onClose, isLoading }) => {
+        // GSAP Animation
+        React.useEffect(() => {
+           if(window.gsap) {
+              window.gsap.fromTo("#modalCard", 
+                { y: 40, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }
+              );
+           }
+        }, []); 
+
+        return React.createElement('div', { id: 'modalCard' },
+          React.createElement('div', { id: 'modalTop' },
+            React.createElement('div', { id: 'modalMeta' }, 
+              React.createElement('strong', {}, 'Reading Mode')
+            ),
+            React.createElement('button', { id: 'close', onClick: onClose }, 'Close')
+          ),
+          React.createElement('div', { id: 'modalBody' },
+            isLoading 
+              ? React.createElement('div', { style: {opacity:0.7, fontFamily:'var(--font-ui)', letterSpacing:'1px', padding:'20px'} }, 'Loading…')
+              : React.createElement(React.Fragment, null,
+                  React.createElement(ArticleHeader, { 
+                    title: article.title, 
+                    category: article.category, 
+                    date: article.date 
+                  }),
+                  React.createElement(ArticleBody, { content: content })
+                )
+          )
+        );
+      };
 
       /* Articles = planets */
       const ARTICLES = [
@@ -426,23 +499,35 @@
         return (saved === "light" || saved === "dark") ? saved : "dark";
       }
 
-      /* Modal reader */
+      /* Modal reader with React */
       const modal = $("modal");
-      const modalMeta = $("modalMeta");
-      const modalBody = $("modalBody");
-      const closeBtn = $("close");
       const cache = new Map();
+      let reactRoot = null;
 
-      function escapeHTML(s){
-        return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      function closeModal(){ 
+        modal.classList.remove("open");
+        if(reactRoot) {
+            reactRoot.unmount();
+            reactRoot = null;
+        }
       }
+      
+      // Close on modal backdrop click
+      modal.addEventListener("click", (e)=>{ if (e.target === modal) closeModal(); });
+      window.addEventListener("keydown", (e)=>{ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
+
       async function openArticle(a){
-        modalMeta.innerHTML =
-          "<span><strong>"+escapeHTML(a.title)+"</strong></span>" +
-          "<span>•</span><span>"+escapeHTML(a.date)+"</span>" +
-          "<span>•</span><span>"+escapeHTML(a.category)+"</span>";
-        modalBody.innerHTML = '<div style="opacity:.72;font-family:var(--font-ui);letter-spacing:1px">Loading…</div>';
         modal.classList.add("open");
+        const container = document.getElementById('react-app');
+        if(!reactRoot) reactRoot = ReactDOM.createRoot(container);
+
+        // Render loading state
+        reactRoot.render(React.createElement(ArticleModal, { 
+            article: a, 
+            content: '', 
+            onClose: closeModal,
+            isLoading: true 
+        }));
 
         try{
           let html = cache.get(a.file);
@@ -452,32 +537,40 @@
             html = await res.text();
             cache.set(a.file, html);
           }
-          const doc = new DOMParser().parseFromString(html, "text/html");
-          const node = doc.querySelector("article") || doc.body;
-          node.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
-          modalBody.innerHTML = "<article>"+node.innerHTML+"</article>";
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, "text/html");
+          
+          // Extract just the content part to avoid double headers
+          const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
+          
+          // If we found a full article but grabbed .content, we are good.
+          // If we grabbed doc.body, cleanup TOC
+          contentNode.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
+          
+          const contentHTML = contentNode.innerHTML;
 
-          // Render math in the loaded content
-          if(window.renderMathInElement){
-            window.renderMathInElement(modalBody, {
-              delimiters: [
-                {left: '$$', right: '$$', display: true},
-                {left: '$', right: '$', display: false},
-                {left: '\\(', right: '\\)', display: false},
-                {left: '\\[', right: '\\]', display: true}
-              ],
-              throwOnError: false
-            });
-          }
+          // Render finished state
+          reactRoot.render(React.createElement(ArticleModal, { 
+            article: a, 
+            content: contentHTML, 
+            onClose: closeModal,
+            isLoading: false 
+          }));
 
         }catch(e){
-          modalBody.innerHTML = '<div style="font-family:var(--font-ui);opacity:.82">Could not load <strong>'+escapeHTML(a.file)+'</strong>. Check the file path in your hosting environment.</div>';
+           console.error(e);
+           // Render error state
+           reactRoot.render(React.createElement('div', { 
+             id: 'modalCard',
+             style: { padding: '20px', color: 'var(--silver)' }
+           }, 
+             React.createElement('div', { id: 'modalTop' },
+               React.createElement('button', { id: 'close', onClick: closeModal }, 'Close')
+             ),
+             React.createElement('div', { style: { padding: '20px' } }, `Could not load ${a.file}.`)
+           ));
         }
       }
-      function closeModal(){ modal.classList.remove("open"); }
-      closeBtn.addEventListener("click", closeModal);
-      modal.addEventListener("click", (e)=>{ if (e.target === modal) closeModal(); });
-      window.addEventListener("keydown", (e)=>{ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
 
       /* KaTeX equations (DOM) */
       function buildEquationLayer(){
@@ -541,7 +634,8 @@
         scene.background = new THREE.Color(cssVar("--bg") || "#050505");
 
         const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 5000);
-        camera.position.set(0, 22, 220);
+        // Changed to center Y at 0 to guarantee visual centering
+        camera.position.set(0, 0, 220);
 
         // Lights
         scene.add(new THREE.AmbientLight(0xffffff, 0.34));
@@ -759,7 +853,7 @@
         ];
 
         function labelSprite(text){
-          const w=1024, h=260;
+          const w=1200, h=400; // Increased size for better wrapping
           const c=document.createElement("canvas");
           c.width=w; c.height=h;
           const g=c.getContext("2d");
@@ -787,12 +881,12 @@
           g.shadowBlur = 18;
 
           g.fillStyle = "rgba(255,255,255,0.94)";
-          g.font = "700 62px Latin Modern Sans, system-ui, sans-serif";
+          g.font = "700 86px Latin Modern Sans, system-ui, sans-serif";
           g.textAlign = "center";
           g.textBaseline = "middle";
 
-          // wrap title
-          const pad=22;
+          // Text wrapping logic
+          const pad=40; 
           const maxW=w-pad*2;
           const words=String(text).split(/\s+/).filter(Boolean);
           let line="", lines=[];
@@ -803,7 +897,7 @@
           }
           if(line) lines.push(line);
 
-          const lineH=72;
+          const lineH=100;
           const y0=h/2 - ((lines.length-1)*lineH)/2;
           for(let i=0;i<lines.length;i++) g.fillText(lines[i], w/2, y0+i*lineH);
 
@@ -816,7 +910,8 @@
             transparent:true,
             depthWrite:false
           }));
-          spr.scale.set(78, 20, 1);
+          // Increased sprite scale for bigger text boxes
+          spr.scale.set(110, 42, 1);
           return spr;
         }
 
@@ -1000,28 +1095,25 @@
           // Responsive Scaling Logic
           let w = window.innerWidth;
           let h = window.innerHeight;
-          // Fallback if dimensions are missing or zero (prevent NaN)
           if (!w || !h) { w = 1024; h = 768; }
 
           const aspect = w / h;
-          // Calculate visible height at z=0 given camera z=220 and fov=52
-          // vH = 2 * dist * tan(fov/2)
           const dist = 220; 
           const vH = 2 * dist * Math.tan((52 * Math.PI / 180) / 2); // approx 215
           const vW = vH * aspect;
 
           // Scale factor to fit orbit within visible area
-          // We want orbit width (approx 480 base) to fit in vW with padding
-          // and orbit height (approx 300 base) to fit in vH with padding
-          let scale = Math.min(vW / 580, vH / 500); 
+          // Adjusted divisors for "safe area" fit
+          let scale = Math.min(vW / 550, vH / 550); 
           
           if (!Number.isFinite(scale)) scale = 1.0;
 
-          // Clamp minimum scale to avoid vanishing on tiny screens
+          // Allow smaller scale for mobile screens to fit properly
           const finalScale = Math.max(scale, 0.22);
 
           // Orbit ring radii in world units - X-Y plane now
-          const orbitRadius = 200 * finalScale; 
+          // Reduced base from 200 to 155 to pull closer to center
+          const orbitRadius = 155 * finalScale; 
           const orbitA = orbitRadius;      // x radius
           const orbitB = orbitRadius;      // y radius (Circular)
 
@@ -1035,7 +1127,8 @@
           for (let i=0;i<n;i++){
             const art = ARTICLES[i];
             const st = STYLES[i % STYLES.length];
-            const radius = 16 * finalScale; // Equal size for all planets
+            // Increased planet radius from 16 to 25
+            const radius = 25 * finalScale; 
 
             const geo = new THREE.SphereGeometry(radius, 64, 64);
             const mat = planetMaterial(st);
@@ -1090,9 +1183,8 @@
           p.atmo.position.copy(p.mesh.position);
 
           p.label.position.copy(p.mesh.position);
-          // Push label down further to avoid overlap
-          // With uniform size, we can push by a fixed scale-relative amount
-          p.label.position.y -= (p.radius + 30 * p.scale); 
+          // Push label down further to avoid overlap (adjusted for larger planets)
+          p.label.position.y -= (p.radius + 45 * p.scale); 
           p.label.quaternion.copy(camera.quaternion);
         }
 
@@ -1146,7 +1238,11 @@
         buildPlanets();
 
         /* click open */
-        window.addEventListener("pointerdown", ()=>{
+        window.addEventListener("pointerdown", (e)=>{
+          // Update pointer coordinates on click/tap
+          pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+          pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
           raycaster.setFromCamera(pointer, camera);
           const hits = raycaster.intersectObjects(planets.children, true)
             .filter(h=>h.object && h.object.userData && h.object.userData.article);
@@ -1178,7 +1274,7 @@
           const nx = pointerActive ? (px / window.innerWidth - 0.5) : 0.0;
           const ny = pointerActive ? (py / window.innerHeight - 0.5) : 0.0;
           camera.position.x = lerp(camera.position.x, nx * 26, 0.06);
-          camera.position.y = lerp(camera.position.y, 22 + (-ny) * 12, 0.06);
+          camera.position.y = lerp(camera.position.y, (-ny) * 12, 0.06);
           camera.lookAt(0,0,0);
 
           // background uniforms
