@@ -223,26 +223,57 @@ if (e.key==="Escape" && modal.classList.contains("open")) closeModal();
 async function openArticle(a){
 modalJustOpenedAt = performance.now();
 modal.classList.add("open");
-const rr = ensureRoot();
-rr.render(React.createElement(ArticleModal, { article: a, content: '', onClose: closeModal, isLoading: true, errorText: '' }));
-try{
-const targetUrl = new URL(a.file, document.baseURI).href;
-let html = cache.get(targetUrl);
-if (!html){
-const controller = new AbortController();
-const id = setTimeout(() => controller.abort(), 6000);
-const res = await fetch(targetUrl, { signal: controller.signal });
-clearTimeout(id);
-if (!res.ok) throw new Error("HTTP " + res.status);
-html = await res.text();
-cache.set(targetUrl, html);
+let rr;
+try {
+  if (!window.React || !window.ReactDOM) throw new Error("React/ReactDOM not loaded. check internet connection or adblocker.");
+  rr = ensureRoot();
+  rr.render(React.createElement(ArticleModal, { article: a, content: '', onClose: closeModal, isLoading: true, errorText: '' }));
+} catch(e) {
+  // If React fails to render "Loading", fallback to raw HTML error
+  modal.innerHTML = `<div style="padding:40px;color:#fff;font-family:sans-serif">
+    <h2>System Error</h2>
+    <p>Failed to initialize reader.</p>
+    <pre style="background:#222;padding:10px;overflow:auto">${e.stack || e}</pre>
+    <button onclick="document.getElementById('modal').classList.remove('open')" style="padding:10px;margin-top:20px">Close</button>
+  </div>`;
+  return;
 }
-const doc = new DOMParser().parseFromString(html, "text/html");
-const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
-contentNode.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
-rr.render(React.createElement(ArticleModal, { article: a, content: contentNode.innerHTML, onClose: closeModal, isLoading: false, errorText: '' }));
+
+try{
+  const targetUrl = new URL(a.file, document.baseURI).href;
+  // console.log("Fetching:", targetUrl); 
+  
+  let html = cache.get(targetUrl);
+  if (!html){
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 8000);
+    let res;
+    try {
+      res = await fetch(targetUrl, { signal: controller.signal });
+    } catch (err) {
+      if (err.name === 'AbortError') throw new Error("Request timed out (8s). Server too slow?");
+      throw err;
+    }
+    clearTimeout(id);
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${targetUrl}`);
+    html = await res.text();
+    cache.set(targetUrl, html);
+  }
+  
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
+  if (!contentNode) throw new Error("Could not find article content (.content/article) in response");
+  
+  contentNode.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
+  rr.render(React.createElement(ArticleModal, { article: a, content: contentNode.innerHTML, onClose: closeModal, isLoading: false, errorText: '' }));
+
 }catch(e){
-rr.render(React.createElement(ArticleModal, { article: a, content: '', onClose: closeModal, isLoading: false, errorText: String(e) }));
+  // Render the error state using React
+  if(rr) {
+    rr.render(React.createElement(ArticleModal, { article: a, content: '', onClose: closeModal, isLoading: false, errorText: String(e) }));
+  } else {
+     showErr(e);
+  }
 }
 }
 function buildEquationLayer(){
