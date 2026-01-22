@@ -89,8 +89,9 @@ isLoading
 : errorText
 ? React.createElement('article', null,
 React.createElement('h1', null, 'Could not load article'),
-React.createElement('p', null, 'This usually occurs when testing locally due to CORS security.'),
-React.createElement('pre', { style: { border:'1px solid rgba(255,255,255,0.12)', background:'rgba(18,18,18,0.55)', borderRadius:'14px', padding:'12px', overflow:'auto' } }, errorText)
+React.createElement('p', null, 'Error loading file:'),
+React.createElement('pre', { style: { border:'1px solid rgba(255,255,255,0.12)', background:'rgba(18,18,18,0.55)', borderRadius:'14px', padding:'12px', overflow:'auto' } }, errorText),
+React.createElement('p', { style: {marginTop:'1em', fontSize:'0.9rem', opacity:0.8} }, 'NOTE: If testing locally (file://), this is expected due to CORS. Please test on a local server or GitHub Pages.')
 )
 : React.createElement(React.Fragment, null,
 React.createElement(ArticleHeader, { title: article.title, category: article.category, date: article.date }),
@@ -197,11 +198,21 @@ modal.classList.add("open");
 const rr = ensureRoot();
 rr.render(React.createElement(ArticleModal, { article: a, content: '', onClose: closeModal, isLoading: true, errorText: '' }));
 try{
-const resolvedUrl = new URL(a.file, document.baseURI || window.location.href).href;
+// ROBUST PATH HANDLING FOR GITHUB PAGES
+const path = window.location.pathname;
+const dir = path.substring(0, path.lastIndexOf('/') + 1);
+const baseUrl = window.location.origin + dir;
+const cleanFile = a.file.replace(/^\.\//, '');
+const resolvedUrl = new URL(cleanFile, baseUrl).href;
+
 let html = cache.get(resolvedUrl);
 if (!html){
-const res = await fetch(resolvedUrl);
-if (!res.ok) throw new Error(`Status ${res.status}`);
+// TIMEOUT AND FETCH
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 8000);
+const res = await fetch(resolvedUrl, { signal: controller.signal, headers: {'Accept': 'text/html'} });
+clearTimeout(timeoutId);
+if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
 html = await res.text();
 cache.set(resolvedUrl, html);
 }
