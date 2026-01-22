@@ -8,6 +8,7 @@
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="preconnect" href="https://unpkg.com" crossorigin />
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" />
 
@@ -26,15 +27,19 @@
       color-scheme: dark;
       --font-main: "Latin Modern Roman","Times New Roman",Times,serif;
       --font-ui: "Latin Modern Sans","Latin Modern Roman",serif;
+
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --nav-h: 64px;
+
       --bg: #050505;
       --panel: rgba(18,18,18,0.62);
       --panel-strong: rgba(10,10,10,0.86);
       --border: rgba(255,255,255,0.10);
+
       --silver: #e8e8ea;
       --silver-dim: rgba(232,232,234,0.72);
+
       --gold: #D4AF37;
       --gold-soft: #F7E7CE;
     }
@@ -48,6 +53,7 @@
       overflow: hidden;
       overscroll-behavior: none;
       -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
     }
     *{ box-sizing: border-box; }
     a{ color: var(--gold-soft); text-decoration: none; }
@@ -100,6 +106,7 @@
       cursor: pointer;
       backdrop-filter: blur(14px);
       transition: all 0.3s ease;
+      user-select: none;
     }
     .btn:hover {
       background: rgba(212,175,55,0.15);
@@ -114,9 +121,9 @@
       display:block;
       z-index: 1;
       touch-action: none;
+      cursor: pointer;
       -webkit-user-select: none;
       user-select: none;
-      -webkit-tap-highlight-color: transparent;
     }
 
     #eqLayer{
@@ -168,7 +175,7 @@
       inset: 0;
       z-index: 600;
       pointer-events: none;
-      opacity: 0.50;
+      opacity: 0.55;
       background:
         radial-gradient(circle at 50% 50%,
           rgba(212,175,55,0.10) 0%,
@@ -245,6 +252,7 @@
       padding: 10px 12px;
       cursor:pointer;
       transition: background 0.2s;
+      user-select: none;
     }
     #close:hover{ background: rgba(255,255,255,0.15); }
 
@@ -252,6 +260,7 @@
       overflow: auto;
       -webkit-overflow-scrolling: touch;
       padding: 18px clamp(14px, 3vw, 28px) 28px;
+      touch-action: pan-y;
     }
     #modalBody article{
       max-width: 820px;
@@ -259,11 +268,13 @@
       line-height: 1.75;
       font-size: 1.14rem;
       color: color-mix(in oklab, var(--silver) 88%, var(--silver-dim));
+      font-family: var(--font-main);
     }
     #modalBody h1, #modalBody h2, #modalBody h3{
       color: color-mix(in oklab, var(--gold-soft) 70%, var(--silver));
       line-height: 1.15;
       margin: 1.2rem 0 0.6rem;
+      font-family: var(--font-ui);
     }
     #modalBody h1{ font-size: clamp(1.8rem, 3.6vw, 2.8rem); margin-top: 0; }
     #modalBody h2{ font-size: clamp(1.35rem, 2.8vw, 1.9rem); }
@@ -369,7 +380,6 @@
             });
           }
         }, [content]);
-
         return React.createElement('div', {
           className: 'content',
           ref: containerRef,
@@ -380,16 +390,9 @@
       const ArticleModal = ({ article, content, onClose, isLoading, errorText }) => {
         React.useEffect(() => {
           if(window.gsap) {
-            window.gsap.from("#modalCard", {
-              y: 40,
-              opacity: 0,
-              duration: 0.4,
-              ease: "power3.out",
-              clearProps: "all"
-            });
+            window.gsap.from("#modalCard", { y: 40, opacity: 0, duration: 0.4, ease: "power3.out", clearProps: "all" });
           }
         }, []);
-
         return React.createElement('div', { id: 'modalCard' },
           React.createElement('div', { id: 'modalTop' },
             React.createElement('div', { id: 'modalMeta' },
@@ -405,7 +408,7 @@
               : errorText
                 ? React.createElement('article', null,
                     React.createElement('h1', null, 'Could not load article'),
-                    React.createElement('p', null, 'Tried URLs / error:'),
+                    React.createElement('p', null, 'Error:'),
                     React.createElement('pre', { style: {
                       border:'1px solid rgba(255,255,255,0.12)',
                       background:'rgba(18,18,18,0.55)',
@@ -415,11 +418,7 @@
                     }}, errorText)
                   )
                 : React.createElement(React.Fragment, null,
-                    React.createElement(ArticleHeader, {
-                      title: article.title,
-                      category: article.category,
-                      date: article.date
-                    }),
+                    React.createElement(ArticleHeader, { title: article.title, category: article.category, date: article.date }),
                     React.createElement(ArticleBody, { content: content })
                   )
           )
@@ -495,9 +494,7 @@
         const isLight = theme==="light";
         eqs.forEach(n=>{
           n.style.color = isLight ? "rgba(20,20,20,0.92)" : "rgba(232,232,234,0.92)";
-          n.style.filter = isLight
-            ? "drop-shadow(0 0 14px rgba(184,138,0,0.20))"
-            : "drop-shadow(0 0 14px rgba(212,175,55,0.24))";
+          n.style.filter = isLight ? "drop-shadow(0 0 14px rgba(184,138,0,0.20))" : "drop-shadow(0 0 14px rgba(212,175,55,0.24))";
         });
 
         if (window.__RECOLOR__) window.__RECOLOR__();
@@ -543,74 +540,32 @@
         return location.origin + path;
       }
 
-      async function fetchFirstOk(urls){
-        const tried = [];
-        for (const u of urls){
-          try{
-            const res = await fetch(u, { cache:"no-store" });
-            tried.push(`${res.ok ? "OK" : "FAIL"} ${res.status} ${u}`);
-            if (res.ok) return { ok:true, url:u, text: await res.text(), tried };
-          }catch(err){
-            tried.push(`ERR ${u} :: ${(err && (err.message||err))}`);
-          }
-        }
-        return { ok:false, url: urls[0] || "", text:"", tried };
-      }
-
       async function openArticle(a){
         modalJustOpenedAt = performance.now();
         modal.classList.add("open");
         const rr = ensureRoot();
 
-        rr.render(React.createElement(ArticleModal, {
-          article: a,
-          content: '',
-          onClose: closeModal,
-          isLoading: true,
-          errorText: ''
-        }));
-
-        const baseDir = getBaseDir();
-        const direct1 = new URL(a.file, baseDir).href;
-        const direct2 = new URL("/" + a.file.replace(/^\//,""), location.origin).href;
-        const guessRepo = (location.pathname.split("/").filter(Boolean)[0] || "");
-        const direct3 = guessRepo ? new URL("/" + guessRepo + "/" + a.file.replace(/^\//,""), location.origin).href : direct1;
+        rr.render(React.createElement(ArticleModal, { article: a, content: '', onClose: closeModal, isLoading: true, errorText: '' }));
 
         try{
-          const key = direct1;
-          let html = cache.get(key);
+          const baseDir = getBaseDir();
+          const resolvedURL = new URL(a.file, baseDir).href;
+
+          let html = cache.get(resolvedURL);
           if (!html){
-            const res = await fetchFirstOk([direct1, direct2, direct3]);
-            if (!res.ok){
-              throw new Error(
-                `Could not fetch article.\n\nTried:\n- ${res.tried.join("\n- ")}\n\n` +
-                `Current page:\n- origin: ${location.origin}\n- pathname: ${location.pathname}\n- baseDir: ${baseDir}\n`
-              );
-            }
-            html = res.text;
-            cache.set(key, html);
+            const res = await fetch(resolvedURL, { cache:"no-store" });
+            if (!res.ok) throw new Error(`Fetch failed (${res.status} ${res.statusText})\n${resolvedURL}`);
+            html = await res.text();
+            cache.set(resolvedURL, html);
           }
 
           const doc = new DOMParser().parseFromString(html, "text/html");
           const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
           contentNode.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
 
-          rr.render(React.createElement(ArticleModal, {
-            article: a,
-            content: contentNode.innerHTML,
-            onClose: closeModal,
-            isLoading: false,
-            errorText: ''
-          }));
-
+          rr.render(React.createElement(ArticleModal, { article: a, content: contentNode.innerHTML, onClose: closeModal, isLoading: false, errorText: '' }));
         }catch(e){
-          rr.render(React.createElement(ArticleModal, {
-            article: a,
-            content: '',
-            onClose: closeModal,
-            isLoading: false,
-            errorText: (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e)
-          }));
+          rr.render(React.createElement(ArticleModal, { article: a, content: '', onClose: closeModal, isLoading: false, errorText: (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e) }));
         }
       }
 
@@ -628,11 +583,8 @@
           el.style.color = color;
 
           const tex = TEX[i % TEX.length];
-          try{
-            el.innerHTML = window.katex.renderToString(tex, { throwOnError:false, displayMode:false });
-          }catch(_){
-            el.textContent = tex;
-          }
+          try{ el.innerHTML = window.katex.renderToString(tex, { throwOnError:false, displayMode:false }); }
+          catch(_){ el.textContent = tex; }
 
           items.push({
             el,
@@ -656,14 +608,7 @@
 
       try{
         const canvas = $("gl");
-        canvas.style.touchAction = "none";
-
-        const renderer = new THREE.WebGLRenderer({
-          canvas,
-          antialias: true,
-          alpha: false,
-          powerPreference: "high-performance"
-        });
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
 
         const DPR = ()=>Math.min(window.devicePixelRatio || 1, 2);
         renderer.setPixelRatio(DPR());
@@ -676,7 +621,7 @@
         scene.background = new THREE.Color(cssVar("--bg") || "#050505");
 
         const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 5000);
-        camera.position.set(0, 0, 220);
+        camera.position.set(0, 0, 240);
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.34));
         const key = new THREE.DirectionalLight(0xffffff, 1.75);
@@ -692,26 +637,22 @@
         const pointer = new THREE.Vector2(0,0);
         let px=0, py=0, pointerActive=false;
 
-        function setPointerFromClient(cx, cy){
-          px = cx; py = cy;
-          pointerActive = true;
-          pointer.x = (cx / window.innerWidth) * 2 - 1;
-          pointer.y = -(cy / window.innerHeight) * 2 + 1;
+        function setPointerFromClient(x,y){
+          px = x; py = y; pointerActive = true;
+          pointer.x = (x / window.innerWidth) * 2 - 1;
+          pointer.y = -(y / window.innerHeight) * 2 + 1;
         }
 
         window.addEventListener("pointermove", (e)=>{
-          setPointerFromClient(e.clientX, e.clientY);
+          if (typeof e.clientX === "number") setPointerFromClient(e.clientX, e.clientY);
         }, { passive:true });
-
-        window.addEventListener("pointerleave", ()=>{
-          pointerActive=false;
-        }, { passive:true });
+        window.addEventListener("pointerleave", ()=>{ pointerActive=false; }, { passive:true });
 
         const galaxy = new THREE.Group();
         scene.add(galaxy);
 
         function buildStars(){
-          const starCount = 38000;
+          const starCount = 36000;
           const geom = new THREE.BufferGeometry();
           const pos = new Float32Array(starCount*3);
           const col = new Float32Array(starCount*3);
@@ -739,7 +680,6 @@
             const t = clamp(0.16 + 0.84*(1 - r/900), 0, 1);
             const c = silv.clone().lerp(gold, t);
             if (Math.random() < 0.10) c.lerp(blue, 0.55);
-
             col[i*3+0]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
 
             size[i] = 0.6 + Math.random()*2.4;
@@ -754,10 +694,7 @@
             transparent: true,
             depthWrite: false,
             blending: THREE.AdditiveBlending,
-            uniforms: {
-              uTime: { value: 0 },
-              uDpr: { value: DPR() }
-            },
+            uniforms: { uTime: { value: 0 }, uDpr: { value: DPR() } },
             vertexShader: `
               attribute float aSize;
               attribute vec3 color;
@@ -878,19 +815,14 @@
         );
         scene.add(nebula);
 
-        const planets = new THREE.Group();
-        scene.add(planets);
+        const orbitFrame = new THREE.Group();
+        scene.add(orbitFrame);
 
-        const orbitGroup = new THREE.Group();
-        planets.add(orbitGroup);
-
-        const orbitLines = new THREE.Group();
-        orbitGroup.add(orbitLines);
-
-        let ringMesh = null;
+        const labelsGroup = new THREE.Group();
+        scene.add(labelsGroup);
 
         const raycaster = new THREE.Raycaster();
-        let hovered = null;
+        raycaster.params.Sprite.threshold = 18;
 
         const STYLES = [
           { seed: 2,  a:"#0b1220", b:"#2f6be3", c:"#3c6e5f", at:"#6bb0ff", rough:0.70 },
@@ -902,7 +834,7 @@
         ];
 
         function labelSprite(text){
-          const w=1200, h=420;
+          const w=1200, h=380;
           const c=document.createElement("canvas");
           c.width=w; c.height=h;
           const g=c.getContext("2d");
@@ -912,7 +844,7 @@
           bg.addColorStop(0.55,"rgba(212,175,55,0.12)");
           bg.addColorStop(1,"rgba(232,232,234,0.08)");
 
-          const r=52;
+          const r=50;
           g.beginPath();
           g.moveTo(r,0); g.lineTo(w-r,0); g.quadraticCurveTo(w,0,w,r);
           g.lineTo(w,h-r); g.quadraticCurveTo(w,h,w-r,h);
@@ -926,15 +858,15 @@
           g.lineWidth = 2;
           g.stroke();
 
-          g.shadowColor = "rgba(212,175,55,0.26)";
-          g.shadowBlur = 16;
+          g.shadowColor = "rgba(212,175,55,0.24)";
+          g.shadowBlur = 14;
 
           g.fillStyle = "rgba(255,255,255,0.94)";
           g.textAlign = "center";
           g.textBaseline = "middle";
-          g.font = "800 94px 'Latin Modern Sans','Latin Modern Roman',system-ui,sans-serif";
+          g.font = "800 90px 'Latin Modern Sans','Latin Modern Roman',system-ui,sans-serif";
 
-          const pad=46;
+          const pad=44;
           const maxW=w-pad*2;
           const words=String(text).split(/\s+/).filter(Boolean);
           let line="", lines=[];
@@ -945,7 +877,7 @@
           }
           if(line) lines.push(line);
 
-          const lineH=112;
+          const lineH=106;
           const y0=h/2 - ((lines.length-1)*lineH)/2;
           for(let i=0;i<lines.length;i++) g.fillText(lines[i], w/2, y0+i*lineH);
 
@@ -953,12 +885,8 @@
           tex.colorSpace = THREE.SRGBColorSpace;
           tex.anisotropy = 8;
 
-          const spr=new THREE.Sprite(new THREE.SpriteMaterial({
-            map: tex,
-            transparent:true,
-            depthWrite:false
-          }));
-          spr.scale.set(110, 44, 1);
+          const spr=new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent:true, depthWrite:false }));
+          spr.scale.set(104, 38, 1);
           spr.userData._labelText = text;
           return spr;
         }
@@ -1059,10 +987,7 @@
             transparent:true,
             depthWrite:false,
             blending:THREE.AdditiveBlending,
-            uniforms:{
-              uColor:{ value:new THREE.Color(hex) },
-              uIntensity:{ value:0.74 }
-            },
+            uniforms:{ uColor:{ value:new THREE.Color(hex) }, uIntensity:{ value:0.74 } },
             vertexShader: `
               varying vec3 vN;
               varying vec3 vW;
@@ -1089,55 +1014,8 @@
         }
 
         const entries = [];
-        const orbitQuat = new THREE.Quaternion();
-        const orbitNormal = new THREE.Vector3(0,0,1);
-        const tmpV = new THREE.Vector3();
-
-        function buildOrbitVisuals(a, b, scale){
-          orbitLines.clear();
-          if (ringMesh){
-            orbitGroup.remove(ringMesh);
-            if (ringMesh.geometry) ringMesh.geometry.dispose();
-            if (ringMesh.material) ringMesh.material.dispose();
-            ringMesh = null;
-          }
-
-          const segments = 180;
-          const points = [];
-          for(let i=0; i<=segments; i++){
-            const theta = (i/segments)*Math.PI*2;
-            points.push(new THREE.Vector3(Math.cos(theta)*a, Math.sin(theta)*b, 0));
-          }
-          const geo = new THREE.BufferGeometry().setFromPoints(points);
-          const mat = new THREE.LineBasicMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0.10,
-            blending: THREE.AdditiveBlending
-          });
-          orbitLines.add(new THREE.LineLoop(geo, mat));
-
-          const inner = Math.max(1, (Math.min(a,b) * 0.92));
-          const outer = Math.max(inner + 1, (Math.max(a,b) * 1.10));
-          const ringGeo = new THREE.RingGeometry(inner, outer, 220, 1);
-          const ringMat = new THREE.MeshBasicMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0.07,
-            blending: THREE.AdditiveBlending,
-            side: THREE.DoubleSide,
-            depthWrite: false
-          });
-          ringMesh = new THREE.Mesh(ringGeo, ringMat);
-          ringMesh.renderOrder = -1;
-          orbitGroup.add(ringMesh);
-
-          const tiltX = 0.56;
-          const tiltZ = 0.22;
-          orbitQuat.setFromEuler(new THREE.Euler(tiltX, 0, tiltZ, "XYZ"));
-          orbitGroup.quaternion.copy(orbitQuat);
-          orbitNormal.set(0,0,1).applyQuaternion(orbitQuat).normalize();
-        }
+        const clickables = [];
+        let ringMesh = null;
 
         function wrapAngle(a){
           const two = Math.PI*2;
@@ -1152,10 +1030,10 @@
         function enforceAngularSeparation(){
           const n = entries.length;
           if (n <= 1) return;
-          const minGapBase = 0.66;
-          for (let it=0; it<24; it++){
+          const minGapBase = 0.64;
+          for (let it=0; it<26; it++){
             let moved = 0;
-            const idx = entries.map((p)=>p).sort((a,b)=>a.angle - b.angle);
+            const idx = entries.slice().sort((a,b)=>a.angle - b.angle);
             for (let k=0;k<n;k++){
               const A = idx[k];
               const B = idx[(k+1)%n];
@@ -1172,34 +1050,26 @@
           }
         }
 
+        const _tmpV3 = new THREE.Vector3();
+        const _ringNormal = new THREE.Vector3();
+        const _q = new THREE.Quaternion();
+
         function applyOrbitPosition(p){
-          const a = p.orbitA * (1.0 + p.rMod);
-          const b = p.orbitB * (1.0 + p.rMod);
+          const R = p.orbitR * (1.0 + p.rMod);
+          const x = Math.cos(p.angle) * R;
+          const z = Math.sin(p.angle) * R;
+          const y = Math.sin(p.angle * 2.0 + p.phase) * p.wobble;
 
-          tmpV.set(Math.cos(p.angle) * a, Math.sin(p.angle) * b, 0).applyQuaternion(orbitQuat);
-          tmpV.addScaledVector(orbitNormal, p.zMod);
+          p.mesh.position.set(x,y,z);
+          p.atmo.position.copy(p.mesh.position);
 
-          p.mesh.position.copy(tmpV);
-          p.atmo.position.copy(tmpV);
+          p.mesh.getWorldPosition(_tmpV3);
+          orbitFrame.getWorldQuaternion(_q);
+          _ringNormal.set(0,1,0).applyQuaternion(_q).normalize();
 
-          p.label.position.copy(tmpV);
-
-          const offset = (p.radius + 44 * p.scale * p.labelScaleMult);
-          if (p.label.position.y >= 0) p.label.position.y += offset;
-          else p.label.position.y -= offset;
-
+          const labelOffset = (p.radius + 34 * p.scale * p.labelScaleMult);
+          p.label.position.copy(_tmpV3).addScaledVector(_ringNormal, labelOffset);
           p.label.quaternion.copy(camera.quaternion);
-        }
-
-        function disposeObject(obj){
-          obj.traverse((o)=>{
-            if (o.geometry) o.geometry.dispose();
-            if (o.material){
-              if (Array.isArray(o.material)) o.material.forEach(m=>m.dispose && m.dispose());
-              else o.material.dispose && o.material.dispose();
-            }
-            if (o.material && o.material.map) o.material.map.dispose && o.material.map.dispose();
-          });
         }
 
         function rebuildLabelTextures(){
@@ -1211,19 +1081,66 @@
             newSpr.position.copy(spr.position);
             newSpr.quaternion.copy(spr.quaternion);
             newSpr.userData.article = spr.userData.article;
-            planets.remove(spr);
-            planets.add(newSpr);
+            labelsGroup.remove(spr);
+            labelsGroup.add(newSpr);
             p.label = newSpr;
+            clickables.push(newSpr);
           }
         }
 
+        function buildRing(inner, outer){
+          if (ringMesh){ orbitFrame.remove(ringMesh); ringMesh.geometry.dispose(); ringMesh.material.dispose(); ringMesh = null; }
+          const geo = new THREE.RingGeometry(inner, outer, 256, 1);
+          const mat = new THREE.ShaderMaterial({
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            uniforms: {
+              uTime: { value: 0 },
+              uGold: { value: new THREE.Color(cssVar("--gold") || "#D4AF37") },
+              uSilver: { value: new THREE.Color(cssVar("--silver") || "#e8e8ea") }
+            },
+            vertexShader: `
+              varying vec2 vUv;
+              void main(){
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+              }
+            `,
+            fragmentShader: `
+              varying vec2 vUv;
+              uniform float uTime;
+              uniform vec3 uGold;
+              uniform vec3 uSilver;
+              void main(){
+                float r = length(vUv - 0.5) * 2.0;
+                float band1 = smoothstep(0.15, 0.35, r) * (1.0 - smoothstep(0.78, 0.98, r));
+                float rip = 0.65 + 0.35*sin(uTime*0.8 + r*42.0);
+                float speck = 0.5 + 0.5*sin(uTime*1.4 + r*120.0 + vUv.x*60.0);
+                float a = band1 * (0.08 + 0.10*rip) * (0.65 + 0.35*speck);
+                vec3 c = mix(uSilver, uGold, 0.5 + 0.5*sin(uTime*0.4 + r*9.0));
+                gl_FragColor = vec4(c, a);
+              }
+            `
+          });
+          ringMesh = new THREE.Mesh(geo, mat);
+          ringMesh.rotation.x = Math.PI/2;
+          orbitFrame.add(ringMesh);
+        }
+
         function buildPlanets(){
-          for (let i = planets.children.length - 1; i >= 0; i--) {
-            const ch = planets.children[i];
-            if (ch !== orbitGroup) { planets.remove(ch); try{ disposeObject(ch); }catch(_){} }
+          while (orbitFrame.children.length) {
+            const ch = orbitFrame.children.pop();
+            if (ch.geometry) ch.geometry.dispose();
+            if (ch.material) ch.material.dispose();
           }
-          orbitLines.clear();
+          while (labelsGroup.children.length) {
+            const ch = labelsGroup.children.pop();
+            if (ch.material && ch.material.map) ch.material.map.dispose();
+            if (ch.material) ch.material.dispose();
+          }
           entries.length = 0;
+          clickables.length = 0;
 
           let w = window.innerWidth;
           let h = window.innerHeight;
@@ -1231,22 +1148,25 @@
           const isMobile = w < 800;
 
           const aspect = w / h;
-          const dist = 220;
+          const dist = 240;
           const vH = 2 * dist * Math.tan((52 * Math.PI / 180) / 2);
           const vW = vH * aspect;
 
-          let scale = Math.min(vW / 560, vH / 560);
+          let scale = Math.min(vW / 620, vH / 620);
           if (!Number.isFinite(scale)) scale = 1.0;
           const finalScale = Math.max(scale, 0.22);
 
-          const orbitRadius = 146 * finalScale;
-          const orbitA = orbitRadius * 1.34;
-          const orbitB = orbitRadius * 0.82;
+          const tiltX = isMobile ? 0.60 : 0.55;
+          const tiltZ = 0.28;
+          orbitFrame.rotation.set(tiltX, 0, tiltZ);
 
-          buildOrbitVisuals(orbitA, orbitB, finalScale);
+          const orbitR = 148 * finalScale;
+          const ringInner = orbitR * 0.86;
+          const ringOuter = orbitR * 1.10;
+          buildRing(ringInner, ringOuter);
 
-          const planetBaseRadius = isMobile ? 20 : 25;
-          const labelScaleMult = isMobile ? 1.80 : 1.0;
+          const planetBaseRadius = isMobile ? 22 : 26;
+          const labelScaleMult = isMobile ? 1.95 : 1.05;
 
           const n = ARTICLES.length;
           for (let i=0;i<n;i++){
@@ -1255,40 +1175,41 @@
 
             const radius = planetBaseRadius * finalScale;
 
-            const mesh = new THREE.Mesh(
-              new THREE.SphereGeometry(radius, 64, 64),
-              planetMaterial(st)
-            );
+            const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 64), planetMaterial(st));
             mesh.userData.article = art;
-            mesh.userData.radius = radius;
 
-            const atmo = new THREE.Mesh(
-              new THREE.SphereGeometry(radius*1.06, 64, 64),
-              atmosphereMaterial(st.at)
-            );
+            const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 64, 64), atmosphereMaterial(st.at));
             atmo.userData.article = art;
 
             const label = labelSprite(art.title);
             label.scale.multiplyScalar(finalScale * labelScaleMult);
             label.userData.article = art;
 
-            const baseAngle = (i / n) * Math.PI*2 + Math.PI/4;
-            entries.push({
+            const baseAngle = (i / n) * Math.PI*2 + Math.PI/6;
+
+            const entry = {
               mesh, atmo, label,
               radius,
               angle: baseAngle,
               angVel: 0,
               rMod: 0,
               zMod: 0,
-              orbitA, orbitB,
+              orbitR,
               hoverPull: 0,
               scale: finalScale,
-              labelScaleMult
-            });
+              labelScaleMult,
+              wobble: (isMobile ? 6.0 : 7.5) * finalScale,
+              phase: i * 0.9
+            };
 
-            planets.add(mesh);
-            planets.add(atmo);
-            planets.add(label);
+            entries.push(entry);
+
+            orbitFrame.add(mesh);
+            orbitFrame.add(atmo);
+            labelsGroup.add(label);
+
+            clickables.push(mesh);
+            clickables.push(label);
           }
 
           enforceAngularSeparation();
@@ -1301,108 +1222,69 @@
           document.fonts.ready.then(()=> { rebuildLabelTextures(); }).catch(()=>{});
         }
 
-        const tap = {
-          active: false,
-          id: null,
-          x0: 0, y0: 0,
-          t0: 0,
-          moved: false
-        };
-
-        function beginTap(clientX, clientY, id){
-          tap.active = true;
-          tap.id = id;
-          tap.x0 = clientX;
-          tap.y0 = clientY;
-          tap.t0 = performance.now();
-          tap.moved = false;
-          setPointerFromClient(clientX, clientY);
-        }
-
-        function moveTap(clientX, clientY){
-          if (!tap.active) return;
-          const dx = clientX - tap.x0;
-          const dy = clientY - tap.y0;
-          if ((dx*dx + dy*dy) > 64) tap.moved = true;
-          setPointerFromClient(clientX, clientY);
-        }
-
-        function endTap(clientX, clientY){
-          if (!tap.active) return false;
-          setPointerFromClient(clientX, clientY);
-          const dt = performance.now() - tap.t0;
-          const dx = clientX - tap.x0;
-          const dy = clientY - tap.y0;
-          const ok = !tap.moved && (dx*dx + dy*dy) <= 100 && dt <= 650;
-          tap.active = false;
-          tap.id = null;
-          return ok;
-        }
-
-        function pickAtPointer(){
+        function pickAtClient(x,y){
+          setPointerFromClient(x,y);
           raycaster.setFromCamera(pointer, camera);
-          const hits = raycaster.intersectObjects(planets.children, true)
-            .filter(h => h.object && h.object.userData && h.object.userData.article);
-          if (hits.length > 0){
-            openArticle(hits[0].object.userData.article);
+          const hits = raycaster.intersectObjects(clickables, true);
+          const hit = hits.find(h => h.object && h.object.userData && h.object.userData.article);
+          if (hit && hit.object && hit.object.userData && hit.object.userData.article){
+            openArticle(hit.object.userData.article);
             return true;
           }
           return false;
         }
 
-        canvas.addEventListener("pointerdown", (e)=>{
-          if (modal.classList.contains("open")) return;
-          if (e.isPrimary === false) return;
-          beginTap(e.clientX, e.clientY, e.pointerId);
-        }, { passive:true });
+        let activePointerId = null;
+        let tapStartX=0, tapStartY=0, tapStartT=0;
+        const TAP_MAX_MS = 520;
+        const TAP_MAX_PX = 14;
 
-        canvas.addEventListener("pointermove", (e)=>{
-          if (!tap.active) return;
-          if (tap.id !== null && e.pointerId !== tap.id) return;
-          moveTap(e.clientX, e.clientY);
-        }, { passive:true });
+        function isTap(x,y,t){
+          const dx = x - tapStartX;
+          const dy = y - tapStartY;
+          return (t - tapStartT) <= TAP_MAX_MS && (dx*dx + dy*dy) <= (TAP_MAX_PX*TAP_MAX_PX);
+        }
 
-        canvas.addEventListener("pointerup", (e)=>{
-          if (modal.classList.contains("open")) return;
-          if (tap.id !== null && e.pointerId !== tap.id) return;
-          const ok = endTap(e.clientX, e.clientY);
-          if (ok) pickAtPointer();
-        }, { passive:true });
+        const supportsPointer = "PointerEvent" in window;
 
-        canvas.addEventListener("pointercancel", ()=>{
-          tap.active = false;
-          tap.id = null;
-        }, { passive:true });
+        if (supportsPointer){
+          canvas.addEventListener("pointerdown", (e)=>{
+            if (modal.classList.contains("open")) return;
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+            activePointerId = e.pointerId;
+            tapStartX = e.clientX; tapStartY = e.clientY; tapStartT = performance.now();
+            try{ canvas.setPointerCapture(e.pointerId); }catch(_){}
+          }, { passive:true });
 
-        canvas.addEventListener("touchstart", (e)=>{
-          if (modal.classList.contains("open")) return;
-          if (!e.changedTouches || !e.changedTouches.length) return;
-          const t = e.changedTouches[0];
-          beginTap(t.clientX, t.clientY, "touch");
-          e.preventDefault();
-        }, { passive:false });
+          canvas.addEventListener("pointerup", (e)=>{
+            if (modal.classList.contains("open")) return;
+            if (activePointerId !== e.pointerId) return;
+            activePointerId = null;
+            const now = performance.now();
+            if (isTap(e.clientX, e.clientY, now)) pickAtClient(e.clientX, e.clientY);
+          }, { passive:true });
 
-        canvas.addEventListener("touchmove", (e)=>{
-          if (!tap.active) return;
-          if (!e.changedTouches || !e.changedTouches.length) return;
-          const t = e.changedTouches[0];
-          moveTap(t.clientX, t.clientY);
-          e.preventDefault();
-        }, { passive:false });
+          canvas.addEventListener("pointercancel", ()=>{ activePointerId = null; }, { passive:true });
+        } else {
+          canvas.addEventListener("touchstart", (e)=>{
+            if (modal.classList.contains("open")) return;
+            if (!e.changedTouches || !e.changedTouches[0]) return;
+            const t = e.changedTouches[0];
+            tapStartX = t.clientX; tapStartY = t.clientY; tapStartT = performance.now();
+            e.preventDefault();
+          }, { passive:false });
 
-        canvas.addEventListener("touchend", (e)=>{
-          if (modal.classList.contains("open")) return;
-          if (!e.changedTouches || !e.changedTouches.length) return;
-          const t = e.changedTouches[0];
-          const ok = endTap(t.clientX, t.clientY);
-          if (ok) pickAtPointer();
-          e.preventDefault();
-        }, { passive:false });
+          canvas.addEventListener("touchend", (e)=>{
+            if (modal.classList.contains("open")) return;
+            if (!e.changedTouches || !e.changedTouches[0]) return;
+            const t = e.changedTouches[0];
+            const now = performance.now();
+            if (isTap(t.clientX, t.clientY, now)) pickAtClient(t.clientX, t.clientY);
+            e.preventDefault();
+          }, { passive:false });
 
-        canvas.addEventListener("touchcancel", ()=>{
-          tap.active = false;
-          tap.id = null;
-        }, { passive:true });
+          canvas.addEventListener("touchmove", (e)=>{ e.preventDefault(); }, { passive:false });
+        }
 
         const clock = new THREE.Clock();
         let eqItems = buildEquationLayer();
@@ -1412,9 +1294,14 @@
           nebula.material.uniforms.uSilver.value.set(cssVar("--silver") || "#e8e8ea");
           nebula.material.uniforms.uBg.value.set(cssVar("--bg") || "#050505");
           scene.background.set(cssVar("--bg") || "#050505");
+          if (ringMesh && ringMesh.material && ringMesh.material.uniforms){
+            ringMesh.material.uniforms.uGold.value.set(cssVar("--gold") || "#D4AF37");
+            ringMesh.material.uniforms.uSilver.value.set(cssVar("--silver") || "#e8e8ea");
+          }
         };
 
         const _targetScale = new THREE.Vector3();
+        let hovered = null;
 
         function tick(){
           const t = clock.getElapsedTime();
@@ -1422,8 +1309,8 @@
 
           const nx = pointerActive ? (px / window.innerWidth - 0.5) : 0.0;
           const ny = pointerActive ? (py / window.innerHeight - 0.5) : 0.0;
-          camera.position.x = lerp(camera.position.x, nx * 24, 0.06);
-          camera.position.y = lerp(camera.position.y, (-ny) * 11, 0.06);
+          camera.position.x = lerp(camera.position.x, nx * 26, 0.06);
+          camera.position.y = lerp(camera.position.y, (-ny) * 12, 0.06);
           camera.lookAt(0,0,0);
 
           nebula.material.uniforms.uTime.value = t;
@@ -1434,13 +1321,15 @@
           galaxy.rotation.y = Math.sin(t*0.06)*0.12;
           galaxy.rotation.z = Math.cos(t*0.04)*0.06;
 
-          raycaster.setFromCamera(pointer, camera);
-          const hits = raycaster.intersectObjects(planets.children, true);
-          const hit = hits.find(h => h.object && h.object.userData && h.object.userData.article);
-          const newHover = hit ? hit.object : null;
-          if (hovered !== newHover){
-            hovered = newHover;
+          if (!modal.classList.contains("open")){
+            raycaster.setFromCamera(pointer, camera);
+            const hits = raycaster.intersectObjects(clickables, true);
+            const hit = hits.find(h => h.object && h.object.userData && h.object.userData.article);
+            hovered = hit ? hit.object : null;
             document.body.style.cursor = hovered ? "pointer" : "default";
+          } else {
+            hovered = null;
+            document.body.style.cursor = "default";
           }
 
           const n = entries.length;
@@ -1451,43 +1340,45 @@
             m.rotation.y += dt * (0.11 + i*0.008);
             m.rotation.x += dt * 0.010;
 
-            const isHover = hovered && hovered.userData.article === m.userData.article;
+            const isHover = hovered && hovered.userData && hovered.userData.article === m.userData.article;
+
             p.hoverPull = lerp(p.hoverPull, isHover ? 1 : 0, 0.12);
 
-            const baseSpin = 0.052;
+            const baseSpin = 0.050;
             const steer = pointerActive ? (nx * 0.14) : 0.0;
-            const hoverSteer = p.hoverPull * (nx*0.45) * 0.07;
+            const hoverSteer = p.hoverPull * (nx*0.45) * 0.075;
             p.angVel = lerp(p.angVel, baseSpin + steer + hoverSteer, 0.05);
 
             const wob = Math.sin(t*0.7 + i*1.7) * 0.0030;
             p.angle = wrapAngle(p.angle + (p.angVel + wob) * dt * 8.0);
 
-            const rTarget = isHover ? 0.030 : 0.0;
+            const rTarget = isHover ? 0.020 : 0.0;
             p.rMod = lerp(p.rMod, rTarget, 0.09);
-
-            const zTarget = isHover ? 22.0 : 0.0;
-            p.zMod = lerp(p.zMod, zTarget, 0.10);
           }
 
           for (let it=0; it<2; it++) enforceAngularSeparation();
 
           for (let i=0;i<n;i++){
             const p = entries[i];
-            const isHover = hovered && hovered.userData.article === p.mesh.userData.article;
+            const m = p.mesh;
+            const isHover = hovered && hovered.userData && hovered.userData.article === m.userData.article;
 
             applyOrbitPosition(p);
 
             const s = isHover ? 1.08 : 1.0;
             _targetScale.set(s, s, s);
             p.mesh.scale.lerp(_targetScale, 0.10);
-
             _targetScale.set(s*1.02, s*1.02, s*1.02);
             p.atmo.scale.lerp(_targetScale, 0.10);
 
-            if (p.mesh.material && p.mesh.material.uniforms){
-              p.mesh.material.uniforms.uTime.value = t;
-              p.mesh.material.uniforms.uGold.value.set(cssVar("--gold") || "#D4AF37");
+            if (m.material && m.material.uniforms){
+              m.material.uniforms.uTime.value = t;
+              m.material.uniforms.uGold.value.set(cssVar("--gold") || "#D4AF37");
             }
+          }
+
+          if (ringMesh && ringMesh.material && ringMesh.material.uniforms){
+            ringMesh.material.uniforms.uTime.value = t;
           }
 
           $("depthName").style.transform = `translate(-50%, -50%) translate(${nx*18}px, ${-ny*10}px)`;
@@ -1522,8 +1413,8 @@
         window.addEventListener("resize", onResize, { passive:true });
 
         const brand = $("brand");
-        brand.addEventListener("click", ()=>camera.position.set(0,0,220));
-        brand.addEventListener("keydown", (e)=>{ if (e.key==="Enter"||e.key===" "){ e.preventDefault(); camera.position.set(0,0,220); } });
+        brand.addEventListener("click", ()=>camera.position.set(0,0,240));
+        brand.addEventListener("keydown", (e)=>{ if (e.key==="Enter"||e.key===" "){ e.preventDefault(); camera.position.set(0,0,240); } });
 
         themeBtn.addEventListener("click", ()=>{
           const cur = root.getAttribute("data-theme") || "dark";
@@ -1532,7 +1423,6 @@
 
         applyTheme(getInitialTheme(), false);
         tick();
-
       }catch(e){
         showErr(e);
       }
