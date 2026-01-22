@@ -7,8 +7,13 @@
   <title>Anıl Kaya</title>
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" />
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
@@ -21,19 +26,15 @@
       color-scheme: dark;
       --font-main: "Latin Modern Roman","Times New Roman",Times,serif;
       --font-ui: "Latin Modern Sans","Latin Modern Roman",serif;
-
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --nav-h: 64px;
-
       --bg: #050505;
       --panel: rgba(18,18,18,0.62);
       --panel-strong: rgba(10,10,10,0.86);
       --border: rgba(255,255,255,0.10);
-
       --silver: #e8e8ea;
       --silver-dim: rgba(232,232,234,0.72);
-
       --gold: #D4AF37;
       --gold-soft: #F7E7CE;
     }
@@ -112,6 +113,10 @@
       height: 100%;
       display:block;
       z-index: 1;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     #eqLayer{
@@ -163,7 +168,7 @@
       inset: 0;
       z-index: 600;
       pointer-events: none;
-      opacity: 0.55;
+      opacity: 0.50;
       background:
         radial-gradient(circle at 50% 50%,
           rgba(212,175,55,0.10) 0%,
@@ -186,6 +191,7 @@
       display:none;
       background: rgba(0,0,0,0.56);
       backdrop-filter: blur(10px);
+      touch-action: none;
     }
     #modal.open{ display:block; }
 
@@ -205,10 +211,7 @@
       overflow: hidden;
       display:grid;
       grid-template-rows: auto 1fr;
-      animation: pop 180ms ease-out;
     }
-    @keyframes pop{ from{ transform: translateX(-50%) translateY(10px); opacity: 0; } to{ transform: translateX(-50%) translateY(0); opacity: 1; } }
-
     #modalTop{
       display:flex;
       align-items:center;
@@ -266,6 +269,7 @@
     #modalBody h2{ font-size: clamp(1.35rem, 2.8vw, 1.9rem); }
     #modalBody h3{ font-size: 1.2rem; font-style: italic; }
     #modalBody p{ margin: 0 0 1.25rem; }
+
     .article-header .meta{
       display:flex; gap:10px; align-items:center; flex-wrap:wrap;
       font-family: var(--font-ui);
@@ -326,13 +330,7 @@
   <div id="eqLayer" aria-hidden="true"></div>
 
   <div id="modal" role="dialog" aria-modal="true" aria-label="Article reader">
-    <div id="modalCard" role="document">
-      <div id="modalTop">
-        <div id="modalMeta"><strong>Reading Mode</strong><span id="modalMeta2"></span></div>
-        <button id="close" type="button">Close</button>
-      </div>
-      <div id="modalBody"></div>
-    </div>
+    <div id="react-app"></div>
   </div>
 
   <div id="err">
@@ -345,11 +343,94 @@
     (function(){
       "use strict";
 
+      const ArticleHeader = ({ title, category, date }) => {
+        return React.createElement('header', { className: 'article-header' },
+          React.createElement('div', { className: 'meta' },
+            React.createElement('span', { className: 'pill' }, category),
+            React.createElement('span', {}, "•"),
+            React.createElement('span', {}, date)
+          ),
+          React.createElement('h1', {}, title)
+        );
+      };
+
+      const ArticleBody = ({ content }) => {
+        const containerRef = React.useRef(null);
+        React.useEffect(() => {
+          if (containerRef.current && window.renderMathInElement) {
+            window.renderMathInElement(containerRef.current, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError: false
+            });
+          }
+        }, [content]);
+
+        return React.createElement('div', {
+          className: 'content',
+          ref: containerRef,
+          dangerouslySetInnerHTML: { __html: content }
+        });
+      };
+
+      const ArticleModal = ({ article, content, onClose, isLoading, errorText }) => {
+        React.useEffect(() => {
+          if(window.gsap) {
+            window.gsap.from("#modalCard", {
+              y: 40,
+              opacity: 0,
+              duration: 0.4,
+              ease: "power3.out",
+              clearProps: "all"
+            });
+          }
+        }, []);
+
+        return React.createElement('div', { id: 'modalCard' },
+          React.createElement('div', { id: 'modalTop' },
+            React.createElement('div', { id: 'modalMeta' },
+              React.createElement('strong', {}, 'Reading Mode'),
+              article ? React.createElement('span', {}, "•") : null,
+              article ? React.createElement('span', {}, article.category || "") : null
+            ),
+            React.createElement('button', { id: 'close', onClick: onClose }, 'Close')
+          ),
+          React.createElement('div', { id: 'modalBody' },
+            isLoading
+              ? React.createElement('div', { style: {opacity:0.7, fontFamily:'var(--font-ui)', letterSpacing:'1px', padding:'20px'} }, 'Loading…')
+              : errorText
+                ? React.createElement('article', null,
+                    React.createElement('h1', null, 'Could not load article'),
+                    React.createElement('p', null, 'Tried URLs / error:'),
+                    React.createElement('pre', { style: {
+                      border:'1px solid rgba(255,255,255,0.12)',
+                      background:'rgba(18,18,18,0.55)',
+                      borderRadius:'14px',
+                      padding:'12px',
+                      overflow:'auto'
+                    }}, errorText)
+                  )
+                : React.createElement(React.Fragment, null,
+                    React.createElement(ArticleHeader, {
+                      title: article.title,
+                      category: article.category,
+                      date: article.date
+                    }),
+                    React.createElement(ArticleBody, { content: content })
+                  )
+          )
+        );
+      };
+
       const ARTICLES = [
-        { id:"options-pricing", file:"articles/options.html", category:"Financial Econometrics", title:"Options Pricing", date:"JAN 2026", enabled:true },
-        { id:"bvar", file:"articles/bvar.html", category:"Core Theory", title:"Bayesian Vector Autoregression", date:"DEC 2025", enabled:true },
-        { id:"stoch-vol", file:"articles/forecasting.html", category:"Time Series", title:"Why ML is (almost) useless in Time Series Forecasting ?", date:"JAN 2026", enabled:true },
-        { id:"sign-rest", file:"articles/ERPT.html", category:"Macroeconometrics", title:"ERPT", date:"JAN 2026", enabled:true }
+        { id:"options-pricing", file:"./articles/options.html", category:"Financial Econometrics", title:"Options Pricing", date:"JAN 2026", enabled:true },
+        { id:"bvar", file:"./articles/bvar.html", category:"Core Theory", title:"Bayesian Vector Autoregression", date:"DEC 2025", enabled:true },
+        { id:"stoch-vol", file:"./articles/forecasting.html", category:"Time Series", title:"Why ML is (almost) useless in Time Series Forecasting ?", date:"JAN 2026", enabled:true },
+        { id:"sign-rest", file:"./articles/ERPT.html", category:"Macroeconometrics", title:"ERPT", date:"JAN 2026", enabled:true }
       ].filter(x=>x.enabled);
 
       const TEX = [
@@ -427,18 +508,24 @@
       }
 
       const modal = $("modal");
-      const modalBody = $("modalBody");
-      const modalMeta2 = $("modalMeta2");
-      const closeBtn = $("close");
+      const cache = new Map();
+      const container = document.getElementById('react-app');
+      let reactRoot = null;
       let modalJustOpenedAt = 0;
+
+      function ensureRoot(){
+        if (!reactRoot){
+          if (ReactDOM && ReactDOM.createRoot) reactRoot = ReactDOM.createRoot(container);
+          else reactRoot = { render: (el)=>ReactDOM.render(el, container), unmount: ()=>ReactDOM.unmountComponentAtNode(container) };
+        }
+        return reactRoot;
+      }
 
       function closeModal(){
         modal.classList.remove("open");
-        modalBody.innerHTML = "";
-        modalMeta2.textContent = "";
+        if (reactRoot && reactRoot.unmount) reactRoot.unmount();
+        reactRoot = null;
       }
-
-      closeBtn.addEventListener("click", closeModal);
 
       modal.addEventListener("click", (e)=>{
         if (performance.now() - modalJustOpenedAt < 250) return;
@@ -449,10 +536,11 @@
         if (e.key==="Escape" && modal.classList.contains("open")) closeModal();
       }, { passive:true });
 
-      function baseDirFromLocation(){
-        const p = location.pathname;
-        const dir = p.endsWith("/") ? p : p.replace(/[^\/]*$/, "");
-        return location.origin + dir;
+      function getBaseDir(){
+        const baseTag = document.querySelector("base");
+        if (baseTag && baseTag.href) return baseTag.href;
+        const path = location.pathname.endsWith("/") ? location.pathname : location.pathname.replace(/[^\/]*$/, "");
+        return location.origin + path;
       }
 
       async function fetchFirstOk(urls){
@@ -469,78 +557,61 @@
         return { ok:false, url: urls[0] || "", text:"", tried };
       }
 
-      function renderMathInto(node){
-        if (!node || !window.renderMathInElement) return;
-        window.renderMathInElement(node, {
-          delimiters: [
-            {left: '$$', right: '$$', display: true},
-            {left: '$', right: '$', display: false},
-            {left: '\\(', right: '\\)', display: false},
-            {left: '\\[', right: '\\]', display: true}
-          ],
-          throwOnError: false
-        });
-      }
-
-      function articleHeaderHTML(a){
-        const cat = (a && a.category) ? a.category : "";
-        const date = (a && a.date) ? a.date : "";
-        return `
-          <header class="article-header">
-            <div class="meta">
-              <span class="pill">${cat}</span>
-              <span>•</span>
-              <span>${date}</span>
-            </div>
-            <h1>${a.title}</h1>
-          </header>
-        `;
-      }
-
       async function openArticle(a){
         modalJustOpenedAt = performance.now();
         modal.classList.add("open");
-        modalMeta2.textContent = a && a.category ? `• ${a.category}` : "";
-        modalBody.innerHTML = `<div style="opacity:0.7;font-family:var(--font-ui);letter-spacing:1px;padding:20px">Loading…</div>`;
+        const rr = ensureRoot();
 
-        const file = String(a.file || "").replace(/^\.\//,"").replace(/^\/+/,"");
-        const baseDir = baseDirFromLocation();
-        const direct1 = new URL(file, baseDir).href;
-        const direct2 = new URL("/" + file, location.origin).href;
-        const seg = (location.pathname.split("/").filter(Boolean)[0] || "");
-        const direct3 = seg ? new URL("/" + seg + "/" + file, location.origin).href : direct1;
+        rr.render(React.createElement(ArticleModal, {
+          article: a,
+          content: '',
+          onClose: closeModal,
+          isLoading: true,
+          errorText: ''
+        }));
 
-        const res = await fetchFirstOk([direct1, direct2, direct3]);
-        if (!res.ok){
-          const info = `
-            <article>
-              <h1>Could not load article</h1>
-              <p>Open these in your browser; the first one that works is where GitHub Pages is serving your files from:</p>
-              <pre style="border:1px solid rgba(255,255,255,0.12);background:rgba(18,18,18,0.55);border-radius:14px;padding:12px;overflow:auto">${res.tried.join("\n")}</pre>
-              <p>Current page:</p>
-              <pre style="border:1px solid rgba(255,255,255,0.12);background:rgba(18,18,18,0.55);border-radius:14px;padding:12px;overflow:auto">origin: ${location.origin}\npathname: ${location.pathname}\nbaseDir: ${baseDir}</pre>
-              <p>If all of these 404, your <code>articles/</code> folder is not being published from the configured Pages source, or a filename case does not match.</p>
-            </article>
-          `;
-          modalBody.innerHTML = info;
-          return;
-        }
+        const baseDir = getBaseDir();
+        const direct1 = new URL(a.file, baseDir).href;
+        const direct2 = new URL("/" + a.file.replace(/^\//,""), location.origin).href;
+        const guessRepo = (location.pathname.split("/").filter(Boolean)[0] || "");
+        const direct3 = guessRepo ? new URL("/" + guessRepo + "/" + a.file.replace(/^\//,""), location.origin).href : direct1;
 
-        const doc = new DOMParser().parseFromString(res.text, "text/html");
-        const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
+        try{
+          const key = direct1;
+          let html = cache.get(key);
+          if (!html){
+            const res = await fetchFirstOk([direct1, direct2, direct3]);
+            if (!res.ok){
+              throw new Error(
+                `Could not fetch article.\n\nTried:\n- ${res.tried.join("\n- ")}\n\n` +
+                `Current page:\n- origin: ${location.origin}\n- pathname: ${location.pathname}\n- baseDir: ${baseDir}\n`
+              );
+            }
+            html = res.text;
+            cache.set(key, html);
+          }
 
-        if (contentNode){
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
           contentNode.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
-        }
 
-        const html = `
-          <article>
-            ${articleHeaderHTML(a)}
-            <div class="content">${contentNode ? contentNode.innerHTML : ""}</div>
-          </article>
-        `;
-        modalBody.innerHTML = html;
-        renderMathInto(modalBody);
+          rr.render(React.createElement(ArticleModal, {
+            article: a,
+            content: contentNode.innerHTML,
+            onClose: closeModal,
+            isLoading: false,
+            errorText: ''
+          }));
+
+        }catch(e){
+          rr.render(React.createElement(ArticleModal, {
+            article: a,
+            content: '',
+            onClose: closeModal,
+            isLoading: false,
+            errorText: (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e)
+          }));
+        }
       }
 
       function buildEquationLayer(){
@@ -548,18 +619,21 @@
         layer.innerHTML = "";
         const isLight = (root.getAttribute("data-theme")==="light");
         const color = isLight ? "rgba(20,20,20,0.92)" : "rgba(232,232,234,0.92)";
+
         const count = 16;
         const items = [];
         for (let i=0;i<count;i++){
           const el = document.createElement("div");
           el.className = "eq";
           el.style.color = color;
+
           const tex = TEX[i % TEX.length];
           try{
             el.innerHTML = window.katex.renderToString(tex, { throwOnError:false, displayMode:false });
           }catch(_){
             el.textContent = tex;
           }
+
           items.push({
             el,
             a: Math.random()*Math.PI*2,
@@ -569,6 +643,7 @@
             ox: (Math.random()-0.5)*140,
             oy: (Math.random()-0.5)*140
           });
+
           layer.appendChild(el);
         }
         return items;
@@ -581,6 +656,8 @@
 
       try{
         const canvas = $("gl");
+        canvas.style.touchAction = "none";
+
         const renderer = new THREE.WebGLRenderer({
           canvas,
           antialias: true,
@@ -615,15 +692,20 @@
         const pointer = new THREE.Vector2(0,0);
         let px=0, py=0, pointerActive=false;
 
-        function updatePointer(e){
+        function setPointerFromClient(cx, cy){
+          px = cx; py = cy;
           pointerActive = true;
-          px = e.clientX; py = e.clientY;
-          pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-          pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+          pointer.x = (cx / window.innerWidth) * 2 - 1;
+          pointer.y = -(cy / window.innerHeight) * 2 + 1;
         }
 
-        window.addEventListener("pointermove", updatePointer, { passive:true });
-        window.addEventListener("pointerleave", ()=>{ pointerActive=false; pointer.set(0,0); }, { passive:true });
+        window.addEventListener("pointermove", (e)=>{
+          setPointerFromClient(e.clientX, e.clientY);
+        }, { passive:true });
+
+        window.addEventListener("pointerleave", ()=>{
+          pointerActive=false;
+        }, { passive:true });
 
         const galaxy = new THREE.Group();
         scene.add(galaxy);
@@ -672,7 +754,10 @@
             transparent: true,
             depthWrite: false,
             blending: THREE.AdditiveBlending,
-            uniforms: { uTime: { value: 0 }, uDpr: { value: DPR() } },
+            uniforms: {
+              uTime: { value: 0 },
+              uDpr: { value: DPR() }
+            },
             vertexShader: `
               attribute float aSize;
               attribute vec3 color;
@@ -796,8 +881,13 @@
         const planets = new THREE.Group();
         scene.add(planets);
 
+        const orbitGroup = new THREE.Group();
+        planets.add(orbitGroup);
+
         const orbitLines = new THREE.Group();
-        planets.add(orbitLines);
+        orbitGroup.add(orbitLines);
+
+        let ringMesh = null;
 
         const raycaster = new THREE.Raycaster();
         let hovered = null;
@@ -863,7 +953,11 @@
           tex.colorSpace = THREE.SRGBColorSpace;
           tex.anisotropy = 8;
 
-          const spr=new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent:true, depthWrite:false }));
+          const spr=new THREE.Sprite(new THREE.SpriteMaterial({
+            map: tex,
+            transparent:true,
+            depthWrite:false
+          }));
           spr.scale.set(110, 44, 1);
           spr.userData._labelText = text;
           return spr;
@@ -965,7 +1059,10 @@
             transparent:true,
             depthWrite:false,
             blending:THREE.AdditiveBlending,
-            uniforms:{ uColor:{ value:new THREE.Color(hex) }, uIntensity:{ value:0.76 } },
+            uniforms:{
+              uColor:{ value:new THREE.Color(hex) },
+              uIntensity:{ value:0.74 }
+            },
             vertexShader: `
               varying vec3 vN;
               varying vec3 vW;
@@ -992,18 +1089,54 @@
         }
 
         const entries = [];
+        const orbitQuat = new THREE.Quaternion();
+        const orbitNormal = new THREE.Vector3(0,0,1);
+        const tmpV = new THREE.Vector3();
 
-        function buildOrbitVisuals(a, b){
+        function buildOrbitVisuals(a, b, scale){
           orbitLines.clear();
+          if (ringMesh){
+            orbitGroup.remove(ringMesh);
+            if (ringMesh.geometry) ringMesh.geometry.dispose();
+            if (ringMesh.material) ringMesh.material.dispose();
+            ringMesh = null;
+          }
+
+          const segments = 180;
           const points = [];
-          const segments = 140;
           for(let i=0; i<=segments; i++){
             const theta = (i/segments)*Math.PI*2;
             points.push(new THREE.Vector3(Math.cos(theta)*a, Math.sin(theta)*b, 0));
           }
           const geo = new THREE.BufferGeometry().setFromPoints(points);
-          const mat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.085, blending: THREE.AdditiveBlending });
+          const mat = new THREE.LineBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.10,
+            blending: THREE.AdditiveBlending
+          });
           orbitLines.add(new THREE.LineLoop(geo, mat));
+
+          const inner = Math.max(1, (Math.min(a,b) * 0.92));
+          const outer = Math.max(inner + 1, (Math.max(a,b) * 1.10));
+          const ringGeo = new THREE.RingGeometry(inner, outer, 220, 1);
+          const ringMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.07,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide,
+            depthWrite: false
+          });
+          ringMesh = new THREE.Mesh(ringGeo, ringMat);
+          ringMesh.renderOrder = -1;
+          orbitGroup.add(ringMesh);
+
+          const tiltX = 0.56;
+          const tiltZ = 0.22;
+          orbitQuat.setFromEuler(new THREE.Euler(tiltX, 0, tiltZ, "XYZ"));
+          orbitGroup.quaternion.copy(orbitQuat);
+          orbitNormal.set(0,0,1).applyQuaternion(orbitQuat).normalize();
         }
 
         function wrapAngle(a){
@@ -1019,10 +1152,10 @@
         function enforceAngularSeparation(){
           const n = entries.length;
           if (n <= 1) return;
-          const minGapBase = 0.62;
-          for (let it=0; it<22; it++){
+          const minGapBase = 0.66;
+          for (let it=0; it<24; it++){
             let moved = 0;
-            const idx = entries.slice().sort((a,b)=>a.angle - b.angle);
+            const idx = entries.map((p)=>p).sort((a,b)=>a.angle - b.angle);
             for (let k=0;k<n;k++){
               const A = idx[k];
               const B = idx[(k+1)%n];
@@ -1042,16 +1175,17 @@
         function applyOrbitPosition(p){
           const a = p.orbitA * (1.0 + p.rMod);
           const b = p.orbitB * (1.0 + p.rMod);
-          const x = Math.cos(p.angle) * a;
-          const y = Math.sin(p.angle) * b;
-          const z = p.zMod;
 
-          p.mesh.position.set(x,y,z);
-          p.atmo.position.copy(p.mesh.position);
-          p.label.position.copy(p.mesh.position);
+          tmpV.set(Math.cos(p.angle) * a, Math.sin(p.angle) * b, 0).applyQuaternion(orbitQuat);
+          tmpV.addScaledVector(orbitNormal, p.zMod);
 
-          const offset = (p.radius + 66 * p.scale * p.labelScaleMult);
-          if (y >= 0) p.label.position.y += offset;
+          p.mesh.position.copy(tmpV);
+          p.atmo.position.copy(tmpV);
+
+          p.label.position.copy(tmpV);
+
+          const offset = (p.radius + 44 * p.scale * p.labelScaleMult);
+          if (p.label.position.y >= 0) p.label.position.y += offset;
           else p.label.position.y -= offset;
 
           p.label.quaternion.copy(camera.quaternion);
@@ -1086,7 +1220,7 @@
         function buildPlanets(){
           for (let i = planets.children.length - 1; i >= 0; i--) {
             const ch = planets.children[i];
-            if (ch !== orbitLines) { planets.remove(ch); try{ disposeObject(ch); }catch(_){} }
+            if (ch !== orbitGroup) { planets.remove(ch); try{ disposeObject(ch); }catch(_){} }
           }
           orbitLines.clear();
           entries.length = 0;
@@ -1105,14 +1239,14 @@
           if (!Number.isFinite(scale)) scale = 1.0;
           const finalScale = Math.max(scale, 0.22);
 
-          const orbitRadius = 128 * finalScale;
-          const orbitA = orbitRadius * 1.28;
-          const orbitB = orbitRadius * 0.90;
+          const orbitRadius = 146 * finalScale;
+          const orbitA = orbitRadius * 1.34;
+          const orbitB = orbitRadius * 0.82;
 
-          buildOrbitVisuals(orbitA, orbitB);
+          buildOrbitVisuals(orbitA, orbitB, finalScale);
 
-          const planetBaseRadius = isMobile ? 50 : 25;
-          const labelScaleMult = isMobile ? 2.15 : 1.0;
+          const planetBaseRadius = isMobile ? 20 : 25;
+          const labelScaleMult = isMobile ? 1.80 : 1.0;
 
           const n = ARTICLES.length;
           for (let i=0;i<n;i++){
@@ -1121,11 +1255,17 @@
 
             const radius = planetBaseRadius * finalScale;
 
-            const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 64), planetMaterial(st));
+            const mesh = new THREE.Mesh(
+              new THREE.SphereGeometry(radius, 64, 64),
+              planetMaterial(st)
+            );
             mesh.userData.article = art;
             mesh.userData.radius = radius;
 
-            const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 64, 64), atmosphereMaterial(st.at));
+            const atmo = new THREE.Mesh(
+              new THREE.SphereGeometry(radius*1.06, 64, 64),
+              atmosphereMaterial(st.at)
+            );
             atmo.userData.article = art;
 
             const label = labelSprite(art.title);
@@ -1161,17 +1301,107 @@
           document.fonts.ready.then(()=> { rebuildLabelTextures(); }).catch(()=>{});
         }
 
-        window.addEventListener("click", (e)=>{
-          if (modal.classList.contains("open")) return;
+        const tap = {
+          active: false,
+          id: null,
+          x0: 0, y0: 0,
+          t0: 0,
+          moved: false
+        };
 
-          pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-          pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        function beginTap(clientX, clientY, id){
+          tap.active = true;
+          tap.id = id;
+          tap.x0 = clientX;
+          tap.y0 = clientY;
+          tap.t0 = performance.now();
+          tap.moved = false;
+          setPointerFromClient(clientX, clientY);
+        }
 
+        function moveTap(clientX, clientY){
+          if (!tap.active) return;
+          const dx = clientX - tap.x0;
+          const dy = clientY - tap.y0;
+          if ((dx*dx + dy*dy) > 64) tap.moved = true;
+          setPointerFromClient(clientX, clientY);
+        }
+
+        function endTap(clientX, clientY){
+          if (!tap.active) return false;
+          setPointerFromClient(clientX, clientY);
+          const dt = performance.now() - tap.t0;
+          const dx = clientX - tap.x0;
+          const dy = clientY - tap.y0;
+          const ok = !tap.moved && (dx*dx + dy*dy) <= 100 && dt <= 650;
+          tap.active = false;
+          tap.id = null;
+          return ok;
+        }
+
+        function pickAtPointer(){
           raycaster.setFromCamera(pointer, camera);
-          const hits = raycaster.intersectObjects(planets.children, true).filter(h => h.object && h.object.userData && h.object.userData.article);
+          const hits = raycaster.intersectObjects(planets.children, true)
+            .filter(h => h.object && h.object.userData && h.object.userData.article);
           if (hits.length > 0){
             openArticle(hits[0].object.userData.article);
+            return true;
           }
+          return false;
+        }
+
+        canvas.addEventListener("pointerdown", (e)=>{
+          if (modal.classList.contains("open")) return;
+          if (e.isPrimary === false) return;
+          beginTap(e.clientX, e.clientY, e.pointerId);
+        }, { passive:true });
+
+        canvas.addEventListener("pointermove", (e)=>{
+          if (!tap.active) return;
+          if (tap.id !== null && e.pointerId !== tap.id) return;
+          moveTap(e.clientX, e.clientY);
+        }, { passive:true });
+
+        canvas.addEventListener("pointerup", (e)=>{
+          if (modal.classList.contains("open")) return;
+          if (tap.id !== null && e.pointerId !== tap.id) return;
+          const ok = endTap(e.clientX, e.clientY);
+          if (ok) pickAtPointer();
+        }, { passive:true });
+
+        canvas.addEventListener("pointercancel", ()=>{
+          tap.active = false;
+          tap.id = null;
+        }, { passive:true });
+
+        canvas.addEventListener("touchstart", (e)=>{
+          if (modal.classList.contains("open")) return;
+          if (!e.changedTouches || !e.changedTouches.length) return;
+          const t = e.changedTouches[0];
+          beginTap(t.clientX, t.clientY, "touch");
+          e.preventDefault();
+        }, { passive:false });
+
+        canvas.addEventListener("touchmove", (e)=>{
+          if (!tap.active) return;
+          if (!e.changedTouches || !e.changedTouches.length) return;
+          const t = e.changedTouches[0];
+          moveTap(t.clientX, t.clientY);
+          e.preventDefault();
+        }, { passive:false });
+
+        canvas.addEventListener("touchend", (e)=>{
+          if (modal.classList.contains("open")) return;
+          if (!e.changedTouches || !e.changedTouches.length) return;
+          const t = e.changedTouches[0];
+          const ok = endTap(t.clientX, t.clientY);
+          if (ok) pickAtPointer();
+          e.preventDefault();
+        }, { passive:false });
+
+        canvas.addEventListener("touchcancel", ()=>{
+          tap.active = false;
+          tap.id = null;
         }, { passive:true });
 
         const clock = new THREE.Clock();
@@ -1192,8 +1422,8 @@
 
           const nx = pointerActive ? (px / window.innerWidth - 0.5) : 0.0;
           const ny = pointerActive ? (py / window.innerHeight - 0.5) : 0.0;
-          camera.position.x = lerp(camera.position.x, nx * 26, 0.06);
-          camera.position.y = lerp(camera.position.y, (-ny) * 12, 0.06);
+          camera.position.x = lerp(camera.position.x, nx * 24, 0.06);
+          camera.position.y = lerp(camera.position.y, (-ny) * 11, 0.06);
           camera.lookAt(0,0,0);
 
           nebula.material.uniforms.uTime.value = t;
@@ -1222,21 +1452,20 @@
             m.rotation.x += dt * 0.010;
 
             const isHover = hovered && hovered.userData.article === m.userData.article;
-
             p.hoverPull = lerp(p.hoverPull, isHover ? 1 : 0, 0.12);
 
             const baseSpin = 0.052;
-            const steer = pointerActive ? (nx * 0.16) : 0.0;
-            const hoverSteer = p.hoverPull * (nx*0.50) * 0.08;
+            const steer = pointerActive ? (nx * 0.14) : 0.0;
+            const hoverSteer = p.hoverPull * (nx*0.45) * 0.07;
             p.angVel = lerp(p.angVel, baseSpin + steer + hoverSteer, 0.05);
 
-            const wob = Math.sin(t*0.7 + i*1.7) * 0.0032;
+            const wob = Math.sin(t*0.7 + i*1.7) * 0.0030;
             p.angle = wrapAngle(p.angle + (p.angVel + wob) * dt * 8.0);
 
-            const rTarget = isHover ? 0.032 : 0.0;
+            const rTarget = isHover ? 0.030 : 0.0;
             p.rMod = lerp(p.rMod, rTarget, 0.09);
 
-            const zTarget = isHover ? 24.0 : 0.0;
+            const zTarget = isHover ? 22.0 : 0.0;
             p.zMod = lerp(p.zMod, zTarget, 0.10);
           }
 
@@ -1248,7 +1477,7 @@
 
             applyOrbitPosition(p);
 
-            const s = isHover ? 1.10 : 1.0;
+            const s = isHover ? 1.08 : 1.0;
             _targetScale.set(s, s, s);
             p.mesh.scale.lerp(_targetScale, 0.10);
 
