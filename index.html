@@ -96,6 +96,7 @@
     .btn{
       font-family: var(--font-ui);
       font-size: 0.82rem;
+      font-weight: 900;
       letter-spacing: 1.2px;
       text-transform: uppercase;
       padding: 10px 12px;
@@ -121,10 +122,11 @@
       display:block;
       z-index: 1;
       touch-action: none;
-      cursor: pointer;
+      cursor: grab;
       -webkit-user-select: none;
       user-select: none;
     }
+    #gl:active{ cursor: grabbing; }
 
     #eqLayer{
       position: fixed;
@@ -1062,6 +1064,8 @@
 
           p.mesh.position.set(x,y,z);
           p.atmo.position.copy(p.mesh.position);
+          // Sync hit sphere
+          if (p.hitMesh) p.hitMesh.position.copy(p.mesh.position);
 
           p.mesh.getWorldPosition(_tmpV3);
           orbitFrame.getWorldQuaternion(_q);
@@ -1073,18 +1077,29 @@
         }
 
         function rebuildLabelTextures(){
+          clickables.length = 0; // Clear existing
           for (const p of entries){
-            const spr = p.label;
-            if (!spr || !spr.userData || !spr.userData._labelText) continue;
-            const newSpr = labelSprite(spr.userData._labelText);
-            newSpr.scale.copy(spr.scale);
-            newSpr.position.copy(spr.position);
-            newSpr.quaternion.copy(spr.quaternion);
-            newSpr.userData.article = spr.userData.article;
-            labelsGroup.remove(spr);
-            labelsGroup.add(newSpr);
+            // Dispose old if exists
+            if (p.label) {
+              labelsGroup.remove(p.label);
+              if (p.label.material.map) p.label.material.map.dispose();
+              if (p.label.material) p.label.material.dispose();
+            }
+
+            // Create new
+            const txt = (p.label && p.label.userData && p.label.userData._labelText) ? p.label.userData._labelText : p.mesh.userData.article.title;
+            const newSpr = labelSprite(txt);
+            newSpr.scale.copy(p.label ? p.label.scale : new THREE.Vector3(1,1,1));
+            // Position/Rotation will be set in loop
+            newSpr.userData.article = p.mesh.userData.article;
+            
             p.label = newSpr;
-            clickables.push(newSpr);
+            labelsGroup.add(newSpr);
+
+            // Re-populate clickables
+            clickables.push(p.mesh); // Planet
+            if (p.hitMesh) clickables.push(p.hitMesh); // Hit sphere
+            clickables.push(p.label); // Label
           }
         }
 
@@ -1175,8 +1190,14 @@
 
             const radius = planetBaseRadius * finalScale;
 
+            // Visual Planet
             const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 64), planetMaterial(st));
             mesh.userData.article = art;
+
+            // Larger Hit Target for Mobile
+            const hitMesh = new THREE.Mesh(new THREE.SphereGeometry(radius * 1.6, 16, 16), new THREE.MeshBasicMaterial({ visible: false }));
+            hitMesh.userData.article = art;
+            orbitFrame.add(hitMesh);
 
             const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 64, 64), atmosphereMaterial(st.at));
             atmo.userData.article = art;
@@ -1188,7 +1209,7 @@
             const baseAngle = (i / n) * Math.PI*2 + Math.PI/6;
 
             const entry = {
-              mesh, atmo, label,
+              mesh, atmo, label, hitMesh,
               radius,
               angle: baseAngle,
               angVel: 0,
@@ -1209,6 +1230,7 @@
             labelsGroup.add(label);
 
             clickables.push(mesh);
+            clickables.push(hitMesh); // Add hit target
             clickables.push(label);
           }
 
@@ -1236,8 +1258,8 @@
 
         let activePointerId = null;
         let tapStartX=0, tapStartY=0, tapStartT=0;
-        const TAP_MAX_MS = 520;
-        const TAP_MAX_PX = 14;
+        const TAP_MAX_MS = 600;
+        const TAP_MAX_PX = 30; // Increased tolerance for touch
 
         function isTap(x,y,t){
           const dx = x - tapStartX;
@@ -1254,15 +1276,16 @@
             activePointerId = e.pointerId;
             tapStartX = e.clientX; tapStartY = e.clientY; tapStartT = performance.now();
             try{ canvas.setPointerCapture(e.pointerId); }catch(_){}
-          }, { passive:true });
+          }, { passive:false });
 
           canvas.addEventListener("pointerup", (e)=>{
             if (modal.classList.contains("open")) return;
-            if (activePointerId !== e.pointerId) return;
+            // Relaxed check: just ensure it's the same ID that started or valid
+            if (activePointerId !== null && activePointerId !== e.pointerId) return;
             activePointerId = null;
             const now = performance.now();
             if (isTap(e.clientX, e.clientY, now)) pickAtClient(e.clientX, e.clientY);
-          }, { passive:true });
+          }, { passive:false });
 
           canvas.addEventListener("pointercancel", ()=>{ activePointerId = null; }, { passive:true });
         } else {
@@ -1326,7 +1349,8 @@
             const hits = raycaster.intersectObjects(clickables, true);
             const hit = hits.find(h => h.object && h.object.userData && h.object.userData.article);
             hovered = hit ? hit.object : null;
-            document.body.style.cursor = hovered ? "pointer" : "default";
+            document.body.style.cursor = hovered ? "pointer" : "grab";
+            if (document.body.style.cursor === "grab" && pointerActive && (Math.abs(nx)>0.01 || Math.abs(ny)>0.01)) document.body.style.cursor = "grabbing";
           } else {
             hovered = null;
             document.body.style.cursor = "default";
