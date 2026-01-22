@@ -198,23 +198,16 @@ modal.classList.add("open");
 const rr = ensureRoot();
 rr.render(React.createElement(ArticleModal, { article: a, content: '', onClose: closeModal, isLoading: true, errorText: '' }));
 try{
-// ROBUST PATH HANDLING FOR GITHUB PAGES
-const path = window.location.pathname;
-const dir = path.substring(0, path.lastIndexOf('/') + 1);
-const baseUrl = window.location.origin + dir;
-const cleanFile = a.file.replace(/^\.\//, '');
-const resolvedUrl = new URL(cleanFile, baseUrl).href;
-
-let html = cache.get(resolvedUrl);
+const targetUrl = new URL(a.file, document.baseURI).href;
+let html = cache.get(targetUrl);
 if (!html){
-// TIMEOUT AND FETCH
 const controller = new AbortController();
-const timeoutId = setTimeout(() => controller.abort(), 8000);
-const res = await fetch(resolvedUrl, { signal: controller.signal, headers: {'Accept': 'text/html'} });
-clearTimeout(timeoutId);
-if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+const id = setTimeout(() => controller.abort(), 6000);
+const res = await fetch(targetUrl, { signal: controller.signal });
+clearTimeout(id);
+if (!res.ok) throw new Error("HTTP " + res.status);
 html = await res.text();
-cache.set(resolvedUrl, html);
+cache.set(targetUrl, html);
 }
 const doc = new DOMParser().parseFromString(html, "text/html");
 const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
