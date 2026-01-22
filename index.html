@@ -9,8 +9,6 @@
 <link rel="preconnect" href="https://unpkg.com" crossorigin/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css"/>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
@@ -39,67 +37,16 @@
 <script>
 (function(){
 "use strict";
-const ArticleHeader = ({ title, category, date }) => {
-return React.createElement('header', { className: 'article-header' },
-React.createElement('div', { className: 'meta' },
-React.createElement('span', { className: 'pill' }, category),
-React.createElement('span', {}, "•"),
-React.createElement('span', {}, date)
-),
-React.createElement('h1', {}, title)
-);
+// TEXTURE ASSETS
+const TEX_URLS = {
+  earth: "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg",
+  earthNormal: "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_normal_2048.jpg",
+  earthSpec: "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg",
+  mars: "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/mars_1k_scale.jpg",
+  venus: "https://upload.wikimedia.org/wikipedia/commons/1/1c/Venus-real_color.jpg", /* Higher res standard */
+  mercury: "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg" /* Using moon as proxy for mercury surface similar appearance */
 };
-const ArticleBody = ({ content }) => {
-const containerRef = React.useRef(null);
-React.useEffect(() => {
-if (containerRef.current && window.renderMathInElement) {
-window.renderMathInElement(containerRef.current, {
-delimiters: [
-{left: '$$', right: '$$', display: true},
-{left: '$', right: '$', display: false},
-{left: '\\(', right: '\\)', display: false},
-{left: '\\[', right: '\\]', display: true}
-],
-throwOnError: false
-});
-}
-}, [content]);
-return React.createElement('div', {
-className: 'content',
-ref: containerRef,
-dangerouslySetInnerHTML: { __html: content }
-});
-};
-const ArticleModal = ({ article, content, onClose, isLoading, errorText }) => {
-React.useEffect(() => {
-if(window.gsap) window.gsap.from("#modalCard", { y: 40, opacity: 0, duration: 0.4, ease: "power3.out", clearProps: "all" });
-}, []);
-return React.createElement('div', { id: 'modalCard' },
-React.createElement('div', { id: 'modalTop' },
-React.createElement('div', { id: 'modalMeta' },
-React.createElement('strong', {}, 'Reading Mode'),
-article ? React.createElement('span', {}, "•") : null,
-article ? React.createElement('span', {}, article.category || "") : null
-),
-React.createElement('button', { id: 'close', onClick: onClose }, 'Close')
-),
-React.createElement('div', { id: 'modalBody' },
-isLoading
-? React.createElement('div', { style: {opacity:0.7, fontFamily:'var(--font-ui)', letterSpacing:'1px', padding:'20px'} }, 'Loading…')
-: errorText
-? React.createElement('article', null,
-React.createElement('h1', null, 'Could not load article'),
-React.createElement('p', null, 'Error loading file:'),
-React.createElement('pre', { style: { border:'1px solid rgba(255,255,255,0.12)', background:'rgba(18,18,18,0.55)', borderRadius:'14px', padding:'12px', overflow:'auto' } }, errorText),
-React.createElement('p', { style: {marginTop:'1em', fontSize:'0.9rem', opacity:0.8} }, 'NOTE: If testing locally (file://), this is expected due to CORS. Please test on a local server or GitHub Pages.')
-)
-: React.createElement(React.Fragment, null,
-React.createElement(ArticleHeader, { title: article.title, category: article.category, date: article.date }),
-React.createElement(ArticleBody, { content: content })
-)
-)
-);
-};
+
 const ARTICLES = [
   { 
     id:"options-pricing", 
@@ -107,6 +54,7 @@ const ARTICLES = [
     category:"Financial Econometrics", 
     title:"Options Pricing", 
     date:"JAN 2026", 
+    texture: TEX_URLS.mercury,
     enabled:true 
   },
   { 
@@ -115,14 +63,17 @@ const ARTICLES = [
     category:"Core Theory", 
     title:"Bayesian Vector Autoregression", 
     date:"DEC 2025", 
+    texture: TEX_URLS.earth,
+    isEarth: true,
     enabled:true 
   },
   { 
     id:"stoch-vol", 
     file:"articles/forecasting.html", 
     category:"Time Series", 
-    title:"Why ML is (almost) useless in Time Series Forecasting ?", 
+    title:"Why ML is (almost) useless?", 
     date:"JAN 2026", 
+    texture: TEX_URLS.mars,
     enabled:true 
   },
   { 
@@ -131,15 +82,17 @@ const ARTICLES = [
     category:"Macroeconometrics", 
     title:"ERPT", 
     date:"JAN 2026", 
+    texture: TEX_URLS.venus,
     enabled:true 
   }
 ].filter(x=>x.enabled);
+
 const TEX = [
 String.raw`Y_t = A_1Y_{t-1}+\cdots+A_pY_{t-p}+u_t`,
 String.raw`u_t\sim\mathcal{N}(0,\Sigma)`,
 String.raw`p(\theta\mid Y)\propto p(Y\mid\theta)p(\theta)`,
 String.raw`E[y_t\mid\mathcal{I}_{t-1}]`,
-String.raw`h_t=\mu+\phi(h_{t-1}-\mu)+\sigma_h\xi_t,\ \ y_t=e^{h_t/2}\varepsilon_t`,
+String.raw`h_t=\mu+\phi(h_{t-1}-\mu)+\sigma_h\xi_t`,
 String.raw`\nabla\mathcal{L}(\theta)`,
 String.raw`\Sigma = A^{-1}\Lambda A^{-1\prime}`
 ];
@@ -198,83 +151,121 @@ return (saved === "light" || saved === "dark") ? saved : "dark";
 }
 const modal = $("modal");
 const cache = new Map();
-const container = document.getElementById('react-app');
-let reactRoot = null;
 let modalJustOpenedAt = 0;
-function ensureRoot(){
-if (!reactRoot){
-if (ReactDOM && ReactDOM.createRoot) reactRoot = ReactDOM.createRoot(container);
-else reactRoot = { render: (el)=>ReactDOM.render(el, container), unmount: ()=>ReactDOM.unmountComponentAtNode(container) };
-}
-return reactRoot;
-}
+const loader = new THREE.TextureLoader();
+
 function closeModal(){
-modal.classList.remove("open");
-if (reactRoot && reactRoot.unmount) reactRoot.unmount();
-reactRoot = null;
+  modal.classList.remove("open");
+  const b = document.getElementById("modalBody");
+  if(b) b.scrollTop = 0;
 }
 modal.addEventListener("click", (e)=>{
-if (performance.now() - modalJustOpenedAt < 250) return;
-if (e.target === modal) closeModal();
+  if (performance.now() - modalJustOpenedAt < 250) return;
+  if (e.target === modal) closeModal();
 });
 window.addEventListener("keydown", (e)=>{
-if (e.key==="Escape" && modal.classList.contains("open")) closeModal();
+  if (e.key==="Escape" && modal.classList.contains("open")) closeModal();
 }, { passive:true });
+
+function renderModal(a, content, isLoading, errorText){
+  // Basic template
+  const html = `
+    <div id="modalCard">
+       <div id="modalTop">
+          <div id="modalMeta">
+             <strong>Reading Mode</strong>
+             ${a ? `<span>•</span><span>${a.category||""}</span>` : ""}
+          </div>
+          <button id="close">Close</button>
+       </div>
+       <div id="modalBody">
+          ${isLoading 
+            ? `<div style="opacity:0.7; font-family:var(--font-ui); letter-spacing:1px; padding:20px;">Loading...</div>`
+            : errorText ? `
+              <article>
+                 <h1>Could not load article</h1>
+                 <p>Error details:</p>
+                 <pre style="border:1px solid rgba(255,255,255,0.12); background:rgba(18,18,18,0.55); border-radius:14px; padding:12px; overflow:auto;">${errorText}</pre>
+                 <p style="margin-top:1em; font-size:0.9rem; opacity:0.8;">Note: Check network or CORS.</p>
+              </article>`
+            : `
+              <header class="article-header">
+                <div class="meta">
+                   <span class="pill">${a.category}</span>
+                   <span>•</span>
+                   <span>${a.date}</span>
+                </div>
+                <h1>${a.title}</h1>
+              </header>
+              <div class="content">
+                 ${content}
+              </div>
+            `
+          }
+       </div>
+    </div>
+  `;
+  modal.innerHTML = html;
+  
+  // Re-bind close event
+  const btn = document.getElementById("close");
+  if(btn) btn.onclick = closeModal;
+
+  // Animate in
+  if(window.gsap && !isLoading && !errorText) {
+      window.gsap.from("#modalCard", { y: 40, opacity: 0, duration: 0.4, ease: "power3.out", clearProps: "all" });
+  }
+
+  // Render Math
+  if(!isLoading && !errorText && window.renderMathInElement){
+      const c = modal.querySelector(".content");
+      if(c) {
+          window.renderMathInElement(c, {
+              delimiters: [
+                  {left: '$$', right: '$$', display: true},
+                  {left: '$', right: '$', display: false},
+                  {left: '\\(', right: '\\)', display: false},
+                  {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError: false
+          });
+      }
+  }
+}
+
 async function openArticle(a){
-modalJustOpenedAt = performance.now();
-modal.classList.add("open");
-let rr;
-try {
-  if (!window.React || !window.ReactDOM) throw new Error("React/ReactDOM not loaded. check internet connection or adblocker.");
-  rr = ensureRoot();
-  rr.render(React.createElement(ArticleModal, { article: a, content: '', onClose: closeModal, isLoading: true, errorText: '' }));
-} catch(e) {
-  // If React fails to render "Loading", fallback to raw HTML error
-  modal.innerHTML = `<div style="padding:40px;color:#fff;font-family:sans-serif">
-    <h2>System Error</h2>
-    <p>Failed to initialize reader.</p>
-    <pre style="background:#222;padding:10px;overflow:auto">${e.stack || e}</pre>
-    <button onclick="document.getElementById('modal').classList.remove('open')" style="padding:10px;margin-top:20px">Close</button>
-  </div>`;
-  return;
-}
-
-try{
-  const targetUrl = new URL(a.file, document.baseURI).href;
-  // console.log("Fetching:", targetUrl); 
+  modalJustOpenedAt = performance.now();
+  modal.classList.add("open");
+  renderModal(a, "", true, "");
   
-  let html = cache.get(targetUrl);
-  if (!html){
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 8000);
-    let res;
-    try {
-      res = await fetch(targetUrl, { signal: controller.signal });
-    } catch (err) {
-      if (err.name === 'AbortError') throw new Error("Request timed out (8s). Server too slow?");
-      throw err;
+  try{
+    const targetUrl = new URL(a.file, document.baseURI).href;
+    let html = cache.get(targetUrl);
+    if (!html){
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), 8000);
+      let res;
+      try {
+         res = await fetch(targetUrl, { signal: controller.signal });
+      }catch(err){
+         if (err.name === 'AbortError') throw new Error("Request timed out (8s)");
+         throw err;
+      }
+      clearTimeout(id);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      html = await res.text();
+      cache.set(targetUrl, html);
     }
-    clearTimeout(id);
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${targetUrl}`);
-    html = await res.text();
-    cache.set(targetUrl, html);
+    
+    // Parse content
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
+    contentNode.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
+    
+    renderModal(a, contentNode.innerHTML, false, "");
+  }catch(e){
+    renderModal(a, "", false, String(e));
   }
-  
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
-  if (!contentNode) throw new Error("Could not find article content (.content/article) in response");
-  
-  contentNode.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
-  rr.render(React.createElement(ArticleModal, { article: a, content: contentNode.innerHTML, onClose: closeModal, isLoading: false, errorText: '' }));
-
-}catch(e){
-  // Render the error state using React
-  if(rr) {
-    rr.render(React.createElement(ArticleModal, { article: a, content: '', onClose: closeModal, isLoading: false, errorText: String(e) }));
-  } else {
-     showErr(e);
-  }
-}
 }
 function buildEquationLayer(){
 const layer = $("eqLayer");
@@ -482,14 +473,8 @@ ringGroup.rotation.x = ringTiltX;
 ringGroup.rotation.z = ringTiltZ;
 const raycaster = new THREE.Raycaster();
 let hovered = null;
-const STYLES = [
-{ seed: 2, a:"#0b1220", b:"#2f6be3", c:"#3c6e5f", at:"#6bb0ff", rough:0.70 },
-{ seed: 5, a:"#2a2321", b:"#b08d5a", c:"#d8c9b0", at:"#f7e7ce", rough:0.60 },
-{ seed: 8, a:"#3a2f26", b:"#d1b27a", c:"#f0eadf", at:"#f7e7ce", rough:0.58 },
-{ seed: 13, a:"#281a12", b:"#b35c2a", c:"#efe7df", at:"#ffb07a", rough:0.82 },
-{ seed: 21, a:"#081024", b:"#2f6be3", c:"#7aa6ff", at:"#7aa6ff", rough:0.66 },
-{ seed: 34, a:"#1f1f22", b:"#9b9aa0", c:"#f2f2f4", at:"#e8e8ea", rough:0.92 }
-];
+// STYLES removed in favor of textures
+
 function labelSprite(text){
 const w=1200, h=380;
 const c=document.createElement("canvas");
@@ -538,125 +523,58 @@ spr.scale.set(100, 36, 1);
 spr.userData._labelText = text;
 return spr;
 }
-function planetMaterial(style){
-return new THREE.ShaderMaterial({
-uniforms:{
-uTime: { value: 0 },
-uSeed: { value: style.seed },
-uA: { value: new THREE.Color(style.a) },
-uB: { value: new THREE.Color(style.b) },
-uC: { value: new THREE.Color(style.c) },
-uGold: { value: new THREE.Color(cssVar("--gold") || "#D4AF37") },
-uRough: { value: style.rough }
-},
-vertexShader: `
-varying vec3 vN;
-varying vec3 vW;
-void main(){
-vN = normalize(normalMatrix * normal);
-vec4 wpos = modelMatrix * vec4(position,1.0);
-vW = wpos.xyz;
-gl_Position = projectionMatrix * viewMatrix * wpos;
+// Planet Textures
+function planetMaterial(art){
+  // If no texture or failed, fallback to shader? No, we strictly use texture now for realism
+  const tex = loader.load(art.texture);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  
+  const params = {
+    map: tex,
+    roughness: 0.7,
+    metalness: 0.1
+  };
+
+  if(art.isEarth){
+      // Earth specific maps
+      const norm = loader.load(TEX_URLS.earthNormal);
+      const spec = loader.load(TEX_URLS.earthSpec);
+      params.normalMap = norm;
+      params.roughnessMap = spec; 
+      params.roughness = 0.5;
+  }
+  
+  const mat = new THREE.MeshStandardMaterial(params);
+  return mat;
 }
-`,
-fragmentShader: `
-varying vec3 vN;
-varying vec3 vW;
-uniform float uTime;
-uniform float uSeed;
-uniform vec3 uA;
-uniform vec3 uB;
-uniform vec3 uC;
-uniform vec3 uGold;
-uniform float uRough;
-float hash(vec3 p){
-p = fract(p*0.3183099 + uSeed*0.07);
-p *= 17.0;
-return fract(p.x*p.y*p.z*(p.x+p.y+p.z));
-}
-float noise(vec3 p){
-vec3 i = floor(p);
-vec3 f = fract(p);
-f = f*f*(3.0-2.0*f);
-float n000 = hash(i);
-float n100 = hash(i+vec3(1,0,0));
-float n010 = hash(i+vec3(0,1,0));
-float n110 = hash(i+vec3(1,1,0));
-float n001 = hash(i+vec3(0,0,1));
-float n101 = hash(i+vec3(1,0,1));
-float n011 = hash(i+vec3(0,1,1));
-float n111 = hash(i+vec3(1,1,1));
-float n00 = mix(n000, n100, f.x);
-float n10 = mix(n010, n110, f.x);
-float n01 = mix(n001, n101, f.x);
-float n11 = mix(n011, n111, f.x);
-float n0 = mix(n00, n10, f.y);
-float n1 = mix(n01, n11, f.y);
-return mix(n0, n1, f.z);
-}
-float fbm(vec3 p){
-float v=0.0;
-float a=0.5;
-for(int i=0;i<5;i++){
-v += a*noise(p);
-p *= 2.02;
-a *= 0.5;
-}
-return v;
-}
-void main(){
-vec3 N = normalize(vN);
-vec3 V = normalize(cameraPosition - vW);
-float lat = N.y * 0.5 + 0.5;
-float bands = sin((lat*12.0 + uSeed*0.13 + uTime*0.02) * 6.28318) * 0.5 + 0.5;
-vec3 p = N * 3.2 + vec3(0.0, 0.0, uTime*0.03);
-float n = fbm(p + uSeed*0.1);
-float m = fbm(p*2.0 + 10.0);
-float t2 = smoothstep(0.35, 0.90, m);
-vec3 base = mix(uA, uB, bands*0.75 + 0.15*n);
-base = mix(base, uC, t2*0.35);
-float glint = pow(max(0.0, dot(reflect(-V,N), normalize(vec3(0.2,0.7,0.6)))), 18.0);
-base += uGold * (0.14 * glint);
-vec3 L = normalize(vec3(0.35, 0.72, 0.58));
-float diff = max(0.0, dot(N,L));
-float fres = pow(1.0 - max(0.0, dot(V,N)), 3.0);
-float spec = pow(max(0.0, dot(reflect(-L,N), V)), 28.0) * (1.0 - uRough);
-vec3 c = base * (0.22 + 1.05*diff) + vec3(1.0)*spec*0.34;
-c += uGold * fres * 0.08;
-gl_FragColor = vec4(clamp(c,0.0,1.0), 1.0);
-}
-`
-});
-}
-function atmosphereMaterial(hex){
-return new THREE.ShaderMaterial({
-transparent:true,
-depthWrite:false,
-blending:THREE.AdditiveBlending,
-uniforms:{ uColor:{ value:new THREE.Color(hex) }, uIntensity:{ value:0.76 } },
-vertexShader: `
-varying vec3 vN;
-varying vec3 vW;
-void main(){
-vN = normalize(normalMatrix * normal);
-vec4 wpos = modelMatrix * vec4(position,1.0);
-vW = wpos.xyz;
-gl_Position = projectionMatrix * viewMatrix * wpos;
-}
-`,
-fragmentShader: `
-varying vec3 vN;
-varying vec3 vW;
-uniform vec3 uColor;
-uniform float uIntensity;
-void main(){
-vec3 V = normalize(cameraPosition - vW);
-float fres = pow(1.0 - max(0.0, dot(V, vN)), 3.0);
-float a = fres * uIntensity;
-gl_FragColor = vec4(uColor, a);
-}
-`
-});
+
+function atmosphereMaterial(colorHex, intensity){
+  // Simple glow shader
+  return new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: {
+      uColor: { value: new THREE.Color(colorHex) },
+      uIntensity: { value: intensity }
+    },
+    vertexShader: `
+      varying vec3 vN;
+      void main(){
+        vN = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vN;
+      uniform vec3 uColor;
+      uniform float uIntensity;
+      void main(){
+        float i = pow(0.65 - dot(vN, vec3(0,0,1)), 3.0);
+        gl_FragColor = vec4(uColor, i * uIntensity);
+      }
+    `
+  });
 }
 const entries = [];
 function buildSaturnRings(innerR, outerR){
@@ -819,15 +737,21 @@ ringMeshes = buildSaturnRings(ringInner, ringOuter);
 const planetBaseRadius = isMobile ? 50 : 25;
 const labelScaleMult = isMobile ? 2.05 : 1.0;
 const n = ARTICLES.length;
-for (let i=0;i<n;i++){
-const art = ARTICLES[i];
-const st = STYLES[i % STYLES.length];
-const radius = planetBaseRadius * finalScale;
-const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 64), planetMaterial(st));
-mesh.userData.article = art;
-mesh.userData.radius = radius;
-const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 64, 64), atmosphereMaterial(st.at));
-atmo.userData.article = art;
+  for (let i=0;i<n;i++){
+    const art = ARTICLES[i];
+    const radius = planetBaseRadius * finalScale;
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 64), planetMaterial(art));
+    mesh.userData.article = art;
+    mesh.userData.radius = radius;
+    
+    // Custom atmosphere color per planet
+    let atColor = "#90b0ff"; // default blueish
+    if(art.isEarth) atColor = "#0066ff";
+    else if(art.texture.includes("mars")) atColor = "#ffb080";
+    else if(art.texture.includes("venus")) atColor = "#ffd080";
+    
+    const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 64, 64), atmosphereMaterial(atColor, 0.45));
+    atmo.userData.article = art;
 const label = labelSprite(art.title);
 label.scale.multiplyScalar(finalScale * labelScaleMult);
 label.userData.article = art;
