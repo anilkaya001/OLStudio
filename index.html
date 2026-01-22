@@ -101,11 +101,11 @@ React.createElement(ArticleBody, { content: content })
 );
 };
 const ARTICLES = [
-{ id:"options-pricing", file:"./articles/options.html", category:"Financial Econometrics", title:"Options Pricing", date:"JAN 2026", enabled:true },
-{ id:"bvar", file:"./articles/bvar.html", category:"Core Theory", title:"Bayesian Vector Autoregression", date:"DEC 2025", enabled:true },
-{ id:"stoch-vol", file:"./articles/forecasting.html", category:"Time Series", title:"Why ML is (almost) useless in Time Series Forecasting ?", date:"JAN 2026", enabled:true },
-{ id:"sign-rest", file:"./articles/ERPT.html", category:"Macroeconometrics", title:"ERPT", date:"JAN 2026", enabled:true }
-].filter(x=>x.enabled);
+  { id:"options-pricing", file:"/OLStudio/articles/options.html", ... },
+  { id:"bvar", file:"/OLStudio/articles/bvar.html", ... },
+  { id:"stoch-vol", file:"/OLStudio/articles/forecasting.html", ... },
+  { id:"sign-rest", file:"/OLStudio/articles/ERPT.html", ... }
+];
 const TEX = [
 String.raw`Y_t = A_1Y_{t-1}+\cdots+A_pY_{t-p}+u_t`,
 String.raw`u_t\sim\mathcal{N}(0,\Sigma)`,
