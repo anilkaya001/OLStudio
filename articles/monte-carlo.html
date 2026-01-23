@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monte Carlo Simulation: What It Can (and Cannot) Do | Anıl Kaya</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-mono.css" />
+
+  <style>
+    :root{
+      color-scheme: light dark;
+      --font-main: "Latin Modern Roman", "Times New Roman", Times, serif;
+      --font-ui: "Latin Modern Sans", "Latin Modern Roman", serif;
+      --font-mono: "Latin Modern Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+      /* Dark (default) */
+      --bg: #050505;
+      --panel: rgba(18,18,18,0.72);
+      --border: rgba(255,255,255,0.10);
+      --silver: #e2e2e2;
+      --silver-dim: rgba(226,226,226,0.70);
+      --gold: #D4AF37;
+      --gold-soft: #F7E7CE;
+      --link: var(--gold-soft);
+    }
+
+    html[data-theme="light"]{
+      color-scheme: light;
+      --bg: #fbfbfc;
+      --panel: rgba(255,255,255,0.82);
+      --border: rgba(0,0,0,0.10);
+      --silver: #1b1b1c;
+      --silver-dim: rgba(27,27,28,0.72);
+      --gold: #B88A00;
+      --gold-soft: #7A5A00;
+      --link: #7A5A00;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--silver);
+      font-family: var(--font-main);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    .article {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 20px 100px;
+    }
+
+    .article-header {
+      padding-bottom: 22px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .meta {
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--silver-dim);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .meta .pill {
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 999px;
+      color: var(--gold);
+      background: rgba(125,125,125,0.05);
+    }
+
+    .article h1 {
+      font-family: var(--font-main);
+      font-weight: 400;
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      color: var(--gold-soft);
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    .content {
+      font-size: 1.15rem;
+      line-height: 1.75;
+      text-align: justify;
+    }
+
+    .content p {
+      margin-bottom: 1.6rem;
+      color: color-mix(in oklab, var(--silver) 90%, transparent);
+    }
+
+    .content h2 {
+      margin: 2.5rem 0 1rem;
+      font-size: 1.8rem;
+      font-weight: 500;
+      color: var(--gold-soft);
+      border-bottom: 1px solid color-mix(in oklab, var(--gold) 20%, transparent);
+      padding-bottom: 5px;
+    }
+
+    .content h3 {
+      margin: 2rem 0 0.8rem;
+      font-size: 1.35rem;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--silver);
+    }
+
+    .content ul {
+      margin-bottom: 1.6rem;
+      padding-left: 1.4rem;
+      color: var(--silver-dim);
+    }
+
+    .content li { margin-bottom: 0.5rem; }
+
+    .content pre {
+      background: rgba(20,20,20,0.5);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      margin: 2rem 0;
+    }
+
+    .content code {
+      font-family: var(--font-mono);
+      color: var(--gold-soft);
+      background: rgba(255,255,255,0.03);
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .content pre code {
+      background: transparent;
+      padding: 0;
+      color: var(--silver-dim);
+    }
+
+    a { color: var(--link); text-decoration: none; border-bottom: 1px dotted color-mix(in oklab, var(--link) 55%, transparent); }
+    a:hover { border-bottom-style: solid; }
+
+    .mjx-chtml { outline: 0 !important; }
+
+    .callout {
+      border: 1px solid var(--border);
+      background: rgba(125,125,125,0.05);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 1.8rem 0;
+      color: var(--silver-dim);
+      font-family: var(--font-ui);
+      font-size: 0.98rem;
+      line-height: 1.55;
+    }
+
+    .refs {
+      border-top: 1px solid var(--border);
+      margin-top: 2.4rem;
+      padding-top: 1.4rem;
+      color: var(--silver-dim);
+      font-size: 0.98rem;
+    }
+    .refs ol { margin: 0.6rem 0 0; padding-left: 1.2rem; }
+    .refs li { margin: 0.55rem 0; }
+    .disclaimer {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      color: var(--silver-dim);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+      padding-top: 20px;
+      opacity: 0.85;
+    }
+  </style>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true
+      },
+      chtml: { displayAlign: 'center' }
+    };
+  </script>
+  <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+<article class="article">
+  <header class="article-header">
+    <div class="meta">
+      <span class="pill">Monte Carlo</span>
+      <span>JAN 2026</span>
+      <span>•</span>
+      <span id="readtime"></span>
+    </div>
+    <h1>Monte Carlo Simulation: Powerful, Fragile, and Easy to Fake</h1>
+  </header>
+
+  <div class="content" id="article-content">
+
+    <p>
+      Monte Carlo (MC) simulation is not forecasting in any sense. It is numerical integration under a specified probabilistic model.
+      The only honest statement is: <em>given</em> a joint distribution for your risk factors and a valuation map from factors to P&amp;L,
+      MC approximates expectations, quantiles, and tail functionals of the induced P&amp;L distribution.
+    </p>
+
+    <div class="callout">
+      <strong>Guiding principle:</strong>
+      Monte Carlo is a microscope, not a telescope.
+      It can reveal the consequences of assumptions with high fidelity, it cannot manufacture correct assumptions.
+      If the tail is wrong, MC will estimate the wrong tail very precisely.
+    </div>
+
+    <h2 id="formal-setup">1) The formal object you are simulating</h2>
+
+    <p>
+      Let $X$ denote (possibly high-dimensional) risk factors (rates, FX, equities, credit spreads, vol states, liquidity states, etc.)
+      and let $\pi(\cdot)$ be the pricing / valuation functional (portfolio value).
+      Fix a horizon $\Delta$ and define the (loss) random variable:
+    </p>
+
+    $$L = -\left(\pi(X_{t+\Delta}) - \pi(X_t)\right).$$
+
+    <p>
+      “Monte Carlo VaR/CVaR” is then an estimator built from i.i.d. draws (or dependent draws, if you are doing path simulation)
+      from a model for $X_{t+\Delta}\mid\mathcal{F}_t$. Everything that follows is about the failure modes of that modeling stack.
+    </p>
+
+    <h3 id="var-cvar-defs">1.1 VaR and CVaR (Expected Shortfall)</h3>
+
+    <p>
+      VaR at tail probability $\alpha$ is a quantile of the loss distribution.
+      Using a common convention, $\mathrm{VaR}_\alpha(L)$ is the $(1-\alpha)$-quantile of $L$
+      (e.g., $\alpha=0.01$ is “99% VaR” if you speak in confidence levels).<sup>[2]</sup>
+    </p>
+
+    <p>
+      CVaR / Expected Shortfall (ES) is a tail conditional expectation:
+      for continuous loss distributions, it is the expected loss conditional on exceeding the VaR threshold,
+      i.e., “average of the tail beyond VaR.”<sup>[1]</sup>
+      This is the reason ES is often preferred in theory and regulation: it is explicitly sensitive to tail severity rather than only tail frequency.<sup>[3]</sup>
+    </p>
+
+    <div class="callout">
+      <strong>Some Technicality:</strong>
+      For discontinuous / mixed distributions, “ES = E[L | L ≥ VaR]” is ambiguous because the event $L = \mathrm{VaR}$
+      may have positive probability mass. Correct definitions use generalized quantiles and integrals of quantile functions,
+      naive “mean of exceedances” estimators can be biased at finite $n$ when ties pile up at the empirical quantile.
+    </div>
+
+    <h2 id="what-mc-can-do">2) What Monte Carlo can do (when used correctly)</h2>
+
+    <p>
+      MC is indeed exceptionally good at propagating uncertainty through <em>nonlinear</em> payoffs and constraints
+      where analytic forms are unavailable (options books, callable structures, path-dependent payoffs, XVA, collateral rules).
+      It is also robust to dimension. You can simulate 5 or 500 risk factors if you can sample them and value the portfolio fast enough.
+    </p>
+
+    <ul>
+      <li><strong>Nonlinear aggregation:</strong> portfolio P&amp;L from thousands of instruments without linearization.</li>
+      <li><strong>Scenario enrichment:</strong> conditional analyses (stress, filtered states, regime-mix models).</li>
+      <li><strong>Tail functionals:</strong> VaR, CVaR, expectiles, and arbitrary distortion risk measures—provided the tail is sufficiently sampled.</li>
+      <li><strong>Modularity:</strong> swap factor model, copula, or pricing engine independently (the “plug-and-play” advantage).</li>
+    </ul>
+
+    <h2 id="what-mc-cannot-do">3) What Monte Carlo cannot do (and people pretend it can)</h2>
+
+    <p>
+      MC cannot rescue model misspecification. If your dependence structure is wrong (for example Gaussian copula in a world with tail dependence),
+      MC will faithfully integrate the wrong joint distribution.
+      And if your horizon dynamics drift, your historical calibration will embed a regime that does not govern tomorrow.
+    </p>
+
+    <ul>
+      <li><strong>It cannot create tail events you do not model:</strong> “Rare” in data often means “not present.”</li>
+      <li><strong>It cannot fix non-identifiability:</strong> many tail models fit the center equally well and disagree violently in the 99.9% region.</li>
+      <li><strong>It cannot guarantee stability:</strong> VaR/ES are high-variance estimands at extreme levels; you pay with $n$.</li>
+      <li><strong>It cannot validate itself:</strong> backtesting tail risk is statistically underpowered at very high confidence unless you have massive history.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Some Truth:</strong>
+      For VaR/CVaR, computational accuracy and statistical accuracy are different.
+      You can compute a number to 12 decimal places and still have a useless estimator because the sampling error in the tail is dominant.
+    </div>
+
+    <h2 id="estimators">4) Estimating VaR/CVaR: order statistics vs bins</h2>
+
+    <h3 id="order-statistics">4.1 The gold standard is order-statistics estimators</h3>
+
+    <p>
+      If you have simulated losses $L_1,\dots,L_n$, sort them: $L_{(1)} \le \cdots \le L_{(n)}$.
+      A plain empirical VaR estimator is:
+    </p>
+
+    $$\widehat{\mathrm{VaR}}_\alpha = L_{(\lceil (1-\alpha)n \rceil)}.$$
+
+    <p>
+      A vanilla “mean of tail” ES estimator is:
+    </p>
+
+    $$\widehat{\mathrm{ES}}_\alpha = \frac{1}{k}\sum_{i=m}^{n} L_{(i)}, \quad m=\lceil (1-\alpha)n \rceil,\; k=n-m+1.$$
+
+    <p>
+      This is typically superior to histogram-based quantiles because it avoids binning bias entirely.
+      If you insist on bins, do so for visualization, smoothing, or density estimation, but not because you think bins are “more robust.”
+    </p>
+
+    <h3 id="why-bins-exist">4.2 Why bins show up anyway (and why that’s dangerous)</h3>
+
+    <p>
+      Bins appear in practice for three reasons:
+      (i) people estimate a histogram and then compute quantiles by integrating the binned density,
+      (ii) people compute CVaR by approximating the tail integral numerically on binned support,
+      (iii) people build “tail buckets” for reporting, limits, or capital add-ons.
+    </p>
+
+    <p>
+      The problem: VaR is a <em>threshold functional</em>, and thresholds are exquisitely sensitive to discretization.
+      CVaR is then sensitive twice: first through the VaR threshold, and second through tail averaging.
+    </p>
+
+    <div class="callout">
+      <strong>Key pathology:</strong>
+      If your bin width is $h$, a histogram-based VaR often has an irreducible discretization error on the order of $O(h)$,
+      no matter how large $n$ gets, unless you let $h\to 0$ with $n$ in a principled way.
+    </div>
+
+    <h2 id="bin-selection">5) Bin selection methods (and how they bias VaR/CVaR)</h2>
+
+    <p>
+      If bins are used for tail estimation (not just plotting), the binning scheme is part of the estimator.
+      That means you must treat “number of bins” as a statistical tuning parameter with bias–variance trade-offs.
+    </p>
+
+    <h3 id="scott-fd">5.1 Scott vs Freedman–Diaconis (global rules)</h3>
+
+    <p>
+      Two canonical global bin-width rules are:
+      <strong>Scott’s rule</strong> and <strong>Freedman–Diaconis</strong>.
+      Under a normal-reference argument, Scott’s rule gives roughly
+      $h \approx 3.5\,\hat\sigma\,n^{-1/3}$.<sup>[4]</sup>
+    </p>
+
+    <p>
+      Freedman–Diaconis is more outlier-robust by using IQR:
+    </p>
+
+    $$h = 2\,\mathrm{IQR}\,n^{-1/3}.$$
+
+    <p>
+      Both are density-estimation heuristics; neither was designed for extreme-quantile or ES estimation.
+      Still, they provide a baseline if you are forced into histogram land (e.g., reporting systems that only accept buckets).<sup>[5]</sup>
+    </p>
+
+    <div class="callout">
+      <strong>Tail-risk implication:</strong>
+      Global rules allocate resolution where the mass is.
+      VaR/CVaR live where the mass is <em>not</em>.
+      So global rules are systematically biased toward under-resolving the tail unless $n$ is huge.
+    </div>
+
+    <h3 id="tail-focused-binning">5.2 Tail-focused binning (what you should do instead)</h3>
+
+    <p>
+      If your objective is VaR/CVaR, your binning should be tail-adaptive.
+      Three defensible strategies:
+    </p>
+
+    <ul>
+      <li><strong>Equal-probability bins (quantile bins):</strong> bins defined by empirical quantiles so each bin has ≈ equal count. This concentrates bins in the tail automatically.</li>
+      <li><strong>Hybrid bins:</strong> coarse bins for the center, fine bins in the upper tail beyond a pilot $\widehat{\mathrm{VaR}}_{\alpha_0}$ (e.g., $\alpha_0=5\%$) where tail risk starts to matter.</li>
+      <li><strong>Extreme-tail modeling:</strong> avoid bins and use EVT for the far tail; use bins only for the “body.” This decouples tail inference from arbitrary discretization.</li>
+    </ul>
+
+    <p>
+      If you adopt quantile bins, you can estimate ES as a weighted sum over tail bins,
+      where weights are empirical probabilities (counts / $n$) and bin “representatives” are conditional means inside bins.
+      This reduces discretization error in the tail relative to equal-width binning, but you must still handle finite-sample instability.
+    </p>
+
+    <h3 id="how-bins-break-var">5.3 How bins break VaR (mechanisms)</h3>
+
+    <ul>
+      <li><strong>Threshold snapping:</strong> histogram-quantile VaR snaps to bin edges, producing artificial plateaus in VaR as parameters move.</li>
+      <li><strong>Tail dilution:</strong> a wide last bin pools mild tail and extreme tail; ES becomes an average of unlike events, biasing severity downward.</li>
+      <li><strong>Discontinuity amplification:</strong> in mixed distributions (e.g., jump components), bins smear point masses into fake density, distorting VaR around the jump.</li>
+      <li><strong>Overfitting noise:</strong> too many bins creates spiky density; the derived quantile becomes a high-variance estimator that moves violently under resampling.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Operational guidance:</strong>
+      If bins are unavoidable, treat binning as a model component and validate it via bootstrap stability:
+      resample losses, recompute VaR/ES under your bin scheme, and check sensitivity.
+      If bin choice moves ES materially, the estimator is not decision-stable.
+    </div>
+
+    <h2 id="rng">6) RNG should be (really random): it is an input to your estimator</h2>
+
+    <p>
+      MC assumes the simulated draws behave like independent samples from the target distribution.
+      The “randomness” you use is therefore part of the estimator, not a convenience.
+      Weak RNG can introduce serial structure, lattice artifacts, and hidden correlations that show up exactly where you least want them: the tail.
+    </p>
+
+    <h3 id="prng-vs-csprng">6.1 PRNG vs CSPRNG (and why “true RNG” matters)</h3>
+
+    <p>
+      For simulation you generally want a high-quality PRNG with strong statistical properties and good support for parallel streams.
+      For adversarial settings (crypto, security tokens, lotteries) you need a CSPRNG.
+      Mersenne Twister is widely used statistically but is not cryptographically secure and can be predictable from enough output,
+      which is explicitly noted by the MT authors and also discussed in applied terms by Cook.<sup>[6]</sup><sup>[7]</sup>
+    </p>
+
+    <p>
+      The deeper point is not “use crypto RNG for everything.”
+      The point is: use a generator with properties appropriate to your application,
+      and architect your simulation so independence across workers is not assumed but enforced (jumped streams, counter-based RNG, or explicit substream management).
+    </p>
+
+    <h3 id="numpy-rng">6.2 A practical modern default (NumPy)</h3>
+
+    <p>
+      Modern NumPy uses a <code>Generator</code> interface (e.g., default <code>PCG64</code>) with explicit seeding for reproducibility.<sup>[8]</sup>
+      If you need many independent streams, prefer bit generators that support jumping / substreams (e.g., <code>PCG64DXSM</code> provides jumping).<sup>[9]</sup>
+    </p>
+
+    <div class="callout">
+      <strong>Common failure:</strong>
+      “Set seed = 42 in every worker.” This creates identical streams and fake diversification.
+      Your VaR/ES may look stable because you accidentally reduced randomness, not because the estimator improved.
+    </div>
+
+    <h2 id="mistakes">7) Common Monte Carlo mistakes (and their tail-risk impact)</h2>
+
+    <ul>
+      <li><strong>Wrong target distribution:</strong> calibrating to returns and then simulating P&amp;L without revaluation under nonlinear instruments yields wrong tails.</li>
+      <li><strong>Horizon mismatch:</strong> scaling 1-day VaR by $\sqrt{10}$ while ignoring re-hedging, nonlinearity, and volatility clustering creates a fiction of 10-day risk.</li>
+      <li><strong>Insufficient tail sampling:</strong> at 99.9% VaR, the effective sample in the tail is ~0.1% of $n$; ES is even more data-hungry.</li>
+      <li><strong>Temporal / information leakage:</strong> using ex-post volatility estimates or revised data in the simulation state makes the tail unrealistically “informed.”</li>
+      <li><strong>Binning without justification:</strong> computing VaR/ES from histograms because “it’s smoother” is usually discretization bias disguised as stability.</li>
+      <li><strong>Correlated randomness:</strong> reusing random numbers across scenarios incorrectly can understate dispersion and deflate VaR/ES.</li>
+    </ul>
+
+    <h2 id="implementation">8) Implementation sketch (VaR/CVaR + bin rules + tail bins)</h2>
+
+    <p>
+      Below is a compact, production-oriented sketch (not a full risk engine) showing:
+      (i) order-statistics VaR/ES,
+      (ii) Scott / Freedman–Diaconis bin-widths for reporting histograms,
+      (iii) quantile-bins for tail-focused aggregation,
+      (iv) modern NumPy RNG setup with optional jumped streams.
+    </p>
+
+    <pre><code class="language-python"># Monte Carlo VaR/CVaR sketch (single-asset placeholder),
+# with: order-statistics estimators + bin selection utilities + RNG discipline.
+
+import numpy as np
+
+def var_es_from_samples(losses, alpha=0.01):
+    """
+    losses: array of losses (positive = loss)
+    alpha: tail probability (e.g. 0.01 => 99% VaR)
+    """
+    x = np.asarray(losses, dtype=float)
+    x = x[np.isfinite(x)]
+    if x.size == 0:
+        raise ValueError("No finite losses.")
+    x.sort()
+    n = x.size
+    m = int(np.ceil((1 - alpha) * n)) - 1
+    m = np.clip(m, 0, n - 1)
+    var_hat = x[m]
+    tail = x[m:]
+    es_hat = tail.mean() if tail.size &gt; 0 else var_hat
+    return var_hat, es_hat
+
+def scott_bin_width(x):
+    x = np.asarray(x, dtype=float)
+    x = x[np.isfinite(x)]
+    n = x.size
+    if n &lt; 2:
+        return np.nan
+    sigma = np.std(x, ddof=1)
+    return 3.5 * sigma * (n ** (-1/3))
+
+def freedman_diaconis_bin_width(x):
+    x = np.asarray(x, dtype=float)
+    x = x[np.isfinite(x)]
+    n = x.size
+    if n &lt; 2:
+        return np.nan
+    q75, q25 = np.percentile(x, [75, 25])
+    iqr = q75 - q25
+    return 2.0 * iqr * (n ** (-1/3))
+
+def equal_width_bins(x, h):
+    x = np.asarray(x, dtype=float)
+    x = x[np.isfinite(x)]
+    if x.size == 0 or not np.isfinite(h) or h &lt;= 0:
+        raise ValueError("Invalid data or bin width.")
+    lo, hi = np.min(x), np.max(x)
+    if lo == hi:
+        return np.array([lo, hi + 1e-12])
+    k = int(np.ceil((hi - lo) / h))
+    k = max(k, 1)
+    edges = lo + h * np.arange(k + 1)
+    edges[-1] = hi  # ensure coverage
+    return edges
+
+def quantile_bins(x, k):
+    """
+    Equal-probability (quantile) bins: edges at empirical quantiles.
+    Good for tail resolution; bins are variable width.
+    """
+    x = np.asarray(x, dtype=float)
+    x = x[np.isfinite(x)]
+    if x.size == 0:
+        raise ValueError("No finite data.")
+    k = int(k)
+    if k &lt; 1:
+        raise ValueError("k must be &gt;= 1.")
+    qs = np.linspace(0.0, 1.0, k + 1)
+    edges = np.quantile(x, qs)
+    # Ensure strict monotonicity in degenerate cases:
+    edges = np.maximum.accumulate(edges)
+    edges[-1] = np.nextafter(edges[-1], np.inf)
+    return edges
+
+def binned_tail_es(losses, alpha=0.01, edges=None):
+    """
+    Approximate ES by binning losses and summing tail-bin conditional means.
+    This is for reporting systems that require buckets.
+    """
+    x = np.asarray(losses, dtype=float)
+    x = x[np.isfinite(x)]
+    if x.size == 0:
+        raise ValueError("No finite losses.")
+    if edges is None:
+        # Tail-aware default: quantile bins
+        edges = quantile_bins(x, k=100)
+    counts, _ = np.histogram(x, bins=edges)
+    # Compute conditional means per bin via digitization:
+    idx = np.clip(np.digitize(x, edges) - 1, 0, len(edges) - 2)
+    bin_sum = np.bincount(idx, weights=x, minlength=len(edges) - 1)
+    bin_cnt = np.bincount(idx, minlength=len(edges) - 1)
+    bin_mean = np.divide(bin_sum, bin_cnt, out=np.zeros_like(bin_sum), where=bin_cnt&gt;0)
+
+    # VaR via empirical quantile (do not bin it if you can avoid it):
+    var_hat, _ = var_es_from_samples(x, alpha=alpha)
+
+    # Identify bins above VaR threshold:
+    # (If VaR falls inside a bin, this bucketization still introduces discretization.)
+    bin_lo = edges[:-1]
+    tail_mask = bin_lo &gt;= var_hat
+    tail_prob = bin_cnt[tail_mask].sum() / x.size
+    if tail_prob == 0:
+        return var_hat
+    es_hat = (bin_mean[tail_mask] * (bin_cnt[tail_mask] / x.size)).sum() / tail_prob
+    return es_hat
+
+# --- Demo: lognormal-ish P&amp;L proxy (placeholder) ---
+# Replace this with a full revaluation engine in real work.
+
+# RNG discipline: modern NumPy Generator (reproducible).
+rng = np.random.default_rng(42)
+
+n = 2_000_00
+mu, sigma = 0.0, 0.02
+returns = rng.normal(mu, sigma, size=n)
+
+# Toy portfolio: loss = -return (so positive means loss)
+losses = -returns
+
+alpha = 0.01
+var_hat, es_hat = var_es_from_samples(losses, alpha=alpha)
+
+h_scott = scott_bin_width(losses)
+h_fd = freedman_diaconis_bin_width(losses)
+
+edges_scott = equal_width_bins(losses, h_scott)
+edges_fd = equal_width_bins(losses, h_fd)
+
+# Tail-aware bins:
+edges_q = quantile_bins(losses, k=200)
+
+es_binned_q = binned_tail_es(losses, alpha=alpha, edges=edges_q)
+
+print({
+  "VaR(alpha)": var_hat,
+  "ES(alpha) (order-stat)": es_hat,
+  "ES(alpha) (quantile-binned approx)": es_binned_q,
+  "Scott h": h_scott,
+  "FD h": h_fd,
+  "bins (Scott)": len(edges_scott)-1,
+  "bins (FD)": len(edges_fd)-1,
+  "bins (quantile)": len(edges_q)-1
+})</code></pre>
+
+    <h2 id="verdict">The verdict</h2>
+
+    <p>
+      Monte Carlo is strongest when the valuation functional is complex and the probabilistic model is credible.
+      It becomes fragile when you use it to estimate extreme tail functionals with insufficient tail data, careless randomness, or discretization-heavy estimators.
+      For VaR/CVaR specifically, prefer order-statistics estimators; treat binning as a reporting layer unless you can justify it statistically.
+    </p>
+
+    <div class="refs">
+      <p><strong>References</strong></p>
+      <ol>
+        <li>
+          Rockafellar &amp; Uryasev. “Optimization of Conditional Value-at-Risk.” (CVaR/ES definitions, tail expectation formulations.)
+          <a href="https://sites.math.washington.edu/~rtr/papers/rtr179-CVaR1.pdf" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Value at Risk (VaR) definition (quantile of loss distribution).
+          <a href="https://en.wikipedia.org/wiki/Value_at_risk" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Basel/FRTB context: ES replacing VaR as a market risk measure (industry summary).
+          <a href="https://www.sifma.org/news/blog/the-fundamental-review-of-the-trading-book-frtb-an-introductory-guide" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Scott’s rule (bin width scaling $\propto n^{-1/3}$; normal-reference constant).
+          <a href="https://en.wikipedia.org/wiki/Scott's_rule" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Freedman–Diaconis rule (bin width based on IQR).
+          <a href="https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          Mersenne Twister FAQ: not cryptographically secure (predictability from output).
+          <a href="https://www.math.sci.hiroshima-u.ac.jp/m-mat/MT/efaq.html" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          John D. Cook: PRNG vs CSPRNG and predictability caveats (simulation vs crypto).
+          <a href="https://www.johndcook.com/blog/2024/10/16/rng-prng-csprng/" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          NumPy random Generator docs (reproducible seeding; modern interface).
+          <a href="https://numpy.org/doc/2.1/reference/random/generator.html" target="_blank" rel="noopener">link</a>
+        </li>
+        <li>
+          NumPy PCG64DXSM docs (jumping/substreams for parallel generation).
+          <a href="https://numpy.org/doc/2.2/reference/random/bit_generators/pcg64dxsm.html" target="_blank" rel="noopener">link</a>
+        </li>
+      </ol>
+    </div>
+
+  </div>
+
+  <div class="disclaimer">
+    <p><strong>Disclaimer:</strong> Educational, technical material only. This is not financial advice and not a substitute for model validation, governance, or regulatory interpretation.</p>
+  </div>
+</article>
+</body>
+</html>
