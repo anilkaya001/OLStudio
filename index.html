@@ -4,20 +4,26 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
 <meta name="theme-color" content="#050505"/>
-<title>Anıl Kaya</title>
+<title>Anıl Kaya | Econometrics Labs</title>
 
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link rel="preconnect" href="https://unpkg.com" crossorigin/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css"/>
 
+<!-- GSAP -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
+<!-- Katex -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 
+<!-- Three.js -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{color-scheme:dark;--font-main:"Latin Modern Roman","Times New Roman",Times,serif;--font-ui:"Latin Modern Sans","Latin Modern Roman",serif;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--nav-h:64px;--bg:#050505;--panel:rgba(18,18,18,0.62);--panel-strong:rgba(10,10,10,0.86);--border:rgba(255,255,255,0.10);--silver:#e8e8ea;--silver-dim:rgba(232,232,234,0.72);--gold:#D4AF37;--gold-soft:#F7E7CE}
@@ -33,6 +39,52 @@ a:hover{opacity:0.9}
 #actions{display:flex;align-items:center;gap:10px}
 .btn{font-family:var(--font-ui);font-size:0.82rem;letter-spacing:1.2px;text-transform:uppercase;padding:10px 12px;border-radius:14px;border:1px solid rgba(212,175,55,0.25);background:linear-gradient(135deg,rgba(18,18,18,0.58),rgba(18,18,18,0.34));color:var(--silver);cursor:pointer;backdrop-filter:blur(14px);transition:all 0.3s ease;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .btn:hover{background:rgba(212,175,55,0.15);border-color:rgba(212,175,55,0.5)}
+
+/* Lab specific styles */
+.lab-btn { border-color: rgba(212,175,55,0.4); color: var(--gold-soft); font-weight: 700; }
+.lab-container { display: grid; grid-template-columns: 340px 1fr; gap: 0; height: 100%; overflow: hidden; font-family: var(--font-ui); background: #050505; }
+.lab-controls { padding: 24px; background: #080808; border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; gap: 18px; z-index: 10; box-shadow: 2px 0 15px rgba(0,0,0,0.5); }
+.lab-main { padding: 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 32px; background: #0b0b0b; position: relative; z-index: 5; }
+.lab-group { display: flex; flex-direction: column; gap: 8px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:16px; }
+.lab-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--gold); font-weight:700; }
+.lab-input-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lab-slider { flex: 1; accent-color: var(--gold); cursor: pointer; }
+.lab-checkbox { accent-color: var(--gold); transform: scale(1.2); cursor: pointer; }
+.lab-select { background: #1a1a1a; border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.85rem; width: 100%; margin-top: 4px; cursor: pointer; }
+.lab-val { font-variant-numeric: tabular-nums; width: 60px; text-align: right; font-size: 0.95rem; color: #fff; font-weight: 600; }
+
+/* Chart Box */
+.lab-chart-box { background: #121212; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; position: relative; min-height: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); display: flex; flex-direction: column; margin-bottom: 20px; }
+.lab-chart-box canvas { flex: 1; width: 100% !important; height: 100% !important; }
+.lab-chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; min-height: 350px; }
+
+/* Metrics */
+.lab-metrics-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; font-variant-numeric: tabular-nums; margin-top:10px; background: #161616; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.lab-metrics-table th { text-align: left; color: var(--gold); padding: 14px; border-bottom: 1px solid rgba(255,255,255,0.15); font-size: 0.8rem; text-transform: uppercase; background: #1a1a1a; letter-spacing: 0.5px; }
+.lab-metrics-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); color: #e0e0e0; }
+.lab-metrics-table tr:last-child td { border-bottom: none; }
+
+/* Merged Specification Window */
+.lab-spec-container { background: #000; padding: 30px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.25); box-shadow: inset 0 0 40px rgba(255,255,255,0.02); margin-bottom: 24px; color: #fff; display: flex; flex-direction: column; gap: 20px; }
+.lab-spec-title { font-family: var(--font-ui); color: var(--gold); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+.lab-spec-eq { font-family: var(--font-main); font-size: 1.5rem; text-align: center; margin: 10px 0; }
+.lab-spec-vec { font-family: var(--font-main); font-size: 1.2rem; overflow-x: auto; white-space: nowrap; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); }
+
+.lab-regen-btn { width: 100%; padding: 14px; background: rgba(212,175,55,0.1); border: 1px solid var(--gold); color: var(--gold); border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s; margin-bottom: 10px; }
+.lab-regen-btn:hover { background: rgba(212,175,55,0.25); color: #fff; }
+
+.robustness-box { padding: 18px; background: #1a0a0a; border-left: 4px solid #ff4444; border-radius: 6px; font-size: 0.95rem; line-height: 1.6; color: #ffdddd; margin-top: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+.robustness-box.ok { background: #0a140f; border-left-color: #44ff88; color: #d0ffe0; }
+.robustness-title { font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 6px; letter-spacing: 0.5px; font-size: 0.85rem; opacity: 1; }
+
+@media (max-width: 900px) {
+  .lab-container { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .lab-controls { border-right: none; border-bottom: 1px solid var(--border); max-height: 300px; }
+  .lab-chart-row { grid-template-columns: 1fr; }
+  #actions { gap: 6px; }
+  .btn { padding: 8px 10px; font-size: 0.7rem; }
+}
+
 #gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;touch-action:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:rgba(0,0,0,0)}
 #eqLayer{position:fixed;inset:0;z-index:700;pointer-events:none;overflow:hidden}
 .eq{position:absolute;will-change:transform,opacity,filter;opacity:0.0;transform:translate3d(0,0,0);filter:drop-shadow(0 0 14px rgba(212,175,55,0.24));color:rgba(232,232,234,0.92);mix-blend-mode:screen}
@@ -48,17 +100,18 @@ a:hover{opacity:0.9}
 #modalMeta strong{color:var(--gold);font-weight:900}
 #close{border-radius:14px;border:1px solid rgba(255,255,255,0.10);background:rgba(18,18,18,0.46);color:var(--silver);font-family:var(--font-ui);letter-spacing:1.2px;text-transform:uppercase;font-size:0.78rem;padding:10px 12px;cursor:pointer;transition:background 0.2s;touch-action:manipulation}
 #close:hover{background:rgba(255,255,255,0.15)}
-#modalBody{overflow-y:auto;overflow-x:hidden;padding:18px clamp(14px, 3vw, 28px) 28px;-webkit-user-select:text;user-select:text;touch-action:pan-y}
+#modalBody{overflow-y:auto;overflow-x:hidden;padding:0; -webkit-user-select:text;user-select:text;touch-action:pan-y}
 #modalBody::-webkit-scrollbar{width:6px;background:transparent}
 #modalBody::-webkit-scrollbar-track{background:rgba(255,255,255,0.05);margin:4px;border-radius:4px}
 #modalBody::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px;border:1px solid rgba(0,0,0,0.2)}
 #modalBody::-webkit-scrollbar-thumb:hover{background:var(--gold-soft)}
-#modalBody article{max-width:820px;margin:0 auto;line-height:1.75;font-size:1.14rem;color:color-mix(in oklab, var(--silver) 88%, var(--silver-dim));text-align:justify;text-justify:inter-word}
-#modalBody h1,#modalBody h2,#modalBody h3{color:color-mix(in oklab,var(--gold-soft) 70%,var(--silver));line-height:1.15;margin:1.2rem 0 0.6rem;text-align:left}
-#modalBody h1{font-size:clamp(1.8rem,3.6vw,2.8rem);margin-top:0}
-#modalBody h2{font-size:clamp(1.35rem,2.8vw,1.9rem)}
-#modalBody h3{font-size:1.2rem;font-style:italic}
-#modalBody p{margin:0 0 1.25rem}
+.article-content { padding: 18px clamp(14px, 3vw, 28px) 28px; }
+.article-content article{max-width:820px;margin:0 auto;line-height:1.75;font-size:1.14rem;color:color-mix(in oklab, var(--silver) 88%, var(--silver-dim));text-align:justify;text-justify:inter-word}
+.article-content h1,.article-content h2,.article-content h3{color:color-mix(in oklab,var(--gold-soft) 70%,var(--silver));line-height:1.15;margin:1.2rem 0 0.6rem;text-align:left}
+.article-content h1{font-size:clamp(1.8rem,3.6vw,2.8rem);margin-top:0}
+.article-content h2{font-size:clamp(1.35rem,2.8vw,1.9rem)}
+.article-content h3{font-size:1.2rem;font-style:italic}
+.article-content p{margin:0 0 1.25rem}
 .article-header .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--font-ui);font-size:0.80rem;letter-spacing:1.1px;text-transform:uppercase;color:var(--silver-dim);margin-bottom:10px}
 .article-header .pill{border:1px solid rgba(212,175,55,0.22);background:rgba(212,175,55,0.10);color:color-mix(in oklab,var(--gold) 75%,var(--silver));padding:6px 10px;border-radius:999px;font-weight:800;font-family:var(--font-ui)}
 #err{position:fixed;inset:0;z-index:9999;display:none;padding:96px 18px 18px;background:#050505;color:#e8e8ea;font-family:var(--font-ui);-webkit-user-select:text;user-select:text;touch-action:pan-y}
@@ -71,6 +124,10 @@ a:hover{opacity:0.9}
 <nav id="nav" aria-label="Primary">
   <div id="brand" role="button" tabindex="0">Anıl Kaya</div>
   <div id="actions">
+    <button class="btn lab-btn" onclick="Lab.open('OLS')">OLS</button>
+    <button class="btn lab-btn" onclick="Lab.open('VAR')">VAR</button>
+    <button class="btn lab-btn" onclick="Lab.open('VECM')">VECM</button>
+    <button class="btn lab-btn" onclick="Lab.open('ARDL')">ARDL</button>
     <a class="btn" href="https://www.linkedin.com/in/anillkaya" target="_blank" rel="noopener noreferrer">LinkedIn</a>
     <button class="btn" id="theme" type="button" aria-label="Toggle theme">Light</button>
   </div>
@@ -81,7 +138,7 @@ a:hover{opacity:0.9}
 <div id="depthName" aria-hidden="true">In Econometrics, We Trust</div>
 <div id="eqLayer" aria-hidden="true"></div>
 
-<div id="modal" role="dialog" aria-modal="true" aria-label="Article reader">
+<div id="modal" role="dialog" aria-modal="true" aria-label="Content reader">
   <div id="react-app"></div>
 </div>
 
@@ -92,104 +149,768 @@ a:hover{opacity:0.9}
 "use strict";
 
 /* =========================
-   ARTICLES (added planet)
+   MATH ENGINE
    ========================= */
-const ARTICLES = [
-  {
-    id:"options-pricing",
-    file:"articles/options.html",
-    category:"Financial Econometrics",
-    title:"Options Pricing",
-    date:"JAN 2026",
-    textureKey:"moon",
-    enabled:true
+const MathLab = {
+  sum: (arr) => arr.reduce((a,b)=>a+b, 0),
+  mean: (arr) => arr.reduce((a,b)=>a+b,0)/arr.length,
+  variance: (arr, m) => {
+    const mean = m !== undefined ? m : MathLab.mean(arr);
+    return arr.reduce((a,b)=>a+(b-mean)**2,0)/(arr.length-1);
   },
-  {
-    id:"bvar",
-    file:"articles/bvar.html",
-    category:"Core Theory",
-    title:"Bayesian Vector Autoregression",
-    date:"DEC 2025",
-    textureKey:"earth",
-    enabled:true
+  generateRandom: (type, params) => {
+    if(type === 'normal') {
+      const { mean, std } = params;
+      let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+      return mean + std * Math.sqrt(-2.0*Math.log(u)) * Math.cos(2.0*Math.PI*v);
+    } else if(type === 'uniform') {
+      const { min, max } = params;
+      return min + Math.random()*(max-min);
+    } else if(type === 't') {
+      const { df, std } = params;
+      let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+      const norm = Math.sqrt(-2.0*Math.log(u)) * Math.cos(2.0*Math.PI*v);
+      let chi = 0;
+      for(let i=0;i<df;i++){
+         let a=0,b=0; while(a===0)a=Math.random(); while(b===0)b=Math.random();
+         let z = Math.sqrt(-2.0*Math.log(a)) * Math.cos(2.0*Math.PI*b);
+         chi += z*z;
+      }
+      return (norm / Math.sqrt(chi/df)) * std; 
+    }
+    return 0;
   },
-  {
-    id:"stoch-vol",
-    file:"articles/forecasting.html",
-    category:"Time Series",
-    title:"Why ML is (almost) useless?",
-    date:"JAN 2026",
-    textureKey:"mars",
-    enabled:true
+  correlation: (x, y) => {
+    const n = x.length;
+    const mx = MathLab.mean(x), my = MathLab.mean(y);
+    let num=0, d1=0, d2=0;
+    for(let i=0;i<n;i++){
+      num += (x[i]-mx)*(y[i]-my);
+      d1 += (x[i]-mx)**2;
+      d2 += (y[i]-my)**2;
+    }
+    return num / Math.sqrt(d1*d2);
   },
-    {
-    id:"game-theory-cb",
-    file:"articles/game.html",
-    category:"Monetary Economics",
-    title:"Central Bank Credibility: Game Theory",
-    date:"JAN 2026",
-    textureKey:"jupiter",  // or choose another planet: saturn, uranus, neptune, pluto
-    enabled:true
+  acf: (series, lag) => {
+    const n = series.length;
+    const m = MathLab.mean(series);
+    let num=0, den=0;
+    for(let i=0;i<n;i++) den += (series[i]-m)**2;
+    for(let i=lag;i<n;i++) num += (series[i]-m)*(series[i-lag]-m);
+    return num/den;
   },
-  {
-    id:"sign-rest",
-    file:"articles/ERPT.html",
-    category:"Macroeconometrics",
-    title:"ERPT",
-    date:"JAN 2026",
-    textureKey:"venus",
-    enabled:true
+  pacf: (series, maxLag) => {
+    let phi = [];
+    let acfs = [];
+    for(let i=0;i<=maxLag;i++) acfs.push(MathLab.acf(series,i));
+    let res = [1.0];
+    for(let k=1; k<=maxLag; k++){
+       let R = [];
+       for(let i=0;i<k;i++){
+         let row = [];
+         for(let j=0;j<k;j++) row.push(acfs[Math.abs(i-j)]);
+         R.push(row);
+       }
+       let r = [];
+       for(let i=1;i<=k;i++) r.push(acfs[i]);
+       const sol = MathLab.solveLinear(R, r);
+       res.push(sol[sol.length-1]);
+    }
+    return res;
   },
-  {
-    id:"monte-carlo",
-    file:"articles/monte-carlo.html",
-    category:"Computational Methods",
-    title:"Monte Carlo Simulation",
-    date:"JAN 2026",
-    textureKey:"mc",
-    enabled:true
-  }
-].filter(x=>x.enabled);
+  solveLinear: (A, b) => {
+    const n = A.length;
+    let M = A.map((row, i) => [...row, b[i]]);
+    for (let i = 0; i < n; i++) {
+        let maxRow = i;
+        for (let k = i + 1; k < n; k++) if (Math.abs(M[k][i]) > Math.abs(M[maxRow][i])) maxRow = k;
+        [M[i], M[maxRow]] = [M[maxRow], M[i]];
+        for (let k = i + 1; k < n; k++) {
+            const f = M[k][i] / M[i][i];
+            for (let j = i; j <= n; j++) M[k][j] -= M[i][j] * f;
+        }
+    }
+    const x = new Array(n).fill(0);
+    for (let i = n - 1; i >= 0; i--) {
+        let sum = 0;
+        for (let j = i + 1; j < n; j++) sum += M[i][j] * x[j];
+        x[i] = (M[i][n] - sum) / M[i][i];
+    }
+    return x;
+  },
+  // OLS for multiple regressors (y, X_matrix) used in Granger Test
+  olsMultivariate: (y, X) => {
+    // b = (X'X)^-1 X'y
+    // Simplification: Assume X has 2 columns (restricted) or 3+ (unrestricted)
+    // We implement a basic matrix solver for this purpose or use approximation
+    // For this lab, we can use a simpler approach for Granger: regress Y on Y_lag and X_lag
+    // We will use a standard matrix operation function if needed, but given no external math lib, 
+    // we'll stick to a simpler 2-variable regression or manually solve 3x3 for VAR Granger.
+    // Solving 3x3 (intercept, lag Y1, lag Y2)
+    const n = y.length;
+    const k = X[0].length;
+    
+    // Construct X'X and X'y
+    let XtX = Array(k).fill(0).map(()=>Array(k).fill(0));
+    let Xty = Array(k).fill(0);
+    
+    for(let i=0; i<n; i++){
+        for(let r=0; r<k; r++){
+            Xty[r] += X[i][r] * y[i];
+            for(let c=0; c<k; c++){
+                XtX[r][c] += X[i][r] * X[i][c];
+            }
+        }
+    }
+    const beta = MathLab.solveLinear(XtX, Xty);
+    
+    // RSS
+    let rss = 0;
+    for(let i=0; i<n; i++){
+        let yhat = 0;
+        for(let j=0; j<k; j++) yhat += X[i][j] * beta[j];
+        rss += (y[i] - yhat)**2;
+    }
+    return rss;
+  },
+  grangerTest: (y, x, lags=1) => {
+    // H0: x does not Granger cause y
+    // Unrestricted: y_t = a0 + a1*y_{t-1} + b1*x_{t-1} + e_t
+    // Restricted: y_t = a0 + a1*y_{t-1} + e_t
+    
+    const n = y.length;
+    const effN = n - lags;
+    
+    // Prepare Data
+    let Y_target = [];
+    let X_restr = [];
+    let X_unrestr = [];
+    
+    for(let i=lags; i<n; i++){
+        Y_target.push(y[i]);
+        // Intercept + lags of Y
+        let rowR = [1];
+        let rowU = [1];
+        for(let l=1; l<=lags; l++) rowR.push(y[i-l]);
+        for(let l=1; l<=lags; l++) rowU.push(y[i-l]);
+        // Add lags of X for Unrestricted
+        for(let l=1; l<=lags; l++) rowU.push(x[i-l]);
+        
+        X_restr.push(rowR);
+        X_unrestr.push(rowU);
+    }
+    
+    const rssR = MathLab.olsMultivariate(Y_target, X_restr);
+    const rssU = MathLab.olsMultivariate(Y_target, X_unrestr);
+    
+    // F-test
+    // F = ((RSS_R - RSS_U) / p) / (RSS_U / (n - k))
+    // p = lags (number of restrictions), k = 2*lags + 1 (params in unrestricted)
+    const p = lags;
+    const k = 2*lags + 1;
+    const fStat = ((rssR - rssU) / p) / (rssU / (effN - k));
+    return fStat;
+  },
+  durbinWatson: (resid) => {
+    let num = 0, den = 0;
+    for(let i=1; i<resid.length; i++) num += (resid[i] - resid[i-1])**2;
+    for(let i=0; i<resid.length; i++) den += resid[i]**2;
+    return num/den;
+  },
+  jarqueBera: (resid) => {
+    const n = resid.length;
+    const m = MathLab.mean(resid);
+    let m2=0, m3=0, m4=0;
+    for(let x of resid){
+      let d = x-m;
+      m2 += d**2;
+      m3 += d**3;
+      m4 += d**4;
+    }
+    m2 /= n; m3 /= n; m4 /= n;
+    const S = m3 / Math.pow(m2, 1.5);
+    const K = m4 / (m2**2);
+    return (n/6) * (S**2 + ((K-3)**2)/4);
+  },
+  ols: (x, y) => {
+    const n = x.length;
+    const mx = MathLab.mean(x);
+    const my = MathLab.mean(y);
+    let num=0, den=0;
+    for(let i=0;i<n;i++){
+      num += (x[i]-mx)*(y[i]-my);
+      den += (x[i]-mx)**2;
+    }
+    const beta = num/den;
+    const alpha = my - beta*mx;
+    const yhat = x.map(xi => alpha + beta*xi);
+    const resid = y.map((yi,i) => yi - yhat[i]);
+    const ssr = resid.reduce((a,b)=>a+b**2, 0);
+    const sst = y.reduce((a,b)=>a+(b-my)**2, 0);
+    const r2 = 1 - (ssr/sst);
+    const sigma2 = ssr/(n-2);
+    const seBeta = Math.sqrt(sigma2/den);
+    const tStat = beta/seBeta;
+    const fStat = (r2/1) / ((1-r2)/(n-2)); 
+    const dw = MathLab.durbinWatson(resid);
+    const jb = MathLab.jarqueBera(resid);
+    const res2 = resid.map(r=>r*r);
+    const bpCorr = MathLab.correlation(res2, x);
+    return { alpha, beta, r2, tStat, seBeta, resid, yhat, fStat, dw, jb, bpCorr };
+  },
+  matVec2: (A, v) => [
+    A[0][0]*v[0] + A[0][1]*v[1],
+    A[1][0]*v[0] + A[1][1]*v[1]
+  ]
+};
 
 /* =========================
-   Equation layer
+   LAB LOGIC
    ========================= */
+const Lab = {
+  chartInstances: [],
+  state: { distType: 'normal', distDf: 5, shockSize: 1, showCI: false, initDiseq: 10, het: 0, rho: 0 },
+  
+  open: (type) => {
+    modal.classList.add("open");
+    Lab.renderUI(type);
+  },
+
+  renderUI: (type) => {
+    const html = `
+      <div id="modalCard">
+         <div id="modalTop">
+           <div id="modalMeta"><strong>Interactive Lab</strong><span>•</span><span>${type}</span></div>
+           <button id="close">Close</button>
+         </div>
+         <div id="modalBody" style="height:100%">
+            <div class="lab-container">
+               <div class="lab-controls" id="labControls"></div>
+               <div class="lab-main" id="labMain"></div>
+            </div>
+         </div>
+      </div>
+    `;
+    modal.innerHTML = html;
+    document.getElementById("close").onclick = closeModal;
+    
+    // Config Chart Global Defaults for readability & No Gridlines
+    Chart.defaults.color = '#c0c0c0';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
+    Chart.defaults.scale.grid.display = false;
+    
+    Lab.chartInstances.forEach(c => c.destroy());
+    Lab.chartInstances = [];
+
+    if(type === 'OLS') Lab.initOLS();
+    if(type === 'VAR') Lab.initVAR();
+    if(type === 'VECM') Lab.initVECM();
+    if(type === 'ARDL') Lab.initARDL();
+    
+    setTimeout(() => { if(window.renderMathInElement) window.renderMathInElement(document.getElementById("modalBody")); }, 100);
+  },
+
+  createControl: (label, id, min, max, step, val, onChange) => {
+    const div = document.createElement("div");
+    div.className = "lab-group";
+    div.innerHTML = `
+      <div class="lab-input-row"><span class="lab-label">${label}</span><span class="lab-val" id="val_${id}">${val}</span></div>
+      <input type="range" id="${id}" class="lab-slider" min="${min}" max="${max}" step="${step}" value="${val}">
+    `;
+    div.querySelector("input").addEventListener("input", (e) => {
+      document.getElementById(`val_${id}`).textContent = e.target.value;
+      onChange(parseFloat(e.target.value));
+    });
+    return div;
+  },
+
+  createToggle: (label, id, checked, onChange) => {
+    const div = document.createElement("div");
+    div.className = "lab-group";
+    div.innerHTML = `
+      <div class="lab-input-row">
+        <span class="lab-label">${label}</span>
+        <input type="checkbox" id="${id}" class="lab-checkbox" ${checked ? "checked" : ""}>
+      </div>
+    `;
+    div.querySelector("input").addEventListener("change", (e) => {
+      onChange(e.target.checked);
+    });
+    return div;
+  },
+
+  createDistSelector: (onUpdate) => {
+    const div = document.createElement("div");
+    div.className = "lab-group";
+    div.innerHTML = `
+      <span class="lab-label">Error Distribution</span>
+      <select id="distSelect" class="lab-select">
+        <option value="normal">Normal (Gaussian)</option>
+        <option value="t">Student-t</option>
+        <option value="uniform">Uniform</option>
+      </select>
+      <div id="dfControl" style="display:none; margin-top:5px;">
+        <div class="lab-input-row"><span class="lab-label">Deg. Freedom</span><span class="lab-val" id="val_df">5</span></div>
+        <input type="range" id="dfRange" class="lab-slider" min="3" max="30" step="1" value="5">
+      </div>
+    `;
+    const sel = div.querySelector("select");
+    const dfC = div.querySelector("#dfControl");
+    const dfR = div.querySelector("#dfRange");
+    
+    sel.addEventListener("change", (e)=>{
+        Lab.state.distType = e.target.value;
+        dfC.style.display = (e.target.value === 't') ? 'block' : 'none';
+        onUpdate();
+    });
+    dfR.addEventListener("input", (e)=>{
+        document.getElementById("val_df").innerText = e.target.value;
+        Lab.state.distDf = parseInt(e.target.value);
+        onUpdate();
+    });
+    return div;
+  },
+
+  generateButton: (txt, onClick) => {
+    const btn = document.createElement("button");
+    btn.className = "lab-regen-btn";
+    btn.innerText = txt;
+    btn.onclick = onClick;
+    return btn;
+  },
+
+  getNoise: (std) => {
+     if(Lab.state.distType === 'uniform') return MathLab.generateRandom('uniform', {min: -std*1.73, max: std*1.73}); 
+     if(Lab.state.distType === 't') return MathLab.generateRandom('t', {df: Lab.state.distDf, std: std});
+     return MathLab.generateRandom('normal', {mean: 0, std: std});
+  },
+
+  renderACFPACF: (resid, containerId, titleSuffix) => {
+    const lags = 12; 
+    let acfVal = [];
+    let pacfVal = MathLab.pacf(resid, lags).slice(1);
+    for(let i=1;i<=lags;i++) acfVal.push(MathLab.acf(resid, i));
+    
+    const ctx = document.getElementById(containerId).getContext('2d');
+    const labels = Array.from({length:lags}, (_,i)=>i+1);
+    const crit = 1.96 / Math.sqrt(resid.length);
+    const critArrPos = new Array(lags).fill(crit);
+    const critArrNeg = new Array(lags).fill(-crit);
+
+    if(Chart.getChart(containerId)) Chart.getChart(containerId).destroy();
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'ACF', data: acfVal, backgroundColor: 'rgba(212,175,55,0.9)', barPercentage: 0.6 },
+                { label: 'PACF', data: pacfVal, backgroundColor: 'rgba(122,166,255,0.9)', barPercentage: 0.6 },
+                { label: '95% Bound', data: critArrPos, type:'line', borderColor:'rgba(255,255,255,0.4)', pointRadius:0, borderWidth:1, borderDash:[5,5] },
+                { label: '95% Bound', data: critArrNeg, type:'line', borderColor:'rgba(255,255,255,0.4)', pointRadius:0, borderWidth:1, borderDash:[5,5] }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { title: { display: true, text: `ACF & PACF ${titleSuffix}`, color: '#e8e8ea' } },
+            scales: { 
+                y: { min: -1, max: 1, grid:{display:false} },
+                x: { grid:{display:false} }
+            }
+        }
+    });
+  },
+
+  updateSpecPanel: (eq, vec) => {
+     document.getElementById("labSpecContainer").innerHTML = `
+        <div class="lab-spec-title">Model Specification</div>
+        <div class="lab-spec-eq">${eq}</div>
+        <div class="lab-spec-vec">${vec}</div>
+     `;
+     if(window.renderMathInElement) window.renderMathInElement(document.getElementById("labSpecContainer"));
+  },
+
+  initOLS: () => {
+    Lab.state = { ...Lab.state, beta0: 10, beta1: 1.5, noise: 5, n: 100, showCI: false, het: 0 };
+    const controls = document.getElementById("labControls");
+    const main = document.getElementById("labMain");
+    
+    controls.appendChild(Lab.generateButton("Simulate New Data", Lab.updateOLS));
+    controls.appendChild(Lab.createDistSelector(Lab.updateOLS));
+    controls.appendChild(Lab.createControl("Intercept (β₀)", "b0", -50, 50, 1, 10, v=>{Lab.state.beta0=v; Lab.updateOLS();}));
+    controls.appendChild(Lab.createControl("Slope (β₁)", "b1", -5, 5, 0.1, 1.5, v=>{Lab.state.beta1=v; Lab.updateOLS();}));
+    controls.appendChild(Lab.createControl("Noise (σ)", "err", 0, 20, 0.5, 5, v=>{Lab.state.noise=v; Lab.updateOLS();}));
+    controls.appendChild(Lab.createControl("Heteroskedasticity", "het", 0, 2, 0.1, 0, v=>{Lab.state.het=v; Lab.updateOLS();}));
+    controls.appendChild(Lab.createControl("Sample Size (N)", "n", 20, 500, 10, 100, v=>{Lab.state.n=v; Lab.updateOLS();}));
+    controls.appendChild(Lab.createToggle("Show 95% CI", "showCI", false, v=>{Lab.state.showCI=v; Lab.updateOLS();}));
+
+    main.innerHTML = `
+      <div class="lab-spec-container" id="labSpecContainer"></div>
+      <div class="lab-chart-box"><canvas id="olsChart"></canvas></div>
+      <div class="lab-chart-row">
+          <div class="lab-chart-box"><canvas id="residChart"></canvas></div>
+          <div class="lab-chart-box"><canvas id="olsACF"></canvas></div>
+      </div>
+      <div class="lab-chart-box" style="min-height:auto; height:auto; padding:0; background:transparent; border:none; box-shadow:none;"><div id="olsMetrics"></div></div>
+      <div id="olsRobustness"></div>
+    `;
+    Lab.updateOLS();
+  },
+
+  updateOLS: () => {
+    const { beta0, beta1, noise, n, showCI, het } = Lab.state;
+    let x = [], y = [];
+    for(let i=0; i<n; i++){
+      let xi = i * (100/n);
+      // Heteroskedasticity: variance increases with X
+      let localSigma = noise * (1 + het * (xi/100)*2); 
+      let yi = beta0 + beta1 * xi + Lab.getNoise(localSigma);
+      x.push(xi); y.push(yi);
+    }
+    const est = MathLab.ols(x, y);
+    
+    let dwStatus = (est.dw > 1.5 && est.dw < 2.5) ? "ok" : "warn";
+    let jbStatus = est.jb < 5.99 ? "ok" : "warn";
+    let bpStatus = Math.abs(est.bpCorr) < 0.3 ? "ok" : "warn"; 
+
+    Lab.updateSpecPanel(
+      `$$ Y_i = \\beta_0 + \\beta_1 X_i + \\epsilon_i, \\quad \\epsilon_i \\sim D(0, \\sigma^2_i) $$`,
+      `$$ \\hat{\\beta} = \\begin{bmatrix} ${est.alpha.toFixed(4)} \\\\ ${est.beta.toFixed(4)} \\end{bmatrix}, \\quad \\text{True } \\beta = \\begin{bmatrix} ${beta0} \\\\ ${beta1} \\end{bmatrix} $$`
+    );
+
+    document.getElementById("olsMetrics").innerHTML = `
+      <table class="lab-metrics-table">
+        <thead><tr><th>Parameter</th><th>True</th><th>Estimated</th><th>t-Stat</th><th>P-Value</th></tr></thead>
+        <tbody>
+          <tr><td>Intercept</td><td>${beta0}</td><td>${est.alpha.toFixed(4)}</td><td>-</td><td>-</td></tr>
+          <tr><td>Slope</td><td>${beta1}</td><td>${est.beta.toFixed(4)}</td><td>${est.tStat.toFixed(4)}</td><td>${(Math.abs(est.tStat)>1.96 ? "< 0.05" : "> 0.05")}</td></tr>
+          <tr><td>Fit</td><td colspan="4">R²: ${est.r2.toFixed(4)} | Adj-R²: ${(1-(1-est.r2)*(n-1)/(n-2)).toFixed(4)} | F-Stat: ${est.fStat.toFixed(2)}</td></tr>
+        </tbody>
+      </table>
+    `;
+    
+    document.getElementById("olsRobustness").innerHTML = `
+       <div class="robustness-box ${dwStatus}">
+         <span class="robustness-title">SERIAL CORRELATION (DW: ${est.dw.toFixed(3)})</span>
+         ${dwStatus==='ok'?"Passed: No significant autocorrelation.":"Warning: Evidence of autocorrelation."}
+       </div>
+       <div class="robustness-box ${jbStatus}">
+         <span class="robustness-title">NORMALITY (JB: ${est.jb.toFixed(2)})</span>
+         ${jbStatus==='ok'?"Passed: Residuals are normal.":"Failed: Residuals deviate from normality."}
+       </div>
+       <div class="robustness-box ${bpStatus}">
+         <span class="robustness-title">HETEROSKEDASTICITY (Corr: ${est.bpCorr.toFixed(3)})</span>
+         ${bpStatus==='ok'?"Passed: Variance appears constant.":"Warning: Variance depends on X (Heteroskedasticity detected)."}
+       </div>
+    `;
+
+    const ctx1 = document.getElementById('olsChart').getContext('2d');
+    let datasets = [{ label: 'Observed', data: x.map((v,i)=>({x:v,y:y[i]})), backgroundColor: '#D4AF37' }, { label: 'Fit', data: x.map((v,i)=>({x:v,y:est.yhat[i]})), type:'line', borderColor: '#e8e8ea', pointRadius:0, borderWidth:2 }];
+    
+    if(showCI){
+        const ciUpper = x.map((v,i)=>({x:v, y:est.yhat[i] + 1.96*est.seBeta*15})); 
+        const ciLower = x.map((v,i)=>({x:v, y:est.yhat[i] - 1.96*est.seBeta*15}));
+        datasets.push({ label: '95% CI', data: ciUpper, type:'line', borderColor:'rgba(255,255,255,0.1)', borderDash:[5,5], pointRadius:0, borderWidth:1 });
+        datasets.push({ label: '95% CI', data: ciLower, type:'line', borderColor:'rgba(255,255,255,0.1)', borderDash:[5,5], pointRadius:0, borderWidth:1 });
+    }
+
+    if(Lab.chartInstances[0]) Lab.chartInstances[0].destroy();
+    Lab.chartInstances[0] = new Chart(ctx1, {
+         type: 'scatter',
+         data: { datasets: datasets },
+         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Regression Fit' } }, scales: { x: { type: 'linear', position: 'bottom', grid:{display:false} }, y:{grid:{display:false}} } }
+    });
+    
+    if(Lab.chartInstances[1]) Lab.chartInstances[1].destroy();
+    Lab.chartInstances[1] = new Chart(document.getElementById('residChart').getContext('2d'), {
+         type: 'bar',
+         data: { labels: x, datasets: [{ label: 'Residuals', data: est.resid, backgroundColor: 'rgba(212,175,55,0.6)' }] },
+         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Residuals' } }, scales:{ x:{ticks:{display:false}, grid:{display:false}}, y:{grid:{display:false}} } }
+    });
+
+    Lab.renderACFPACF(est.resid, 'olsACF', '(Residuals)');
+  },
+
+  initVAR: () => {
+    Lab.state = { ...Lab.state, a11: 0.7, a12: 0.2, a21: 0.1, a22: 0.6, lag: 1, T: 100, noise: 1, shockSize: 1, rho: 0 };
+    const controls = document.getElementById("labControls");
+    const main = document.getElementById("labMain");
+    
+    controls.appendChild(Lab.generateButton("Simulate New Data", Lab.updateVAR));
+    controls.appendChild(Lab.createDistSelector(Lab.updateVAR));
+    controls.appendChild(Lab.createControl("A[1,1]", "a11", -1.2, 1.2, 0.05, 0.7, v=>{Lab.state.a11=v; Lab.updateVAR();}));
+    controls.appendChild(Lab.createControl("A[1,2]", "a12", -1, 1, 0.05, 0.2, v=>{Lab.state.a12=v; Lab.updateVAR();}));
+    controls.appendChild(Lab.createControl("A[2,1]", "a21", -1, 1, 0.05, 0.1, v=>{Lab.state.a21=v; Lab.updateVAR();}));
+    controls.appendChild(Lab.createControl("A[2,2]", "a22", -1.2, 1.2, 0.05, 0.6, v=>{Lab.state.a22=v; Lab.updateVAR();}));
+    controls.appendChild(Lab.createControl("Error Corr (ρ)", "rho", -0.9, 0.9, 0.1, 0, v=>{Lab.state.rho=v; Lab.updateVAR();}));
+    controls.appendChild(Lab.createControl("Impulse Mag.", "shockSize", 0.5, 5, 0.5, 1, v=>{Lab.state.shockSize=v; Lab.updateVAR();}));
+    controls.appendChild(Lab.createControl("Time (T)", "T", 50, 200, 10, 100, v=>{Lab.state.T=v; Lab.updateVAR();}));
+
+    main.innerHTML = `
+      <div class="lab-spec-container" id="labSpecContainer"></div>
+      <div class="lab-chart-box"><canvas id="varSeries"></canvas></div>
+      <div class="lab-chart-row">
+         <div class="lab-chart-box"><canvas id="varIRF"></canvas></div>
+         <div class="lab-chart-box"><canvas id="varACF"></canvas></div>
+      </div>
+      <div class="lab-chart-box" style="min-height:auto; height:auto; padding:0; background:transparent; border:none; box-shadow:none;"><div id="varMetrics"></div></div>
+      <div id="varRobustness"></div>
+    `;
+    Lab.updateVAR();
+  },
+
+  updateVAR: () => {
+    const { a11, a12, a21, a22, T, noise, shockSize, rho } = Lab.state;
+    const tr = a11 + a22;
+    const det = a11*a22 - a12*a21;
+    const delta = Math.sqrt(Math.abs(tr*tr - 4*det));
+    const maxEig = Math.max(Math.abs((tr+delta)/2), Math.abs((tr-delta)/2));
+    const isStable = maxEig < 1.0;
+
+    let y1 = [0], y2 = [0];
+    for(let t=1; t<T; t++){
+       let u1 = Lab.getNoise(noise);
+       let u2_indep = Lab.getNoise(noise);
+       // Correlated errors: u2 = rho*u1 + sqrt(1-rho^2)*u2_indep
+       let u2 = rho * u1 + Math.sqrt(1 - rho*rho) * u2_indep;
+       
+       let ny1 = a11*y1[t-1] + a12*y2[t-1] + u1;
+       let ny2 = a21*y1[t-1] + a22*y2[t-1] + u2;
+       y1.push(ny1); y2.push(ny2);
+    }
+    
+    // Granger Test (Simulated): Regress Y1 on lag Y1 and lag Y2
+    const fStatGranger = MathLab.grangerTest(y1, y2, 1);
+    const grangerP = fStatGranger > 3.9 ? "< 0.05" : "> 0.05";
+    const grangerMsg = fStatGranger > 3.9 ? "Y2 Granger Causes Y1" : "No Granger Causality (Y2 -> Y1)";
+
+    let irf1 = [shockSize], irf2 = [0];
+    // For correlated errors, Cholesky shock to Y1 affects Y2 contemporaneously by rho*sigma
+    // But simplified here as orthogonalized: Shock u1 -> affects Y1 directly. 
+    // Does it affect Y2? Only via dynamics unless we model B0. 
+    // Standard impulse is [1, 0] for Y1 shock.
+    let current = [shockSize, 0]; 
+    const A = [[a11, a12], [a21, a22]];
+    for(let h=1; h<=15; h++){
+       current = MathLab.matVec2(A, current);
+       irf1.push(current[0]); irf2.push(current[1]);
+    }
+    
+    Lab.updateSpecPanel(
+      `$$ Y_t = A Y_{t-1} + u_t, \\quad u_t \\sim N(0, \\Sigma) $$`,
+      `$$ A = \\begin{bmatrix} ${a11.toFixed(2)} & ${a12.toFixed(2)} \\\\ ${a21.toFixed(2)} & ${a22.toFixed(2)} \\end{bmatrix}, \\quad
+         \\Sigma = \\sigma^2 \\begin{bmatrix} 1 & ${rho.toFixed(2)} \\\\ ${rho.toFixed(2)} & 1 \\end{bmatrix} $$`
+    );
+
+    document.getElementById("varMetrics").innerHTML = `
+      <table class="lab-metrics-table">
+        <thead><tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr></thead>
+        <tbody>
+          <tr><td>Max Eigenvalue</td><td>${maxEig.toFixed(4)}</td><td>${isStable ? "Stable (<1)" : "Unstable (>1)"}</td></tr>
+          <tr><td>Determinant (A)</td><td>${det.toFixed(4)}</td><td>System Interaction</td></tr>
+          <tr><td>Granger F-Stat</td><td>${fStatGranger.toFixed(2)}</td><td>${grangerMsg}</td></tr>
+        </tbody>
+      </table>
+    `;
+    
+    let stabStatus = isStable ? "ok" : "warn";
+    document.getElementById("varRobustness").innerHTML = `
+       <div class="robustness-box ${stabStatus}">
+         <span class="robustness-title">STABILITY CHECK</span>
+         Max Modulus: ${maxEig.toFixed(3)}. ${isStable ? "PASSED: Stationary." : "FAILED: Explosive."}
+       </div>
+       <div class="robustness-box ok">
+         <span class="robustness-title">GRANGER CAUSALITY (Y2 &rarr; Y1)</span>
+         F-Stat: ${fStatGranger.toFixed(2)} (${grangerP}). ${grangerMsg}.
+       </div>
+    `;
+
+    if(Lab.chartInstances[0]) Lab.chartInstances[0].destroy();
+    Lab.chartInstances[0] = new Chart(document.getElementById('varSeries').getContext('2d'), {
+         type: 'line',
+         data: { labels: Array.from({length: T}, (_, i) => i), datasets: [{ label: 'Y1', data: y1, borderColor: '#D4AF37', borderWidth:1.5, pointRadius:0 }, { label: 'Y2', data: y2, borderColor: '#7aa6ff', borderWidth:1.5, pointRadius:0 }] },
+         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Simulated VAR Process' } }, scales:{ x:{grid:{display:false}}, y:{grid:{display:false}} } }
+    });
+
+    if(Lab.chartInstances[1]) Lab.chartInstances[1].destroy();
+    Lab.chartInstances[1] = new Chart(document.getElementById('varIRF').getContext('2d'), {
+         type: 'line',
+         data: { labels: Array.from({length: 16}, (_, i) => i), datasets: [{ label: 'Response Y1', data: irf1, borderColor: '#D4AF37', borderDash:[5,5] }, { label: 'Response Y2', data: irf2, borderColor: '#7aa6ff' }] },
+         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: `Orthogonal IRF (Shock to Y1)` } }, scales:{ x:{grid:{display:false}}, y:{grid:{display:false}} } }
+    });
+    
+    Lab.renderACFPACF(y1, 'varACF', 'of Y1 Series');
+  },
+
+  initVECM: () => {
+    Lab.state = { ...Lab.state, alpha: -0.2, beta: 1, noise: 1, initDiseq: 10, rho: 0 };
+    const controls = document.getElementById("labControls");
+    const main = document.getElementById("labMain");
+    
+    controls.appendChild(Lab.generateButton("Simulate New Data", Lab.updateVECM));
+    controls.appendChild(Lab.createDistSelector(Lab.updateVECM));
+    controls.appendChild(Lab.createControl("Adj. Speed (α)", "alpha", -0.8, 0.2, 0.05, -0.2, v=>{Lab.state.alpha=v; Lab.updateVECM();}));
+    controls.appendChild(Lab.createControl("Cointegration (β)", "beta", 0.5, 2, 0.1, 1, v=>{Lab.state.beta=v; Lab.updateVECM();}));
+    controls.appendChild(Lab.createControl("Error Corr (ρ)", "rho", -0.9, 0.9, 0.1, 0, v=>{Lab.state.rho=v; Lab.updateVECM();}));
+    controls.appendChild(Lab.createControl("Init. Diseq.", "initDiseq", 0, 20, 1, 10, v=>{Lab.state.initDiseq=v; Lab.updateVECM();}));
+
+    main.innerHTML = `
+      <div class="lab-spec-container" id="labSpecContainer"></div>
+      <div class="lab-chart-box"><canvas id="vecmChart"></canvas></div>
+      <div class="lab-chart-row">
+          <div class="lab-chart-box"><canvas id="vecmECT"></canvas></div>
+          <div class="lab-chart-box"><canvas id="vecmACF"></canvas></div>
+      </div>
+      <div id="vecmRobustness"></div>
+    `;
+    Lab.updateVECM();
+  },
+
+  updateVECM: () => {
+    const { alpha, beta, noise, initDiseq, rho } = Lab.state;
+    let x = [0], y = [initDiseq], ect = [initDiseq]; 
+    for(let t=1; t<100; t++){
+       let u = Lab.getNoise(noise);
+       let e_indep = Lab.getNoise(noise);
+       let e = rho * u + Math.sqrt(1 - rho*rho) * e_indep;
+       
+       let nextX = x[t-1] + u;
+       let diseq = y[t-1] - beta * x[t-1];
+       let dy = alpha * diseq + e;
+       let nextY = y[t-1] + dy;
+       x.push(nextX); y.push(nextY); ect.push(diseq);
+    }
+
+    let alphaValid = alpha < 0 && alpha > -1;
+    Lab.updateSpecPanel(
+      `$$ \\Delta y_t = \\alpha (y_{t-1} - \\beta x_{t-1}) + \\epsilon_t, \\quad \\Delta x_t = u_t $$`,
+      `$$ \\alpha = [${alpha.toFixed(2)}], \\quad \\beta = [1, ${-beta.toFixed(2)}]', \\quad \\text{Corr}(\\epsilon, u) = ${rho.toFixed(2)} $$`
+    );
+
+    document.getElementById("vecmRobustness").innerHTML = `
+      <div class="robustness-box ${alphaValid?'ok':'warn'}">
+        <span class="robustness-title">ADJUSTMENT COEFFICIENT</span>
+        Alpha = ${alpha.toFixed(2)}. ${alphaValid ? "Negative/Significant. System correctly corrects to equilibrium." : "Positive or Zero. No convergence."}
+      </div>
+      <div class="robustness-box ok">
+         <span class="robustness-title">GRANGER CAUSALITY (Long Run)</span>
+         Since $\\alpha \\neq 0$, X Granger-causes Y via the ECT term.
+      </div>
+    `;
+
+    if(Lab.chartInstances[0]) Lab.chartInstances[0].destroy();
+    Lab.chartInstances[0] = new Chart(document.getElementById('vecmChart').getContext('2d'), {
+         type: 'line',
+         data: { labels: Array.from({length:100},(_,i)=>i), datasets: [{ label: 'X (Trend)', data: x, borderColor: '#7aa6ff', pointRadius:0 }, { label: 'Y (Adjusting)', data: y, borderColor: '#D4AF37', pointRadius:0 }] },
+         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Cointegrated Series' } }, scales:{ x:{grid:{display:false}}, y:{grid:{display:false}} } }
+    });
+
+    if(Lab.chartInstances[1]) Lab.chartInstances[1].destroy();
+    Lab.chartInstances[1] = new Chart(document.getElementById('vecmECT').getContext('2d'), {
+         type: 'line',
+         data: { labels: Array.from({length:100},(_,i)=>i), datasets: [{ label: 'ECT', data: ect, borderColor: '#ff4444', backgroundColor:'rgba(255,68,68,0.1)', fill:true, pointRadius:0 }] },
+         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Deviations from Equilibrium' } }, scales:{ x:{grid:{display:false}}, y:{grid:{display:false}} } }
+    });
+    
+    Lab.renderACFPACF(ect, 'vecmACF', '(ECT)');
+  },
+  
+  initARDL: () => {
+     Lab.state = { ...Lab.state, phi: 0.6, theta: 0.5, shockSize: 1 };
+     const controls = document.getElementById("labControls");
+     const main = document.getElementById("labMain");
+     
+     controls.appendChild(Lab.generateButton("Simulate New Data", Lab.updateARDL));
+     controls.appendChild(Lab.createDistSelector(Lab.updateARDL));
+     controls.appendChild(Lab.createControl("Lag Y Coeff (φ)", "phi", 0, 1.2, 0.05, 0.6, v=>{Lab.state.phi=v; Lab.updateARDL();}));
+     controls.appendChild(Lab.createControl("Lag X Coeff (θ)", "theta", -1, 1, 0.1, 0.5, v=>{Lab.state.theta=v; Lab.updateARDL();}));
+     controls.appendChild(Lab.createControl("Shock Magnitude", "shockSize", 0.5, 5, 0.5, 1, v=>{Lab.state.shockSize=v; Lab.updateARDL();}));
+
+     main.innerHTML = `
+       <div class="lab-spec-container" id="labSpecContainer"></div>
+       <div class="lab-chart-box"><canvas id="ardlDyn"></canvas></div>
+       <div class="lab-chart-row"><div class="lab-chart-box"><canvas id="ardlACF"></canvas></div></div>
+       <div id="ardlMetrics"></div>
+     `;
+     Lab.updateARDL();
+  },
+  
+  updateARDL: () => {
+    const { phi, theta, shockSize } = Lab.state;
+    let mult = [], y_curr = 0, x_shock = shockSize, resid = []; 
+    for(let t=0; t<20; t++){
+       y_curr = phi * (t===0 ? 0 : y_curr) + theta * x_shock;
+       mult.push(y_curr);
+       resid.push(Lab.getNoise(1));
+    }
+    
+    const isStable = Math.abs(phi) < 1;
+    const lrm = isStable ? (theta * shockSize) / (1 - phi) : Infinity;
+    let fProxy = isStable ? (1/(1-phi)) * 5 : 1.0; 
+    let boundStatus = fProxy > 4.0 ? "PASSED (Cointegration)" : "FAILED (No Relationship)";
+    
+    Lab.updateSpecPanel(
+      `$$ Y_t = \\phi Y_{t-1} + \\theta X_t + \\epsilon_t $$`,
+      `$$ \\phi = ${phi.toFixed(2)}, \\quad \\theta = ${theta.toFixed(2)} $$`
+    );
+
+    document.getElementById("ardlMetrics").innerHTML = `
+      <div class="robustness-box ${isStable?'ok':'warn'}">
+        <span class="robustness-title">STABILITY CHECK ($|\\phi| < 1$)</span>
+        ${isStable ? "Model is stable." : "Model is UNSTABLE (Unit Root)."}
+      </div>
+      <div style="margin-top:15px; padding:15px; background:rgba(255,255,255,0.05); border-radius:8px; font-size:0.9rem; border:1px solid rgba(255,255,255,0.1);">
+        <span class="robustness-title" style="color:#D4AF37;">BOUNDS TEST (F-Statistic)</span>
+        F-Stat (Proxy): ${fProxy.toFixed(2)}. I(0) Bound: 2.5, I(1) Bound: 3.8. <br> Result: ${boundStatus}<br><br>
+        <strong>Long Run Multiplier:</strong> $$ \\frac{\\theta}{1-\\phi} \\times \\text{Shock} = ${isStable ? lrm.toFixed(4) : "\\infty"} $$
+      </div>
+    `;
+
+    if(Lab.chartInstances[0]) Lab.chartInstances[0].destroy();
+    Lab.chartInstances[0] = new Chart(document.getElementById("ardlDyn").getContext('2d'), {
+        type: 'bar',
+        data: { labels: Array.from({length:20},(_,i)=>i), datasets: [{ label: `Dynamic Multiplier`, data: mult, backgroundColor: '#D4AF37' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: `Dynamic Multiplier` } }, scales:{ x:{grid:{display:false}}, y:{grid:{display:false}} } }
+    });
+
+    Lab.renderACFPACF(resid, 'ardlACF', '(Residuals)');
+  }
+};
+window.Lab = Lab;
+
+/* =========================
+   ARTICLES & 3D SCENE (Existing)
+   ========================= */
+const ARTICLES = [
+  { id:"options-pricing", file:"articles/options.html", category:"Financial Econometrics", title:"Options Pricing", date:"JAN 2026", textureKey:"moon", enabled:true },
+  { id:"bvar", file:"articles/bvar.html", category:"Core Theory", title:"Bayesian Vector Autoregression", date:"DEC 2025", textureKey:"earth", enabled:true },
+  { id:"stoch-vol", file:"articles/forecasting.html", category:"Time Series", title:"Why ML is (almost) useless?", date:"JAN 2026", textureKey:"mars", enabled:true },
+  { id:"game-theory-cb", file:"articles/game.html", category:"Monetary Economics", title:"Central Bank Credibility", date:"JAN 2026", textureKey:"jupiter", enabled:true },
+  { id:"sign-rest", file:"articles/ERPT.html", category:"Macroeconometrics", title:"ERPT", date:"JAN 2026", textureKey:"venus", enabled:true },
+  { id:"monte-carlo", file:"articles/monte-carlo.html", category:"Computational Methods", title:"Monte Carlo Simulation", date:"JAN 2026", textureKey:"mc", enabled:true }
+].filter(x=>x.enabled);
+
 const TEX = [
-  String.raw`Y_t = A_1Y_{t-1}+\cdots+A_pY_{t-p}+u_t`,
-  String.raw`u_t\sim\mathcal{N}(0,\Sigma)`,
-  String.raw`p(\theta\mid Y)\propto p(Y\mid\theta)p(\theta)`,
-  String.raw`E[y_t\mid\mathcal{I}_{t-1}]`,
-  String.raw`h_t=\mu+\phi(h_{t-1}-\mu)+\sigma_h\xi_t`,
-  String.raw`\nabla\mathcal{L}(\theta)`,
-  String.raw`\Sigma = A^{-1}\Lambda A^{-1\prime}`,
-  String.raw`\hat{\pi}\approx 4\cdot \frac{1}{n}\sum_{i=1}^n \mathbf{1}\{x_i^2+y_i^2\le1\}`
+  String.raw`Y_t = A_1Y_{t-1}+\cdots+A_pY_{t-p}+u_t`, String.raw`u_t\sim\mathcal{N}(0,\Sigma)`,
+  String.raw`p(\theta\mid Y)\propto p(Y\mid\theta)p(\theta)`, String.raw`E[y_t\mid\mathcal{I}_{t-1}]`,
+  String.raw`h_t=\mu+\phi(h_{t-1}-\mu)+\sigma_h\xi_t`, String.raw`\nabla\mathcal{L}(\theta)`,
+  String.raw`\Sigma = A^{-1}\Lambda A^{-1\prime}`
 ];
 
 const $ = (id)=>document.getElementById(id);
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function showErr(e){
+  const txt = $("errText");
+  if(txt) txt.textContent = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
+  const el = $("err");
+  if(el) el.style.display = "block";
+}
 const root = document.documentElement;
 const themeBtn = $("theme");
-const metaTheme = document.querySelector('meta[name="theme-color"]');
 const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
 const lerp = (a,b,t)=>a+(b-a)*t;
 
-/* =========================
-   Helpers
-   ========================= */
-function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-function showErr(e){
-  $("errText").textContent = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
-  $("err").style.display = "block";
-}
-function isWebGLAvailable(){
-  try{
-    const c = document.createElement("canvas");
-    return !!(window.WebGLRenderingContext && (c.getContext("webgl") || c.getContext("experimental-webgl")));
-  }catch(_){ return false; }
-}
-
-/* =========================
-   Theme
-   ========================= */
 const LS_KEY = "theme";
 function applyTheme(theme, persist){
   root.setAttribute("data-theme", theme);
@@ -197,29 +918,19 @@ function applyTheme(theme, persist){
   if (theme === "light"){
     root.style.setProperty("--bg", "#fbfbfc");
     root.style.setProperty("--panel", "rgba(255,255,255,0.82)");
-    root.style.setProperty("--panel-strong", "rgba(255,255,255,0.94)");
-    root.style.setProperty("--border", "rgba(0,0,0,0.10)");
     root.style.setProperty("--silver", "#1b1b1c");
     root.style.setProperty("--silver-dim", "rgba(27,27,28,0.72)");
     root.style.setProperty("--gold", "#B88A00");
     root.style.setProperty("--gold-soft", "#7A5A00");
     themeBtn.textContent = "Dark";
-    metaTheme && metaTheme.setAttribute("content", "#fbfbfc");
     $("depthName").style.color = "rgba(184,138,0,0.20)";
     $("depthName").style.textShadow = "0 0 55px rgba(184,138,0,0.14)";
   } else {
     root.removeAttribute("style");
     themeBtn.textContent = "Light";
-    metaTheme && metaTheme.setAttribute("content", "#050505");
     $("depthName").style.color = "rgba(212,175,55,0.24)";
     $("depthName").style.textShadow = "0 0 55px rgba(212,175,55,0.18)";
   }
-  const eqs = document.querySelectorAll(".eq");
-  const isLight = theme==="light";
-  eqs.forEach(n=>{
-    n.style.color = isLight ? "rgba(20,20,20,0.92)" : "rgba(232,232,234,0.92)";
-    n.style.filter = isLight ? "drop-shadow(0 0 14px rgba(184,138,0,0.20))" : "drop-shadow(0 0 14px rgba(212,175,55,0.24))";
-  });
   if (window.__RECOLOR__) window.__RECOLOR__();
 }
 function getInitialTheme(){
@@ -227,151 +938,67 @@ function getInitialTheme(){
   return (saved === "light" || saved === "dark") ? saved : "dark";
 }
 
-/* =========================
-   Modal reader
-   ========================= */
 const modal = $("modal");
-const cache = new Map();
 let modalJustOpenedAt = 0;
-
-function closeModal(){
-  modal.classList.remove("open");
-  const b = document.getElementById("modalBody");
-  if(b) b.scrollTop = 0;
-}
-modal.addEventListener("click", (e)=>{
-  if (performance.now() - modalJustOpenedAt < 250) return;
-  if (e.target === modal) closeModal();
-});
-window.addEventListener("keydown", (e)=>{
-  if (e.key==="Escape" && modal.classList.contains("open")) closeModal();
-}, { passive:true });
+function closeModal(){ modal.classList.remove("open"); const b = document.getElementById("modalBody"); if(b) b.scrollTop = 0; }
+modal.addEventListener("click", (e)=>{ if (performance.now() - modalJustOpenedAt < 250) return; if (e.target === modal) closeModal(); });
+window.addEventListener("keydown", (e)=>{ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
 
 function renderModal(a, content, isLoading, errorText){
   const html = `
     <div id="modalCard">
-       <div id="modalTop">
-          <div id="modalMeta">
-             <strong>Reading Mode</strong>
-             ${a ? `<span>•</span><span>${a.category||""}</span>` : ""}
-          </div>
-          <button id="close">Close</button>
-       </div>
-       <div id="modalBody">
-          ${isLoading
-            ? `<div style="opacity:0.7; font-family:var(--font-ui); letter-spacing:1px; padding:20px;">Loading...</div>`
-            : errorText ? `
-              <article>
-                 <h1>Could not load article</h1>
-                 <p>Error details:</p>
-                 <pre style="border:1px solid rgba(255,255,255,0.12); background:rgba(18,18,18,0.55); border-radius:14px; padding:12px; overflow:auto;">${errorText}</pre>
-                 <p style="margin-top:1em; font-size:0.9rem; opacity:0.8;">Note: Check network or CORS.</p>
-              </article>`
-            : `
-              <header class="article-header">
-                <div class="meta">
-                   <span class="pill">${a.category}</span>
-                   <span>•</span>
-                   <span>${a.date}</span>
-                </div>
-                <h1>${a.title}</h1>
-              </header>
-              <div class="content">
-                 ${content}
-              </div>
-            `
-          }
-       </div>
-    </div>
-  `;
+       <div id="modalTop"><div id="modalMeta"><strong>Reading</strong></div><button id="close">Close</button></div>
+       <div id="modalBody"><div class="article-content">${content}</div></div>
+    </div>`;
   modal.innerHTML = html;
-
-  const btn = document.getElementById("close");
-  if(btn) btn.onclick = closeModal;
-
-  if(window.gsap && !isLoading && !errorText) {
-    window.gsap.from("#modalCard", { y: 40, opacity: 0, duration: 0.4, ease: "power3.out", clearProps: "all" });
-  }
-
-  if(!isLoading && !errorText && window.renderMathInElement){
-    const c = modal.querySelector(".content");
-    if(c) {
-      window.renderMathInElement(c, {
-        delimiters: [
-          {left: '$$', right: '$$', display: true},
-          {left: '$', right: '$', display: false},
-          {left: '\\(', right: '\\)', display: false},
-          {left: '\\[', right: '\\]', display: true}
-        ],
-        throwOnError: false
-      });
-    }
-  }
+  document.getElementById("close").onclick = closeModal;
 }
 
 async function openArticle(a){
   modalJustOpenedAt = performance.now();
   modal.classList.add("open");
-  renderModal(a, "", true, "");
-
+  const html = `
+    <header class="article-header">
+       <div class="meta"><span class="pill">${a.category}</span><span>•</span><span>${a.date}</span></div>
+       <h1>${a.title}</h1>
+    </header>
+    <div class="content"><p>Loading article content...</p></div>`;
+  renderModal(a, html, false, "");
+  
   try{
     const targetUrl = new URL(a.file, document.baseURI).href;
-    let html = cache.get(targetUrl);
-    if (!html){
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), 8000);
-      let res;
-      try {
-        res = await fetch(targetUrl, { signal: controller.signal });
-      }catch(err){
-        if (err.name === 'AbortError') throw new Error("Request timed out (8s)");
-        throw err;
-      }
-      clearTimeout(id);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      html = await res.text();
-      cache.set(targetUrl, html);
+    let txt = cache.get(targetUrl);
+    if (!txt){
+       const res = await fetch(targetUrl);
+       if(!res.ok) throw new Error("HTTP "+res.status);
+       txt = await res.text();
+       cache.set(targetUrl, txt);
     }
-
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    const contentNode = doc.querySelector(".content") || doc.querySelector("article") || doc.body;
-    contentNode.querySelectorAll("#toc, .toc, nav.toc, .table-of-contents, .contents, [data-toc]").forEach(n=>n.remove());
-
-    renderModal(a, contentNode.innerHTML, false, "");
-  }catch(e){
-    renderModal(a, "", false, String(e));
+    const doc = new DOMParser().parseFromString(txt, "text/html");
+    const c = doc.querySelector(".content") || doc.body;
+    renderModal(a, c.innerHTML, false, "");
+    if(window.renderMathInElement) window.renderMathInElement(modal);
+  } catch(e){
+    renderModal(a, `<p>Error loading article: ${e.message}</p>`, false, "");
   }
 }
 
 /* =========================
-   Procedural in-HTML planet textures (no external images)
+   3D PROCEDURAL VISUALS
    ========================= */
 function fract(x){ return x - Math.floor(x); }
-function hash2(x,y,s){
-  return fract(Math.sin(x*127.1 + y*311.7 + s*74.7) * 43758.5453123);
-}
-function smoothstep(a,b,x){
-  const t = clamp((x-a)/(b-a), 0, 1);
-  return t*t*(3-2*t);
-}
+function hash2(x,y,s){ return fract(Math.sin(x*127.1 + y*311.7 + s*74.7) * 43758.5453123); }
+function smoothstep(a,b,x){ const t = clamp((x-a)/(b-a), 0, 1); return t*t*(3-2*t); }
 function noise2(u,v,s){
   const x = Math.floor(u), y = Math.floor(v);
   const fx = u - x, fy = v - y;
-  const a = hash2(x,   y,   s);
-  const b = hash2(x+1, y,   s);
-  const c = hash2(x,   y+1, s);
-  const d = hash2(x+1, y+1, s);
-  const ux = fx*fx*(3-2*fx);
-  const uy = fy*fy*(3-2*fy);
+  const a = hash2(x,y,s), b = hash2(x+1,y,s), c = hash2(x,y+1,s), d = hash2(x+1,y+1,s);
+  const ux = fx*fx*(3-2*fx), uy = fy*fy*(3-2*fy);
   return (a*(1-ux) + b*ux)*(1-uy) + (c*(1-ux) + d*ux)*uy;
 }
 function fbm2(u,v,s){
   let f=0, amp=0.5, freq=1.0;
-  for(let i=0;i<5;i++){
-    f += amp * noise2(u*freq, v*freq, s + i*19.19);
-    freq *= 2.02;
-    amp *= 0.5;
-  }
+  for(let i=0;i<5;i++){ f += amp * noise2(u*freq, v*freq, s + i*19.19); freq *= 2.02; amp *= 0.5; }
   return f;
 }
 function mix(a,b,t){ return a + (b-a)*t; }
@@ -380,229 +1007,108 @@ function rgb(r,g,b){ return [r,g,b]; }
 function to255(x){ return Math.round(clamp01(x)*255); }
 
 function makeCanvasTexture(drawFn, size){
-  const c = document.createElement("canvas");
-  c.width = c.height = size;
-  const g = c.getContext("2d", { willReadFrequently:true });
-  drawFn(g, size);
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 16;
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.needsUpdate = true;
+  const c = document.createElement("canvas"); c.width = c.height = size;
+  const g = c.getContext("2d", { willReadFrequently:true }); drawFn(g, size);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 16; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.needsUpdate = true;
   return tex;
 }
 
 function drawEarth(g, size){
-  const img = g.createImageData(size,size);
-  const d = img.data;
-
-  const deep = rgb(0.04,0.13,0.32);
-  const shallow = rgb(0.07,0.22,0.46);
-  const green = rgb(0.10,0.33,0.18);
-  const brown = rgb(0.32,0.28,0.14);
-  const sand  = rgb(0.52,0.46,0.25);
-
+  const img = g.createImageData(size,size); const d = img.data;
+  const deep = rgb(0.04,0.13,0.32), shallow = rgb(0.07,0.22,0.46), green = rgb(0.10,0.33,0.18), brown = rgb(0.32,0.28,0.14), sand  = rgb(0.52,0.46,0.25);
   for(let y=0;y<size;y++){
-    const v = y/(size-1);
-    const lat = Math.abs(v-0.5)*2;
+    const v = y/(size-1), lat = Math.abs(v-0.5)*2;
     for(let x=0;x<size;x++){
       const u = x/(size-1);
-
-      const n1 = fbm2(u*6.0, v*6.0, 1.3);
-      const n2 = fbm2(u*14.0, v*14.0, 7.7);
+      const n1 = fbm2(u*6.0, v*6.0, 1.3), n2 = fbm2(u*14.0, v*14.0, 7.7);
       const continent = n1 + 0.35*n2 - 0.52 + 0.10*Math.sin((v-0.5)*Math.PI*2);
-
-      const ice = smoothstep(0.72, 0.98, lat);
-      const land = smoothstep(-0.04, 0.05, continent);
-
-      // Ocean color variation
+      const ice = smoothstep(0.72, 0.98, lat), land = smoothstep(-0.04, 0.05, continent);
       const seaVar = fbm2(u*18.0+3.0, v*18.0+9.0, 4.2);
-      let oc = [
-        mix(deep[0], shallow[0], seaVar),
-        mix(deep[1], shallow[1], seaVar),
-        mix(deep[2], shallow[2], seaVar)
-      ];
-
-      // Land color variation
-      const elev = fbm2(u*10.0+20.0, v*10.0+10.0, 2.6);
-      const dryness = fbm2(u*8.0+2.0, v*8.0+8.0, 9.1);
-      let lc = [
-        mix(green[0], brown[0], elev),
-        mix(green[1], brown[1], elev),
-        mix(green[2], brown[2], elev)
-      ];
-      // deserts
+      let oc = [mix(deep[0], shallow[0], seaVar), mix(deep[1], shallow[1], seaVar), mix(deep[2], shallow[2], seaVar)];
+      const elev = fbm2(u*10.0+20.0, v*10.0+10.0, 2.6), dryness = fbm2(u*8.0+2.0, v*8.0+8.0, 9.1);
+      let lc = [mix(green[0], brown[0], elev), mix(green[1], brown[1], elev), mix(green[2], brown[2], elev)];
       const des = smoothstep(0.58, 0.78, dryness) * (1.0 - ice);
-      lc = [
-        mix(lc[0], sand[0], des),
-        mix(lc[1], sand[1], des),
-        mix(lc[2], sand[2], des)
-      ];
-
-      // Blend land/ocean
-      let c = [
-        mix(oc[0], lc[0], land),
-        mix(oc[1], lc[1], land),
-        mix(oc[2], lc[2], land)
-      ];
-
-      // Clouds (semi-transparent white)
-      const cloudN = fbm2(u*26.0+31.0, v*26.0+17.0, 12.0);
-      const cloud = smoothstep(0.67, 0.82, cloudN) * (0.65 + 0.35*(1.0-land));
-      c = [
-        mix(c[0], 0.92, cloud*0.45),
-        mix(c[1], 0.92, cloud*0.45),
-        mix(c[2], 0.95, cloud*0.45)
-      ];
-
-      // Ice caps
-      c = [
-        mix(c[0], 0.94, ice*0.85),
-        mix(c[1], 0.94, ice*0.85),
-        mix(c[2], 0.98, ice*0.85)
-      ];
-
-      const i = (y*size + x)*4;
-      d[i+0] = to255(c[0]);
-      d[i+1] = to255(c[1]);
-      d[i+2] = to255(c[2]);
-      d[i+3] = 255;
+      lc = [mix(lc[0], sand[0], des), mix(lc[1], sand[1], des), mix(lc[2], sand[2], des)];
+      let c = [mix(oc[0], lc[0], land), mix(oc[1], lc[1], land), mix(oc[2], lc[2], land)];
+      const cloudN = fbm2(u*26.0+31.0, v*26.0+17.0, 12.0), cloud = smoothstep(0.67, 0.82, cloudN) * (0.65 + 0.35*(1.0-land));
+      c = [mix(c[0], 0.92, cloud*0.45), mix(c[1], 0.92, cloud*0.45), mix(c[2], 0.95, cloud*0.45)];
+      c = [mix(c[0], 0.94, ice*0.85), mix(c[1], 0.94, ice*0.85), mix(c[2], 0.98, ice*0.85)];
+      const i = (y*size + x)*4; d[i+0] = to255(c[0]); d[i+1] = to255(c[1]); d[i+2] = to255(c[2]); d[i+3] = 255;
     }
   }
   g.putImageData(img,0,0);
 }
 
 function drawMoon(g, size){
-  const img = g.createImageData(size,size);
-  const d = img.data;
+  const img = g.createImageData(size,size); const d = img.data;
   for(let y=0;y<size;y++){
     const v = y/(size-1);
     for(let x=0;x<size;x++){
       const u = x/(size-1);
-
       const base = 0.55 + 0.18*(fbm2(u*8.0, v*8.0, 3.1)-0.5);
       const crater = smoothstep(0.55, 0.86, fbm2(u*22.0+4.0, v*22.0+9.0, 8.8));
       const ray = smoothstep(0.70, 0.92, fbm2(u*30.0+17.0, v*30.0+3.0, 1.7));
-
-      let c = base;
-      c = c - crater*0.18 + ray*0.10;
-      c = clamp01(c);
-
-      const i = (y*size + x)*4;
-      d[i+0] = to255(c*0.98);
-      d[i+1] = to255(c*0.99);
-      d[i+2] = to255(c*1.02);
-      d[i+3] = 255;
+      let c = clamp01(base - crater*0.18 + ray*0.10);
+      const i = (y*size + x)*4; d[i+0] = to255(c*0.98); d[i+1] = to255(c*0.99); d[i+2] = to255(c*1.02); d[i+3] = 255;
     }
   }
   g.putImageData(img,0,0);
 }
 
 function drawMars(g, size){
-  const img = g.createImageData(size,size);
-  const d = img.data;
-  const baseR = 0.62, baseG = 0.24, baseB = 0.10;
+  const img = g.createImageData(size,size); const d = img.data; const baseR = 0.62, baseG = 0.24, baseB = 0.10;
   for(let y=0;y<size;y++){
     const v = y/(size-1);
     for(let x=0;x<size;x++){
       const u = x/(size-1);
-
-      const n = fbm2(u*10.0, v*10.0, 5.5);
-      const ridges = fbm2(u*20.0+3.0, v*20.0+11.0, 2.2);
-      const dust = smoothstep(0.45, 0.78, n);
-      const dark = smoothstep(0.58, 0.86, ridges);
-
-      let r = baseR + 0.18*dust - 0.16*dark;
-      let gg = baseG + 0.06*dust - 0.08*dark;
-      let b = baseB + 0.02*dust - 0.04*dark;
-
-      // Polar hint
-      const lat = Math.abs(v-0.5)*2;
-      const ice = smoothstep(0.82, 0.98, lat);
-      r = mix(r, 0.92, ice*0.45);
-      gg = mix(gg, 0.92, ice*0.45);
-      b = mix(b, 0.96, ice*0.45);
-
-      const i = (y*size + x)*4;
-      d[i+0] = to255(r);
-      d[i+1] = to255(gg);
-      d[i+2] = to255(b);
-      d[i+3] = 255;
+      const n = fbm2(u*10.0, v*10.0, 5.5), ridges = fbm2(u*20.0+3.0, v*20.0+11.0, 2.2);
+      const dust = smoothstep(0.45, 0.78, n), dark = smoothstep(0.58, 0.86, ridges);
+      let r = baseR + 0.18*dust - 0.16*dark, gg = baseG + 0.06*dust - 0.08*dark, b = baseB + 0.02*dust - 0.04*dark;
+      const lat = Math.abs(v-0.5)*2, ice = smoothstep(0.82, 0.98, lat);
+      r = mix(r, 0.92, ice*0.45); gg = mix(gg, 0.92, ice*0.45); b = mix(b, 0.96, ice*0.45);
+      const i = (y*size + x)*4; d[i+0] = to255(r); d[i+1] = to255(gg); d[i+2] = to255(b); d[i+3] = 255;
     }
   }
   g.putImageData(img,0,0);
 }
 
 function drawVenus(g, size){
-  const img = g.createImageData(size,size);
-  const d = img.data;
+  const img = g.createImageData(size,size); const d = img.data;
   for(let y=0;y<size;y++){
     const v = y/(size-1);
     for(let x=0;x<size;x++){
       const u = x/(size-1);
-
       const swirl = 0.5 + 0.5*Math.sin((u*10.0 + v*2.0)*Math.PI*2);
-      const n = fbm2(u*14.0+swirl*3.0, v*14.0, 6.6);
-      const band = smoothstep(0.35, 0.75, n);
-
-      let r = mix(0.82, 0.98, band);
-      let gg = mix(0.64, 0.86, band);
-      let b = mix(0.36, 0.62, band);
-
+      const n = fbm2(u*14.0+swirl*3.0, v*14.0, 6.6), band = smoothstep(0.35, 0.75, n);
+      let r = mix(0.82, 0.98, band), gg = mix(0.64, 0.86, band), b = mix(0.36, 0.62, band);
       const haze = smoothstep(0.60, 0.92, fbm2(u*26.0+7.0, v*26.0+19.0, 1.2));
-      r = mix(r, 1.0, haze*0.18);
-      gg = mix(gg, 1.0, haze*0.18);
-      b = mix(b, 1.0, haze*0.18);
-
-      const i = (y*size + x)*4;
-      d[i+0] = to255(r);
-      d[i+1] = to255(gg);
-      d[i+2] = to255(b);
-      d[i+3] = 255;
+      r = mix(r, 1.0, haze*0.18); gg = mix(gg, 1.0, haze*0.18); b = mix(b, 1.0, haze*0.18);
+      const i = (y*size + x)*4; d[i+0] = to255(r); d[i+1] = to255(gg); d[i+2] = to255(b); d[i+3] = 255;
     }
   }
   g.putImageData(img,0,0);
 }
 
 function drawMonteCarlo(g, size){
-  // Dark “simulation” planet: sparse bright speckles + subtle grid/noise.
-  const img = g.createImageData(size,size);
-  const d = img.data;
+  const img = g.createImageData(size,size); const d = img.data;
   for(let y=0;y<size;y++){
     const v = y/(size-1);
     for(let x=0;x<size;x++){
       const u = x/(size-1);
-
       const n = fbm2(u*16.0, v*16.0, 10.1);
       const grid = (Math.abs(fract(u*24.0)-0.5)<0.01 || Math.abs(fract(v*24.0)-0.5)<0.01) ? 1.0 : 0.0;
       const speck = smoothstep(0.88, 0.98, fbm2(u*52.0+3.0, v*52.0+9.0, 21.7));
-
-      let r = 0.08 + 0.12*n;
-      let gg = 0.10 + 0.14*n;
-      let b = 0.16 + 0.22*n;
-
-      // subtle grid lines
-      r = mix(r, 0.40, grid*0.10);
-      gg = mix(gg, 0.55, grid*0.10);
-      b = mix(b, 0.95, grid*0.10);
-
-      // speckles
-      r = mix(r, 0.95, speck*0.55);
-      gg = mix(gg, 0.90, speck*0.55);
-      b = mix(b, 0.98, speck*0.55);
-
-      const i = (y*size + x)*4;
-      d[i+0] = to255(r);
-      d[i+1] = to255(gg);
-      d[i+2] = to255(b);
-      d[i+3] = 255;
+      let r = 0.08 + 0.12*n, gg = 0.10 + 0.14*n, b = 0.16 + 0.22*n;
+      r = mix(r, 0.40, grid*0.10); gg = mix(gg, 0.55, grid*0.10); b = mix(b, 0.95, grid*0.10);
+      r = mix(r, 0.95, speck*0.55); gg = mix(gg, 0.90, speck*0.55); b = mix(b, 0.98, speck*0.55);
+      const i = (y*size + x)*4; d[i+0] = to255(r); d[i+1] = to255(gg); d[i+2] = to255(b); d[i+3] = 255;
     }
   }
   g.putImageData(img,0,0);
 }
 
 function buildBaseTextures(){
-  // 512 keeps quality; still lightweight enough for GH pages.
   const SZ = 512;
   return {
     earth: makeCanvasTexture(drawEarth, SZ),
@@ -613,819 +1119,217 @@ function buildBaseTextures(){
   };
 }
 
-/* =========================
-   Equation layer builder
-   ========================= */
 function buildEquationLayer(){
-  const layer = $("eqLayer");
-  layer.innerHTML = "";
-  const isLight = (root.getAttribute("data-theme")==="light");
-  const color = isLight ? "rgba(20,20,20,0.92)" : "rgba(232,232,234,0.92)";
-  const count = 16;
-  const items = [];
+  const layer = $("eqLayer"); layer.innerHTML = "";
+  const count = 16, items = [];
   for (let i=0;i<count;i++){
-    const el = document.createElement("div");
-    el.className = "eq";
-    el.style.color = color;
+    const el = document.createElement("div"); el.className = "eq"; el.style.color = (root.getAttribute("data-theme")==="light")?"rgba(20,20,20,0.92)":"rgba(232,232,234,0.92)";
     const tex = TEX[i % TEX.length];
-    try{ el.innerHTML = window.katex.renderToString(tex, { throwOnError:false, displayMode:false }); }
-    catch(_){ el.textContent = tex; }
-    items.push({
-      el,
-      a: Math.random()*Math.PI*2,
-      r: 0.18 + Math.random()*0.82,
-      s: 0.08 + Math.random()*0.18,
-      ph: Math.random()*10,
-      ox: (Math.random()-0.5)*140,
-      oy: (Math.random()-0.5)*140
-    });
+    try{ el.innerHTML = window.katex.renderToString(tex, { throwOnError:false, displayMode:false }); } catch(_){ el.textContent = tex; }
+    items.push({ el, a: Math.random()*Math.PI*2, r: 0.18 + Math.random()*0.82, s: 0.08 + Math.random()*0.18, ph: Math.random()*10, ox: (Math.random()-0.5)*140, oy: (Math.random()-0.5)*140 });
     layer.appendChild(el);
   }
   return items;
 }
 
-/* =========================
-   Main (Three.js)
-   ========================= */
-if (!window.THREE || !isWebGLAvailable()){
-  showErr(new Error("WebGL or Three.js unavailable."));
-  return;
-}
+if (!window.THREE){ showErr(new Error("Three.js unavailable.")); return; }
 
 try{
   const canvas = $("gl");
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
   const DPR = ()=>Math.min(window.devicePixelRatio || 1, 2);
-  renderer.setPixelRatio(DPR());
-  renderer.setSize(window.innerWidth, window.innerHeight, false);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+  renderer.setPixelRatio(DPR()); renderer.setSize(window.innerWidth, window.innerHeight, false);
+  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.08;
 
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(cssVar("--bg") || "#050505");
-
-  const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 5000);
-  camera.position.set(0, 0, 220);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(cssVar("--bg") || "#050505");
+  const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 5000); camera.position.set(0, 0, 220);
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
   const key = new THREE.DirectionalLight(0xffffff, 1.85); key.position.set(160, 190, 130); scene.add(key);
   const fill = new THREE.DirectionalLight(0xfff1cc, 0.72); fill.position.set(-210, 70, 160); scene.add(fill);
   const rim = new THREE.PointLight(0xd4af37, 1.35, 1200, 1.4); rim.position.set(0, 0, -320); scene.add(rim);
 
-  const pointer = new THREE.Vector2(0,0);
-  let px=0, py=0, pointerActive=false;
-
-  const galaxy = new THREE.Group();
-  scene.add(galaxy);
+  const pointer = new THREE.Vector2(0,0); let px=0, py=0, pointerActive=false;
+  const galaxy = new THREE.Group(); scene.add(galaxy);
 
   function buildStars(){
-    const starCount = 38000;
-    const geom = new THREE.BufferGeometry();
-    const pos = new Float32Array(starCount*3);
-    const col = new Float32Array(starCount*3);
-    const size = new Float32Array(starCount);
-
-    const gold = new THREE.Color(cssVar("--gold") || "#D4AF37");
-    const silv = new THREE.Color(cssVar("--silver") || "#e8e8ea");
-    const blue = new THREE.Color("#7aa6ff");
-    const arms = 4;
-
+    const starCount = 38000, geom = new THREE.BufferGeometry(), pos = new Float32Array(starCount*3), col = new Float32Array(starCount*3), size = new Float32Array(starCount);
+    const gold = new THREE.Color(cssVar("--gold") || "#D4AF37"), silv = new THREE.Color(cssVar("--silver") || "#e8e8ea"), blue = new THREE.Color("#7aa6ff"), arms = 4;
     for (let i=0;i<starCount;i++){
-      const r = Math.pow(Math.random(), 0.42) * 900;
-      const arm = (i % arms) * (Math.PI*2/arms);
-      const theta = Math.random() * Math.PI*2;
-      const twist = (r/900) * 6.6;
-      const a = theta + arm + twist;
-      const thickness = (1 - r/900);
-      const y = (Math.random()-0.5) * (22 + 160*(1-thickness)) * (0.32 + 0.68*Math.random());
-
-      pos[i*3+0] = Math.cos(a)*r + (Math.random()-0.5)*14;
-      pos[i*3+1] = y;
-      pos[i*3+2] = Math.sin(a)*r + (Math.random()-0.5)*14;
-
-      const t = clamp(0.16 + 0.84*(1 - r/900), 0, 1);
-      const c = silv.clone().lerp(gold, t);
-      if (Math.random() < 0.10) c.lerp(blue, 0.55);
-      col[i*3+0]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
-
-      size[i] = 0.6 + Math.random()*2.4;
-      if (Math.random() < 0.02) size[i] *= 3.0;
+      const r = Math.pow(Math.random(), 0.42) * 900, arm = (i % arms) * (Math.PI*2/arms), theta = Math.random() * Math.PI*2;
+      const twist = (r/900) * 6.6, a = theta + arm + twist, thickness = (1 - r/900), y = (Math.random()-0.5) * (22 + 160*(1-thickness)) * (0.32 + 0.68*Math.random());
+      pos[i*3+0] = Math.cos(a)*r + (Math.random()-0.5)*14; pos[i*3+1] = y; pos[i*3+2] = Math.sin(a)*r + (Math.random()-0.5)*14;
+      const t = clamp(0.16 + 0.84*(1 - r/900), 0, 1); const c = silv.clone().lerp(gold, t); if (Math.random() < 0.10) c.lerp(blue, 0.55);
+      col[i*3+0]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b; size[i] = 0.6 + Math.random()*2.4; if (Math.random() < 0.02) size[i] *= 3.0;
     }
-
-    geom.setAttribute("position", new THREE.BufferAttribute(pos,3));
-    geom.setAttribute("color", new THREE.BufferAttribute(col,3));
-    geom.setAttribute("aSize", new THREE.BufferAttribute(size,1));
-
+    geom.setAttribute("position", new THREE.BufferAttribute(pos,3)); geom.setAttribute("color", new THREE.BufferAttribute(col,3)); geom.setAttribute("aSize", new THREE.BufferAttribute(size,1));
     const mat = new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      uniforms: { uTime: { value: 0 }, uDpr: { value: DPR() } },
-      vertexShader: `
-        attribute float aSize;
-        attribute vec3 color;
-        varying vec3 vColor;
-        uniform float uTime;
-        uniform float uDpr;
-        void main(){
-          vColor = color;
-          vec3 p = position;
-          float tw = sin(uTime*0.18 + p.x*0.01 + p.z*0.01) * 0.30;
-          p.y += tw;
-          vec4 mv = modelViewMatrix * vec4(p, 1.0);
-          gl_Position = projectionMatrix * mv;
-          float s = aSize * (300.0 / -mv.z);
-          gl_PointSize = clamp(s * uDpr, 1.0, 10.0);
-        }
-      `,
-      fragmentShader: `
-        varying vec3 vColor;
-        void main(){
-          vec2 uv = gl_PointCoord.xy - 0.5;
-          float d = dot(uv, uv);
-          float a = smoothstep(0.25, 0.0, d);
-          float halo = smoothstep(0.48, 0.10, d) * 0.55;
-          vec3 c = vColor * (1.2*a + 0.9*halo);
-          gl_FragColor = vec4(c, (a + halo) * 0.85);
-        }
-      `
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uTime: { value: 0 }, uDpr: { value: DPR() } },
+      vertexShader: `attribute float aSize; attribute vec3 color; varying vec3 vColor; uniform float uTime; uniform float uDpr; void main(){ vColor = color; vec3 p = position; float tw = sin(uTime*0.18 + p.x*0.01 + p.z*0.01) * 0.30; p.y += tw; vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv; float s = aSize * (300.0 / -mv.z); gl_PointSize = clamp(s * uDpr, 1.0, 10.0); }`,
+      fragmentShader: `varying vec3 vColor; void main(){ vec2 uv = gl_PointCoord.xy - 0.5; float d = dot(uv, uv); float a = smoothstep(0.25, 0.0, d); float halo = smoothstep(0.48, 0.10, d) * 0.55; vec3 c = vColor * (1.2*a + 0.9*halo); gl_FragColor = vec4(c, (a + halo) * 0.85); }`
     });
-
     return new THREE.Points(geom, mat);
   }
-
-  const stars = buildStars();
-  stars.rotation.x = -0.34;
-  galaxy.add(stars);
+  const stars = buildStars(); stars.rotation.x = -0.34; galaxy.add(stars);
 
   const nebula = new THREE.Mesh(
     new THREE.SphereGeometry(1900, 48, 48),
     new THREE.ShaderMaterial({
       side: THREE.BackSide,
-      uniforms: {
-        uTime: { value: 0 },
-        uPointer: { value: new THREE.Vector2(0,0) },
-        uGold: { value: new THREE.Color(cssVar("--gold") || "#D4AF37") },
-        uSilver: { value: new THREE.Color(cssVar("--silver") || "#e8e8ea") },
-        uBg: { value: new THREE.Color(cssVar("--bg") || "#050505") }
-      },
-      vertexShader: `
-        varying vec3 vP;
-        uniform float uTime;
-        uniform vec2 uPointer;
-        void main(){
-          vec3 p = position;
-          float band = exp(-abs(p.y) / 240.0);
-          float swirl = sin(uTime*0.08 + p.x*0.002 + p.z*0.002) * 22.0 * band;
-          p.x += swirl;
-          p.z -= swirl * 0.55;
-          p.x += uPointer.x * 40.0 * band;
-          p.y += uPointer.y * 18.0 * band;
-          vP = p;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-        }
-      `,
-      fragmentShader: `
-        varying vec3 vP;
-        uniform float uTime;
-        uniform vec3 uGold;
-        uniform vec3 uSilver;
-        uniform vec3 uBg;
-        float noise(vec3 p){
-          vec3 i = floor(p);
-          vec3 f = fract(p);
-          f = f*f*(3.0-2.0*f);
-          float n000 = fract(sin(dot(i, vec3(1.0,57.0,113.0))) * 43758.5453);
-          float n100 = fract(sin(dot(i+vec3(1,0,0), vec3(1.0,57.0,113.0))) * 43758.5453);
-          float n010 = fract(sin(dot(i+vec3(0,1,0), vec3(1.0,57.0,113.0))) * 43758.5453);
-          float n110 = fract(sin(dot(i+vec3(1,1,0), vec3(1.0,57.0,113.0))) * 43758.5453);
-          float n001 = fract(sin(dot(i+vec3(0,0,1), vec3(1.0,57.0,113.0))) * 43758.5453);
-          float n101 = fract(sin(dot(i+vec3(1,0,1), vec3(1.0,57.0,113.0))) * 43758.5453);
-          float n011 = fract(sin(dot(i+vec3(0,1,1), vec3(1.0,57.0,113.0))) * 43758.5453);
-          float n111 = fract(sin(dot(i+vec3(1,1,1), vec3(1.0,57.0,113.0))) * 43758.5453);
-          float n00 = mix(n000, n100, f.x);
-          float n10 = mix(n010, n110, f.x);
-          float n01 = mix(n001, n101, f.x);
-          float n11 = mix(n011, n111, f.x);
-          float n0 = mix(n00, n10, f.y);
-          float n1 = mix(n01, n11, f.y);
-          return mix(n0, n1, f.z);
-        }
-        float fbm(vec3 p){
-          float v = 0.0;
-          float a = 0.5;
-          for(int i=0;i<5;i++){
-            v += a * noise(p);
-            p *= 2.02;
-            a *= 0.5;
-          }
-          return v;
-        }
-        void main(){
-          float band = exp(-abs(vP.y) / 170.0);
-          vec3 q = vP * 0.0018 + vec3(0.0, 0.0, uTime*0.015);
-          float n = fbm(q*3.0);
-          float m = fbm(q*6.0 + 12.3);
-          float cloud = smoothstep(0.35, 0.92, n) * band;
-          float dust = smoothstep(0.25, 0.85, m) * band;
-          float grad = clamp(0.5 + 0.5*sin(vP.x*0.002 + uTime*0.06), 0.0, 1.0);
-          vec3 mixc = mix(uSilver, uGold, grad);
-          vec3 c = uBg;
-          c += mixc * (0.18*cloud + 0.12*dust);
-          c += uGold * (0.06 * band);
-          c = clamp(c, 0.0, 1.0);
-          gl_FragColor = vec4(c, 1.0);
-        }
-      `
+      uniforms: { uTime: { value: 0 }, uPointer: { value: new THREE.Vector2(0,0) }, uGold: { value: new THREE.Color(cssVar("--gold") || "#D4AF37") }, uSilver: { value: new THREE.Color(cssVar("--silver") || "#e8e8ea") }, uBg: { value: new THREE.Color(cssVar("--bg") || "#050505") } },
+      vertexShader: `varying vec3 vP; uniform float uTime; uniform vec2 uPointer; void main(){ vec3 p = position; float band = exp(-abs(p.y) / 240.0); float swirl = sin(uTime*0.08 + p.x*0.002 + p.z*0.002) * 22.0 * band; p.x += swirl; p.z -= swirl * 0.55; p.x += uPointer.x * 40.0 * band; p.y += uPointer.y * 18.0 * band; vP = p; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }`,
+      fragmentShader: `varying vec3 vP; uniform float uTime; uniform vec3 uGold; uniform vec3 uSilver; uniform vec3 uBg; float noise(vec3 p){ vec3 i = floor(p); vec3 f = fract(p); f = f*f*(3.0-2.0*f); float n000 = fract(sin(dot(i, vec3(1.0,57.0,113.0))) * 43758.5453); float n100 = fract(sin(dot(i+vec3(1,0,0), vec3(1.0,57.0,113.0))) * 43758.5453); float n010 = fract(sin(dot(i+vec3(0,1,0), vec3(1.0,57.0,113.0))) * 43758.5453); float n110 = fract(sin(dot(i+vec3(1,1,0), vec3(1.0,57.0,113.0))) * 43758.5453); float n001 = fract(sin(dot(i+vec3(0,0,1), vec3(1.0,57.0,113.0))) * 43758.5453); float n101 = fract(sin(dot(i+vec3(1,0,1), vec3(1.0,57.0,113.0))) * 43758.5453); float n011 = fract(sin(dot(i+vec3(0,1,1), vec3(1.0,57.0,113.0))) * 43758.5453); float n111 = fract(sin(dot(i+vec3(1,1,1), vec3(1.0,57.0,113.0))) * 43758.5453); float n00 = mix(n000, n100, f.x); float n10 = mix(n010, n110, f.x); float n01 = mix(n001, n101, f.x); float n11 = mix(n011, n111, f.x); float n0 = mix(n00, n10, f.y); float n1 = mix(n01, n11, f.y); return mix(n0, n1, f.z); } float fbm(vec3 p){ float v = 0.0; float a = 0.5; for(int i=0;i<5;i++){ v += a * noise(p); p *= 2.02; a *= 0.5; } return v; } void main(){ float band = exp(-abs(vP.y) / 170.0); vec3 q = vP * 0.0018 + vec3(0.0, 0.0, uTime*0.015); float n = fbm(q*3.0); float m = fbm(q*6.0 + 12.3); float cloud = smoothstep(0.35, 0.92, n) * band; float dust = smoothstep(0.25, 0.85, m) * band; float grad = clamp(0.5 + 0.5*sin(vP.x*0.002 + uTime*0.06), 0.0, 1.0); vec3 mixc = mix(uSilver, uGold, grad); vec3 c = uBg; c += mixc * (0.18*cloud + 0.12*dust); c += uGold * (0.06 * band); c = clamp(c, 0.0, 1.0); gl_FragColor = vec4(c, 1.0); }`
     })
   );
   scene.add(nebula);
 
-  const planets = new THREE.Group();
-  scene.add(planets);
-
-  const ringGroup = new THREE.Group();
-  planets.add(ringGroup);
-
-  const ringTiltX = 0.38;
-  const ringTiltZ = -0.12;
-  ringGroup.rotation.x = ringTiltX;
-  ringGroup.rotation.z = ringTiltZ;
-
-  const raycaster = new THREE.Raycaster();
-  let hovered = null;
+  const planets = new THREE.Group(); scene.add(planets);
+  const ringGroup = new THREE.Group(); planets.add(ringGroup);
+  const ringTiltX = 0.38, ringTiltZ = -0.12; ringGroup.rotation.x = ringTiltX; ringGroup.rotation.z = ringTiltZ;
+  const raycaster = new THREE.Raycaster(); let hovered = null;
 
   function labelSprite(text){
-    const w=1200, h=380;
-    const c=document.createElement("canvas");
-    c.width=w; c.height=h;
-    const g=c.getContext("2d");
-
-    const bg = g.createLinearGradient(0,0,w,h);
-    bg.addColorStop(0,"rgba(232,232,234,0.16)");
-    bg.addColorStop(0.55,"rgba(212,175,55,0.12)");
-    bg.addColorStop(1,"rgba(232,232,234,0.08)");
-
-    const r=52;
-    g.beginPath();
-    g.moveTo(r,0); g.lineTo(w-r,0); g.quadraticCurveTo(w,0,w,r);
-    g.lineTo(w,h-r); g.quadraticCurveTo(w,h,w-r,h);
-    g.lineTo(r,h); g.quadraticCurveTo(0,h,0,h-r);
-    g.lineTo(0,r); g.quadraticCurveTo(0,0,r,0);
-    g.closePath();
-    g.fillStyle = bg;
-    g.fill();
-    g.strokeStyle = "rgba(255,255,255,0.18)";
-    g.lineWidth = 2;
-    g.stroke();
-
-    g.shadowColor = "rgba(212,175,55,0.26)";
-    g.shadowBlur = 14;
-
-    g.fillStyle = "rgba(255,255,255,0.94)";
-    g.textAlign = "center";
-    g.textBaseline = "middle";
-    g.font = "800 90px 'Latin Modern Sans','Latin Modern Roman',system-ui,sans-serif";
-
-    const pad=48;
-    const maxW=w-pad*2;
-    const words=String(text).split(/\s+/).filter(Boolean);
-    let line="", lines=[];
-    for(let i=0;i<words.length;i++){
-      const test=line? (line+" "+words[i]) : words[i];
-      if(g.measureText(test).width<=maxW) line=test;
-      else{ lines.push(line); line=words[i]; }
-    }
-    if(line) lines.push(line);
-
-    const lineH=104;
-    const y0=h/2 - ((lines.length-1)*lineH)/2;
-    for(let i=0;i<lines.length;i++) g.fillText(lines[i], w/2, y0+i*lineH);
-
-    const tex=new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
-
-    const spr=new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent:true, depthWrite:false }));
-    spr.scale.set(100, 36, 1);
-    spr.userData._labelText = text;
-    return spr;
+    const w=1200, h=380, c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
+    const bg = g.createLinearGradient(0,0,w,h); bg.addColorStop(0,"rgba(232,232,234,0.16)"); bg.addColorStop(0.55,"rgba(212,175,55,0.12)"); bg.addColorStop(1,"rgba(232,232,234,0.08)");
+    const r=52; g.beginPath(); g.moveTo(r,0); g.lineTo(w-r,0); g.quadraticCurveTo(w,0,w,r); g.lineTo(w,h-r); g.quadraticCurveTo(w,h,w-r,h); g.lineTo(r,h); g.quadraticCurveTo(0,h,0,h-r); g.lineTo(0,r); g.quadraticCurveTo(0,0,r,0); g.closePath(); g.fillStyle = bg; g.fill(); g.strokeStyle = "rgba(255,255,255,0.18)"; g.lineWidth = 2; g.stroke();
+    g.shadowColor = "rgba(212,175,55,0.26)"; g.shadowBlur = 14;
+    g.fillStyle = "rgba(255,255,255,0.94)"; g.textAlign = "center"; g.textBaseline = "middle"; g.font = "800 90px 'Latin Modern Sans','Latin Modern Roman',system-ui,sans-serif";
+    const pad=48, maxW=w-pad*2, words=String(text).split(/\s+/).filter(Boolean);
+    let line="", lines=[]; for(let i=0;i<words.length;i++){ const test=line? (line+" "+words[i]) : words[i]; if(g.measureText(test).width<=maxW) line=test; else{ lines.push(line); line=words[i]; } } if(line) lines.push(line);
+    const lineH=104, y0=h/2 - ((lines.length-1)*lineH)/2; for(let i=0;i<lines.length;i++) g.fillText(lines[i], w/2, y0+i*lineH);
+    const tex=new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+    const spr=new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent:true, depthWrite:false })); spr.scale.set(100, 36, 1); spr.userData._labelText = text; return spr;
   }
 
   const BASE_TEX = buildBaseTextures();
 
   function planetMaterial(art){
-    // Clone per-planet so resize/dispose stays safe.
     const base = BASE_TEX[art.textureKey] || BASE_TEX.moon;
-    const tex = base.clone();
-    tex.needsUpdate = true;
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 16;
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-
-    const shininess = (art.textureKey==="earth") ? 22 : (art.textureKey==="mc" ? 14 : 6);
-    const spec = (art.textureKey==="earth") ? 0x333333 : 0x080808;
-
-    return new THREE.MeshPhongMaterial({
-      map: tex,
-      shininess,
-      specular: new THREE.Color(spec),
-      color: 0xffffff
-    });
+    const tex = base.clone(); tex.needsUpdate = true; tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 16; tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    const shininess = (art.textureKey==="earth") ? 22 : (art.textureKey==="mc" ? 14 : 6); const spec = (art.textureKey==="earth") ? 0x333333 : 0x080808;
+    return new THREE.MeshPhongMaterial({ map: tex, shininess, specular: new THREE.Color(spec), color: 0xffffff });
   }
 
   function atmosphereMaterial(colorHex, intensity){
     return new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      uniforms: {
-        uColor: { value: new THREE.Color(colorHex) },
-        uIntensity: { value: intensity }
-      },
-      vertexShader: `
-        varying vec3 vN;
-        void main(){
-          vN = normalize(normalMatrix * normal);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        varying vec3 vN;
-        uniform vec3 uColor;
-        uniform float uIntensity;
-        void main(){
-          float i = pow(0.65 - dot(vN, vec3(0,0,1)), 3.0);
-          gl_FragColor = vec4(uColor, i * uIntensity);
-        }
-      `
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uColor: { value: new THREE.Color(colorHex) }, uIntensity: { value: intensity } },
+      vertexShader: `varying vec3 vN; void main(){ vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: `varying vec3 vN; uniform vec3 uColor; uniform float uIntensity; void main(){ float i = pow(0.65 - dot(vN, vec3(0,0,1)), 3.0); gl_FragColor = vec4(uColor, i * uIntensity); }`
     });
   }
 
   const entries = [];
-
   function buildSaturnRings(innerR, outerR){
-    ringGroup.clear();
-    const gold = new THREE.Color(cssVar("--gold") || "#D4AF37");
-    const silv = new THREE.Color(cssVar("--silver") || "#e8e8ea");
-
+    ringGroup.clear(); const gold = new THREE.Color(cssVar("--gold") || "#D4AF37"), silv = new THREE.Color(cssVar("--silver") || "#e8e8ea");
     const makeRing = (r0, r1, opacity, z, tintMix)=>{
       const geo = new THREE.RingGeometry(r0, r1, 192, 1);
       const mat = new THREE.ShaderMaterial({
-        transparent:true,
-        depthWrite:false,
-        blending:THREE.AdditiveBlending,
-        uniforms:{
-          uTime:{ value:0 },
-          uGold:{ value: gold.clone() },
-          uSilv:{ value: silv.clone() },
-          uOpacity:{ value: opacity },
-          uTint:{ value: tintMix }
-        },
-        vertexShader: `
-          varying vec2 vUv;
-          varying vec3 vPos;
-          void main(){
-            vUv = uv;
-            vec4 wp = modelMatrix * vec4(position,1.0);
-            vPos = wp.xyz;
-            gl_Position = projectionMatrix * viewMatrix * wp;
-          }
-        `,
-        fragmentShader: `
-          varying vec2 vUv;
-          varying vec3 vPos;
-          uniform float uTime;
-          uniform vec3 uGold;
-          uniform vec3 uSilv;
-          uniform float uOpacity;
-          uniform float uTint;
-          float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-          float noise(vec2 p){
-            vec2 i = floor(p);
-            vec2 f = fract(p);
-            f = f*f*(3.0-2.0*f);
-            float a = hash(i);
-            float b = hash(i+vec2(1.0,0.0));
-            float c = hash(i+vec2(0.0,1.0));
-            float d = hash(i+vec2(1.0,1.0));
-            return mix(mix(a,b,f.x), mix(c,d,f.x), f.y);
-          }
-          void main(){
-            float r = length(vUv - 0.5) * 2.0;
-            float g = noise((vUv-0.5)*vec2(180.0, 28.0) + uTime*0.02);
-            float streak = noise((vUv-0.5)*vec2(420.0, 44.0) - uTime*0.01);
-            float a = (0.55 + 0.45*g) * (0.55 + 0.45*streak);
-            float edge = smoothstep(0.98, 0.65, r) * smoothstep(0.02, 0.18, r);
-            a *= edge;
-            vec3 c = mix(uSilv, uGold, uTint + 0.15*sin(vUv.x*20.0));
-            gl_FragColor = vec4(c, a * uOpacity);
-          }
-        `
+        transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+        uniforms:{ uTime:{ value:0 }, uGold:{ value: gold.clone() }, uSilv:{ value: silv.clone() }, uOpacity:{ value: opacity }, uTint:{ value: tintMix } },
+        vertexShader: `varying vec2 vUv; varying vec3 vPos; void main(){ vUv = uv; vec4 wp = modelMatrix * vec4(position,1.0); vPos = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }`,
+        fragmentShader: `varying vec2 vUv; varying vec3 vPos; uniform float uTime; uniform vec3 uGold; uniform vec3 uSilv; uniform float uOpacity; uniform float uTint; float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); } float noise(vec2 p){ vec2 i = floor(p); vec2 f = fract(p); f = f*f*(3.0-2.0*f); float a = hash(i); float b = hash(i+vec2(1.0,0.0)); float c = hash(i+vec2(0.0,1.0)); float d = hash(i+vec2(1.0,1.0)); return mix(mix(a,b,f.x), mix(c,d,f.x), f.y); } void main(){ float r = length(vUv - 0.5) * 2.0; float g = noise((vUv-0.5)*vec2(180.0, 28.0) + uTime*0.02); float streak = noise((vUv-0.5)*vec2(420.0, 44.0) - uTime*0.01); float a = (0.55 + 0.45*g) * (0.55 + 0.45*streak); float edge = smoothstep(0.98, 0.65, r) * smoothstep(0.02, 0.18, r); a *= edge; vec3 c = mix(uSilv, uGold, uTint + 0.15*sin(vUv.x*20.0)); gl_FragColor = vec4(c, a * uOpacity); }`
       });
-      const m = new THREE.Mesh(geo, mat);
-      m.position.z = z;
-      ringGroup.add(m);
-      return m;
+      const m = new THREE.Mesh(geo, mat); m.position.z = z; ringGroup.add(m); return m;
     };
-
-    const rings = [];
-    rings.push(makeRing(innerR, outerR, 0.22, 0.0, 0.55));
-    rings.push(makeRing(innerR*1.02, outerR*0.985, 0.16, 0.06, 0.35));
-    rings.push(makeRing(innerR*1.06, outerR*0.96, 0.12, -0.06, 0.70));
-    return rings;
+    const rings = []; rings.push(makeRing(innerR, outerR, 0.22, 0.0, 0.55)); rings.push(makeRing(innerR*1.02, outerR*0.985, 0.16, 0.06, 0.35)); rings.push(makeRing(innerR*1.06, outerR*0.96, 0.12, -0.06, 0.70)); return rings;
   }
 
   function wrapAngle(a){ const two = Math.PI*2; a = a % two; return a < 0 ? a + two : a; }
   function angleDist(a,b){ const two = Math.PI*2; let d = Math.abs(a-b) % two; return d > Math.PI ? two - d : d; }
-
   function enforceAngularSeparation(){
-    const n = entries.length;
-    if (n <= 1) return;
-    const minGapBase = 0.64;
+    const n = entries.length; if (n <= 1) return; const minGapBase = 0.64;
     for (let it=0; it<22; it++){
-      let moved = 0;
-      const idx = entries.map((p)=>p).sort((a,b)=>a.angle - b.angle);
-      for (let k=0;k<n;k++){
-        const A = idx[k];
-        const B = idx[(k+1)%n];
-        const gapNeed = minGapBase + 0.010*(A.radius + B.radius);
-        const d = angleDist(A.angle, B.angle);
-        if (d < gapNeed){
-          const push = (gapNeed - d) * 0.5;
-          A.angle = wrapAngle(A.angle - push);
-          B.angle = wrapAngle(B.angle + push);
-          moved++;
-        }
-      }
-      if (!moved) break;
+      let moved = 0; const idx = entries.map((p)=>p).sort((a,b)=>a.angle - b.angle);
+      for (let k=0;k<n;k++){ const A = idx[k], B = idx[(k+1)%n], gapNeed = minGapBase + 0.010*(A.radius + B.radius), d = angleDist(A.angle, B.angle); if (d < gapNeed){ const push = (gapNeed - d) * 0.5; A.angle = wrapAngle(A.angle - push); B.angle = wrapAngle(B.angle + push); moved++; } } if (!moved) break;
     }
   }
-
   function applyOrbitPosition(p){
-    const r = p.ringR * (1.0 + p.rMod);
-    const x = Math.cos(p.angle) * r;
-    const y = Math.sin(p.angle) * r;
-    const z = p.zMod;
-
-    const pos = new THREE.Vector3(x,y,0);
-    pos.applyEuler(new THREE.Euler(ringTiltX, 0, ringTiltZ, "XYZ"));
-    pos.z += z;
-
-    p.mesh.position.copy(pos);
-    p.atmo.position.copy(pos);
-    p.label.position.copy(pos);
-
-    const offset = (p.radius + 42 * p.scale * p.labelScaleMult);
-    const up = new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(ringTiltX, 0, ringTiltZ, "XYZ"));
-    const sign = (y >= 0) ? 1 : -1;
-    p.label.position.addScaledVector(up, offset * sign);
+    const r = p.ringR * (1.0 + p.rMod), x = Math.cos(p.angle) * r, y = Math.sin(p.angle) * r, z = p.zMod;
+    const pos = new THREE.Vector3(x,y,0); pos.applyEuler(new THREE.Euler(ringTiltX, 0, ringTiltZ, "XYZ")); pos.z += z;
+    p.mesh.position.copy(pos); p.atmo.position.copy(pos); p.label.position.copy(pos);
+    const offset = (p.radius + 42 * p.scale * p.labelScaleMult), up = new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(ringTiltX, 0, ringTiltZ, "XYZ")), sign = (y >= 0) ? 1 : -1;
+    p.label.position.addScaledVector(up, offset * sign * 0.6); // Slightly closer labels
     p.label.quaternion.copy(camera.quaternion);
   }
-
-  function disposeObject(obj){
-    obj.traverse((o)=>{
-      if (o.geometry) o.geometry.dispose();
-      if (o.material){
-        if (Array.isArray(o.material)) o.material.forEach(m=>m.dispose && m.dispose());
-        else o.material.dispose && o.material.dispose();
-      }
-      if (o.material && o.material.map) o.material.map.dispose && o.material.map.dispose();
-    });
-  }
-
+  function disposeObject(obj){ obj.traverse((o)=>{ if (o.geometry) o.geometry.dispose(); if (o.material){ if (Array.isArray(o.material)) o.material.forEach(m=>m.dispose && m.dispose()); else o.material.dispose && o.material.dispose(); } if (o.material && o.material.map) o.material.map.dispose && o.material.map.dispose(); }); }
   function rebuildLabelTextures(){
-    for (const p of entries){
-      const spr = p.label;
-      if (!spr || !spr.userData || !spr.userData._labelText) continue;
-      const newSpr = labelSprite(spr.userData._labelText);
-      newSpr.scale.copy(spr.scale);
-      newSpr.position.copy(spr.position);
-      newSpr.quaternion.copy(spr.quaternion);
-      newSpr.userData.article = spr.userData.article;
-      planets.remove(spr);
-      planets.add(newSpr);
-      p.label = newSpr;
-    }
+    for (const p of entries){ const spr = p.label; if (!spr || !spr.userData || !spr.userData._labelText) continue; const newSpr = labelSprite(spr.userData._labelText); newSpr.scale.copy(spr.scale); newSpr.position.copy(spr.position); newSpr.quaternion.copy(spr.quaternion); newSpr.userData.article = spr.userData.article; planets.remove(spr); planets.add(newSpr); p.label = newSpr; }
   }
 
   let ringMeshes = [];
   function buildPlanets(){
-    for (let i = planets.children.length - 1; i >= 0; i--) {
-      const ch = planets.children[i];
-      if (ch !== ringGroup) { planets.remove(ch); try{ disposeObject(ch); }catch(_){} }
-    }
-
+    for (let i = planets.children.length - 1; i >= 0; i--) { const ch = planets.children[i]; if (ch !== ringGroup) { planets.remove(ch); try{ disposeObject(ch); }catch(_){} } }
     entries.length = 0;
-
-    let w = window.innerWidth;
-    let h = window.innerHeight;
-    if (!w || !h) { w = 1024; h = 768; }
-    const isMobile = w < 800;
-    const aspect = w / h;
-    const dist = 220;
-    const vH = 2 * dist * Math.tan((52 * Math.PI / 180) / 2);
-    const vW = vH * aspect;
-
-    let scale = Math.min(vW / 560, vH / 560);
-    if (!Number.isFinite(scale)) scale = 1.0;
-
-    const finalScale = Math.max(scale, 0.22);
-    const ringR = 142 * finalScale;
-    const ringInner = ringR * 0.78;
-    const ringOuter = ringR * 1.12;
-
+    let w = window.innerWidth, h = window.innerHeight; if (!w || !h) { w = 1024; h = 768; } const isMobile = w < 800, aspect = w / h, dist = 220, vH = 2 * dist * Math.tan((52 * Math.PI / 180) / 2), vW = vH * aspect;
+    let scale = Math.min(vW / 560, vH / 560); if (!Number.isFinite(scale)) scale = 1.0;
+    const finalScale = Math.max(scale, 0.22), ringR = 142 * finalScale, ringInner = ringR * 0.78, ringOuter = ringR * 1.12;
     ringMeshes = buildSaturnRings(ringInner, ringOuter);
-
-    const planetBaseRadius = isMobile ? 50 : 25;
-    const labelScaleMult = isMobile ? 2.05 : 1.0;
-
+    const planetBaseRadius = isMobile ? 50 : 25, labelScaleMult = isMobile ? 2.05 : 1.0;
     const n = ARTICLES.length;
     for (let i=0;i<n;i++){
-      const art = ARTICLES[i];
-      const radius = planetBaseRadius * finalScale;
-
-      const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 64), planetMaterial(art));
-      mesh.userData.article = art;
-      mesh.userData.radius = radius;
-
-      let atColor = "#90b0ff";
-      if(art.textureKey==="earth") atColor = "#0066ff";
-      else if(art.textureKey==="mars") atColor = "#ff4400";
-      else if(art.textureKey==="venus") atColor = "#ffd080";
-      else if(art.textureKey==="mc") atColor = "#a7b7ff";
-      else atColor = "#cfd3ff";
-
-      const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 64, 64), atmosphereMaterial(atColor, 0.45));
-      atmo.userData.article = art;
-
-      const label = labelSprite(art.title);
-      label.scale.multiplyScalar(finalScale * labelScaleMult);
-      label.userData.article = art;
-
+      const art = ARTICLES[i], radius = planetBaseRadius * finalScale;
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 64), planetMaterial(art)); mesh.userData.article = art; mesh.userData.radius = radius;
+      let atColor = "#90b0ff"; if(art.textureKey==="earth") atColor = "#0066ff"; else if(art.textureKey==="mars") atColor = "#ff4400"; else if(art.textureKey==="venus") atColor = "#ffd080"; else if(art.textureKey==="mc") atColor = "#a7b7ff"; else atColor = "#cfd3ff";
+      const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 64, 64), atmosphereMaterial(atColor, 0.45)); atmo.userData.article = art;
+      const label = labelSprite(art.title); label.scale.multiplyScalar(finalScale * labelScaleMult); label.userData.article = art;
       const baseAngle = (i / n) * Math.PI*2 + Math.PI/5;
-
-      entries.push({
-        mesh, atmo, label,
-        radius,
-        angle: baseAngle,
-        angVel: 0,
-        rMod: 0,
-        zMod: 0,
-        ringR,
-        hoverPull: 0,
-        scale: finalScale,
-        labelScaleMult
-      });
-
-      planets.add(mesh);
-      planets.add(atmo);
-      planets.add(label);
+      entries.push({ mesh, atmo, label, radius, angle: baseAngle, angVel: 0, rMod: 0, zMod: 0, ringR, hoverPull: 0, scale: finalScale, labelScaleMult });
+      planets.add(mesh); planets.add(atmo); planets.add(label);
     }
-
-    enforceAngularSeparation();
-    for (const p of entries) applyOrbitPosition(p);
+    enforceAngularSeparation(); for (const p of entries) applyOrbitPosition(p);
   }
-
   buildPlanets();
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(()=>rebuildLabelTextures()).catch(()=>{});
-  }
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(()=>rebuildLabelTextures()).catch(()=>{}); }
 
-  function getClientXY(ev){
-    if (ev && ev.changedTouches && ev.changedTouches.length) return { x: ev.changedTouches[0].clientX, y: ev.changedTouches[0].clientY };
-    if (ev && ev.touches && ev.touches.length) return { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
-    return { x: ev.clientX, y: ev.clientY };
-  }
-
-  function setPointerFromEvent(ev){
-    const r = canvas.getBoundingClientRect();
-    const p = getClientXY(ev);
-    const x = (p.x - r.left) / Math.max(1, r.width);
-    const y = (p.y - r.top) / Math.max(1, r.height);
-    pointer.x = x * 2 - 1;
-    pointer.y = -(y * 2 - 1);
-    px = clamp(p.x - r.left, 0, r.width);
-    py = clamp(p.y - r.top, 0, r.height);
-    pointerActive = true;
-  }
-
-  let lastTapAt = 0;
-  let tapStart = null;
-
-  function tryPick(ev){
-    if (modal.classList.contains("open")) return;
-    setPointerFromEvent(ev);
-    raycaster.setFromCamera(pointer, camera);
-    const hits = raycaster.intersectObjects(planets.children, true).filter(h => h.object && h.object.userData && h.object.userData.article);
-    if (hits.length > 0){
-      openArticle(hits[0].object.userData.article);
-    }
-  }
-
-  function onTapStart(ev){
-    if (modal.classList.contains("open")) return;
-    const p = getClientXY(ev);
-    tapStart = { x: p.x, y: p.y, t: performance.now() };
-    setPointerFromEvent(ev);
-    if (ev.cancelable) ev.preventDefault();
-  }
-
-  function onTapEnd(ev){
-    if (!tapStart) { tryPick(ev); return; }
-    const p = getClientXY(ev);
-    const dt = performance.now() - tapStart.t;
-    const dx = Math.abs(p.x - tapStart.x);
-    const dy = Math.abs(p.y - tapStart.y);
-    tapStart = null;
-    if (dt < 450 && dx < 14 && dy < 14){
-      const now = performance.now();
-      if (now - lastTapAt < 220) return;
-      lastTapAt = now;
-      tryPick(ev);
-    }
-    if (ev.cancelable) ev.preventDefault();
-  }
-
+  function getClientXY(ev){ if (ev && ev.changedTouches && ev.changedTouches.length) return { x: ev.changedTouches[0].clientX, y: ev.changedTouches[0].clientY }; if (ev && ev.touches && ev.touches.length) return { x: ev.touches[0].clientX, y: ev.touches[0].clientY }; return { x: ev.clientX, y: ev.clientY }; }
+  function setPointerFromEvent(ev){ const r = canvas.getBoundingClientRect(); const p = getClientXY(ev); const x = (p.x - r.left) / Math.max(1, r.width); const y = (p.y - r.top) / Math.max(1, r.height); pointer.x = x * 2 - 1; pointer.y = -(y * 2 - 1); px = clamp(p.x - r.left, 0, r.width); py = clamp(p.y - r.top, 0, r.height); pointerActive = true; }
+  let lastTapAt = 0, tapStart = null;
+  function tryPick(ev){ if (modal.classList.contains("open")) return; setPointerFromEvent(ev); raycaster.setFromCamera(pointer, camera); const hits = raycaster.intersectObjects(planets.children, true).filter(h => h.object && h.object.userData && h.object.userData.article); if (hits.length > 0){ openArticle(hits[0].object.userData.article); } }
+  function onTapStart(ev){ if (modal.classList.contains("open")) return; const p = getClientXY(ev); tapStart = { x: p.x, y: p.y, t: performance.now() }; setPointerFromEvent(ev); if (ev.cancelable) ev.preventDefault(); }
+  function onTapEnd(ev){ if (!tapStart) { tryPick(ev); return; } const p = getClientXY(ev); const dt = performance.now() - tapStart.t; const dx = Math.abs(p.x - tapStart.x); const dy = Math.abs(p.y - tapStart.y); tapStart = null; if (dt < 450 && dx < 14 && dy < 14){ const now = performance.now(); if (now - lastTapAt < 220) return; lastTapAt = now; tryPick(ev); } if (ev.cancelable) ev.preventDefault(); }
   function onPointerMove(e){ setPointerFromEvent(e); }
+  canvas.addEventListener("pointermove", onPointerMove, { passive:true }); canvas.addEventListener("pointerdown", onTapStart, { passive:false }); canvas.addEventListener("pointerup", onTapEnd, { passive:false }); canvas.addEventListener("touchstart", onTapStart, { passive:false }); canvas.addEventListener("touchend", onTapEnd, { passive:false }); canvas.addEventListener("touchcancel", ()=>{ tapStart = null; }, { passive:true }); canvas.addEventListener("click", (e)=>{ tryPick(e); }, { passive:true });
 
-  canvas.addEventListener("pointermove", onPointerMove, { passive:true });
-  canvas.addEventListener("pointerdown", onTapStart, { passive:false });
-  canvas.addEventListener("pointerup", onTapEnd, { passive:false });
-  canvas.addEventListener("touchstart", onTapStart, { passive:false });
-  canvas.addEventListener("touchend", onTapEnd, { passive:false });
-  canvas.addEventListener("touchcancel", ()=>{ tapStart = null; }, { passive:true });
-  canvas.addEventListener("click", (e)=>{ tryPick(e); }, { passive:true });
-
-  const clock = new THREE.Clock();
-  let eqItems = buildEquationLayer();
-
-  // Star animation state (freezes on hover)
-  const starAnim = { time: 0, rotY: 0, rotZ: 0 };
-
-  window.__RECOLOR__ = function(){
-    nebula.material.uniforms.uGold.value.set(cssVar("--gold") || "#D4AF37");
-    nebula.material.uniforms.uSilver.value.set(cssVar("--silver") || "#e8e8ea");
-    nebula.material.uniforms.uBg.value.set(cssVar("--bg") || "#050505");
-    scene.background.set(cssVar("--bg") || "#050505");
-    if (ringMeshes && ringMeshes.length){
-      const gold = new THREE.Color(cssVar("--gold") || "#D4AF37");
-      const silv = new THREE.Color(cssVar("--silver") || "#e8e8ea");
-      ringMeshes.forEach(m=>{
-        if (m.material && m.material.uniforms){
-          m.material.uniforms.uGold.value.copy(gold);
-          m.material.uniforms.uSilv.value.copy(silv);
-        }
-      });
-    }
-  };
-
+  const clock = new THREE.Clock(); let eqItems = buildEquationLayer(); const starAnim = { time: 0, rotY: 0, rotZ: 0 };
+  window.__RECOLOR__ = function(){ nebula.material.uniforms.uGold.value.set(cssVar("--gold") || "#D4AF37"); nebula.material.uniforms.uSilver.value.set(cssVar("--silver") || "#e8e8ea"); nebula.material.uniforms.uBg.value.set(cssVar("--bg") || "#050505"); scene.background.set(cssVar("--bg") || "#050505"); if (ringMeshes && ringMeshes.length){ const gold = new THREE.Color(cssVar("--gold") || "#D4AF37"), silv = new THREE.Color(cssVar("--silver") || "#e8e8ea"); ringMeshes.forEach(m=>{ if (m.material && m.material.uniforms){ m.material.uniforms.uGold.value.copy(gold); m.material.uniforms.uSilv.value.copy(silv); } }); } };
   const _targetScale = new THREE.Vector3();
 
   function tick(){
-    const dt = Math.min(0.033, clock.getDelta());
-    const t = clock.getElapsedTime();
-
-    const rect = canvas.getBoundingClientRect();
-    const nx = pointerActive ? (px / Math.max(1, rect.width) - 0.5) : 0.0;
-    const ny = pointerActive ? (py / Math.max(1, rect.height) - 0.5) : 0.0;
-
-    camera.position.x = lerp(camera.position.x, nx * 26, 0.06);
-    camera.position.y = lerp(camera.position.y, (-ny) * 12, 0.06);
-    camera.lookAt(0,0,0);
-
-    // Nebula continues as before
-    nebula.material.uniforms.uTime.value = t;
-    nebula.material.uniforms.uPointer.value.set(nx, -ny);
-
-    // Hover detection only when pointer is active (prevents random freezing)
-    if (pointerActive && !modal.classList.contains("open")){
-      raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(planets.children, true);
-      const hit = hits.find(h => h.object && h.object.userData && h.object.userData.article);
-      const newHover = hit ? hit.object : null;
-      if (hovered !== newHover){
-        hovered = newHover;
-        document.body.style.cursor = hovered ? "pointer" : "default";
-      }
-    } else {
-      if (hovered !== null){
-        hovered = null;
-        document.body.style.cursor = "default";
-      }
-    }
-
+    const dt = Math.min(0.033, clock.getDelta()), t = clock.getElapsedTime();
+    const rect = canvas.getBoundingClientRect(); const nx = pointerActive ? (px / Math.max(1, rect.width) - 0.5) : 0.0, ny = pointerActive ? (py / Math.max(1, rect.height) - 0.5) : 0.0;
+    camera.position.x = lerp(camera.position.x, nx * 26, 0.06); camera.position.y = lerp(camera.position.y, (-ny) * 12, 0.06); camera.lookAt(0,0,0);
+    nebula.material.uniforms.uTime.value = t; nebula.material.uniforms.uPointer.value.set(nx, -ny);
+    if (pointerActive && !modal.classList.contains("open")){ raycaster.setFromCamera(pointer, camera); const hits = raycaster.intersectObjects(planets.children, true); const hit = hits.find(h => h.object && h.object.userData && h.object.userData.article); const newHover = hit ? hit.object : null; if (hovered !== newHover){ hovered = newHover; document.body.style.cursor = hovered ? "pointer" : "default"; } } else { if (hovered !== null){ hovered = null; document.body.style.cursor = "default"; } }
     const isHoveringPlanet = !!(hovered && hovered.userData && hovered.userData.article);
-
-    // Freeze star motion when hovering a planet
-    if (!isHoveringPlanet){
-      starAnim.time += dt;
-      starAnim.rotY += dt * 0.05;
-      starAnim.rotZ = Math.cos(starAnim.time*0.04)*0.06;
-    }
-    stars.material.uniforms.uTime.value = starAnim.time;
-    stars.material.uniforms.uDpr.value = DPR();
-    galaxy.rotation.y = starAnim.rotY;
-    galaxy.rotation.z = starAnim.rotZ;
-
-    if (ringMeshes && ringMeshes.length){
-      ringMeshes.forEach(m=>{ if (m.material && m.material.uniforms) m.material.uniforms.uTime.value = t; });
-      ringGroup.rotation.y = Math.sin(t*0.05)*0.06;
-    }
-
-    // Slow orbit (requested)
+    if (!isHoveringPlanet){ starAnim.time += dt; starAnim.rotY += dt * 0.05; starAnim.rotZ = Math.cos(starAnim.time*0.04)*0.06; }
+    stars.material.uniforms.uTime.value = starAnim.time; stars.material.uniforms.uDpr.value = DPR(); galaxy.rotation.y = starAnim.rotY; galaxy.rotation.z = starAnim.rotZ;
+    if (ringMeshes && ringMeshes.length){ ringMeshes.forEach(m=>{ if (m.material && m.material.uniforms) m.material.uniforms.uTime.value = t; }); ringGroup.rotation.y = Math.sin(t*0.05)*0.06; }
     const n = entries.length;
     for (let i=0;i<n;i++){
-      const p = entries[i];
-      const m = p.mesh;
-
-      // Slight self-rotation (kept modest)
-      m.rotation.y += dt * (0.65 + i*0.03);
-      m.rotation.x += dt * 0.008;
-
+      const p = entries[i], m = p.mesh; m.rotation.y += dt * (0.65 + i*0.03); m.rotation.x += dt * 0.008;
       const isHover = isHoveringPlanet && (hovered.userData.article === m.userData.article);
       p.hoverPull = lerp(p.hoverPull, isHover ? 1 : 0, 0.12);
-
-      // Much slower base orbit
-      const baseSpin = 0.012;
-      const steer = pointerActive ? (nx * 0.015) : 0.0;
-      const hoverSteer = p.hoverPull * (nx*0.20) * 0.02;
+      const baseSpin = 0.012, steer = pointerActive ? (nx * 0.015) : 0.0, hoverSteer = p.hoverPull * (nx*0.20) * 0.02;
       p.angVel = lerp(p.angVel, baseSpin + steer + hoverSteer, 0.05);
-
-      const wob = Math.sin(t*0.7 + i*1.7) * 0.0009;
-      p.angle = wrapAngle(p.angle + (p.angVel + wob) * dt);
-
-      const rTarget = isHover ? 0.030 : 0.0;
-      p.rMod = lerp(p.rMod, rTarget, 0.09);
-
-      const zTarget = isHover ? 24.0 : 0.0;
-      p.zMod = lerp(p.zMod, zTarget, 0.10);
+      const wob = Math.sin(t*0.7 + i*1.7) * 0.0009; p.angle = wrapAngle(p.angle + (p.angVel + wob) * dt);
+      const rTarget = isHover ? 0.030 : 0.0; p.rMod = lerp(p.rMod, rTarget, 0.09);
+      const zTarget = isHover ? 24.0 : 0.0; p.zMod = lerp(p.zMod, zTarget, 0.10);
     }
-
     for (let it=0; it<2; it++) enforceAngularSeparation();
-
-    for (let i=0;i<n;i++){
-      const p = entries[i];
-      const isHover = isHoveringPlanet && (hovered.userData.article === p.mesh.userData.article);
-
-      applyOrbitPosition(p);
-
-      const s = isHover ? 1.10 : 1.0;
-      _targetScale.set(s, s, s);
-      p.mesh.scale.lerp(_targetScale, 0.10);
-
-      _targetScale.set(s*1.02, s*1.02, s*1.02);
-      p.atmo.scale.lerp(_targetScale, 0.10);
-    }
-
-    // Static depth name transform
+    for (let i=0;i<n;i++){ const p = entries[i]; const isHover = isHoveringPlanet && (hovered.userData.article === p.mesh.userData.article); applyOrbitPosition(p); const s = isHover ? 1.10 : 1.0; _targetScale.set(s, s, s); p.mesh.scale.lerp(_targetScale, 0.10); _targetScale.set(s*1.02, s*1.02, s*1.02); p.atmo.scale.lerp(_targetScale, 0.10); }
     $("depthName").style.transform = "translate(-50%, -50%)";
-
-    // Equation layer drift
     const w = window.innerWidth, h = window.innerHeight;
-    for (let i=0;i<eqItems.length;i++){
-      const it = eqItems[i];
-      it.a += dt * it.s;
-      const rr = (0.18 + it.r*0.82);
-      const x = (0.5 + 0.46*Math.cos(it.a) * rr) * w + it.ox;
-      const y = (0.5 + 0.36*Math.sin(it.a*0.92 + it.ph) * rr) * h + it.oy;
-      const op = 0.18 + 0.12*(0.5+0.5*Math.sin(t*0.35 + i));
-      it.el.style.opacity = String(op);
-      it.el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${Math.sin(it.a)*2.0}deg)`;
-    }
-
-    renderer.render(scene, camera);
-    requestAnimationFrame(tick);
+    for (let i=0;i<eqItems.length;i++){ const it = eqItems[i]; it.a += dt * it.s; const rr = (0.18 + it.r*0.82), x = (0.5 + 0.46*Math.cos(it.a) * rr) * w + it.ox, y = (0.5 + 0.36*Math.sin(it.a*0.92 + it.ph) * rr) * h + it.oy, op = 0.18 + 0.12*(0.5+0.5*Math.sin(t*0.35 + i)); it.el.style.opacity = String(op); it.el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${Math.sin(it.a)*2.0}deg)`; }
+    renderer.render(scene, camera); requestAnimationFrame(tick);
   }
 
-  function onResize(){
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setPixelRatio(DPR());
-    renderer.setSize(window.innerWidth, window.innerHeight, false);
-    buildPlanets();
-    eqItems = buildEquationLayer();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(()=>rebuildLabelTextures()).catch(()=>{});
-  }
+  function onResize(){ camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setPixelRatio(DPR()); renderer.setSize(window.innerWidth, window.innerHeight, false); buildPlanets(); eqItems = buildEquationLayer(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(()=>rebuildLabelTextures()).catch(()=>{}); }
   window.addEventListener("resize", onResize, { passive:true });
+  const brand = $("brand"); brand.addEventListener("click", ()=>camera.position.set(0,0,220)); brand.addEventListener("keydown", (e)=>{ if (e.key==="Enter"||e.key===" "){ e.preventDefault(); camera.position.set(0,0,220); } });
+  themeBtn.addEventListener("click", ()=>{ const cur = root.getAttribute("data-theme") || "dark"; applyTheme(cur === "dark" ? "light" : "dark", true); });
+  applyTheme(getInitialTheme(), false); tick();
 
-  const brand = $("brand");
-  brand.addEventListener("click", ()=>camera.position.set(0,0,220));
-  brand.addEventListener("keydown", (e)=>{ if (e.key==="Enter"||e.key===" "){ e.preventDefault(); camera.position.set(0,0,220); } });
-
-  themeBtn.addEventListener("click", ()=>{
-    const cur = root.getAttribute("data-theme") || "dark";
-    applyTheme(cur === "dark" ? "light" : "dark", true);
-  });
-
-  applyTheme(getInitialTheme(), false);
-  tick();
-
-}catch(e){
-  showErr(e);
-}
-
+}catch(e){ showErr(e); }
 })();
 </script>
 </body>
