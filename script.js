@@ -408,7 +408,8 @@ async function openArticle(a){
     modal.innerHTML = `<div id="modalCard"><div id="modalBody">Loading...</div></div>`;
     try {
         const t = await (await fetch(a.file)).text();
-        modal.innerHTML = `<div id="modalCard"><div id="modalTop"><div>${a.title}</div><button onclick="closeModal()">X</button></div><div id="modalBody" class="article-content">${sanitizeHTML(t)}</div></div>`;
+        modal.innerHTML = `<div id="modalCard"><div id="modalTop"><div>${a.title}</div><button id="closeBtn">X</button></div><div id="modalBody" class="article-content">${sanitizeHTML(t)}</div></div>`;
+        document.getElementById("closeBtn").addEventListener("click", closeModal);
         if(window.renderMathInElement) window.renderMathInElement(modal);
     } catch(e){ modal.innerHTML="Error loading article."; }
 }
@@ -480,4 +481,3 @@ if(window.THREE) {
 // Global Event Listeners
 document.querySelectorAll(".lab-btn").forEach(b => b.addEventListener("click", () => Lab.open(b.getAttribute("data-type"))));
 
-})();
