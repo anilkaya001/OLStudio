@@ -1,5 +1,6 @@
 (function(){
 "use strict";
+// v1.1 Hotfix Force Deploy
 
 /* =========================
    UTILS & HELPERS
