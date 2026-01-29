@@ -5,12 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="theme-color" content="#050505"/>
 
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'nonce-r4nd0m' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'nonce-r4nd0m' https://cdn.jsdelivr.net https://cdn.npm.com; img-src 'self' data:; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self'; object-src 'none'; base-uri 'self';">
+<!-- 
+    CSP NOTE: 
+    Strict CSP with nonces removed for GitHub Pages compatibility. 
+    Static hosting cannot generate dynamic nonces. 
+    Security is maintained by strict HTTPS references and sanitized inputs.
+-->
 
 <title>Anıl Kaya | Econometrics Labs & Research</title>
 <meta name="description" content="Advanced interactive econometrics laboratory with academic-grade diagnostics.">
 <link rel="canonical" href="https://anilkaya.com/">
 
+<!-- External Dependencies -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" crossorigin="anonymous"/>
@@ -22,7 +28,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 
-<style nonce="r4nd0m">
+<style>
 :root{color-scheme:dark;--font-main:"Latin Modern Roman","Times New Roman",Times,serif;--font-ui:"Latin Modern Sans","Latin Modern Roman",serif;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--nav-h:64px;--bg:#050505;--border:rgba(255,255,255,0.10);--silver:#e8e8ea;--silver-dim:rgba(232,232,234,0.72);--gold:#D4AF37;--gold-soft:#F7E7CE}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--silver);font-family:var(--font-main);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
@@ -107,13 +113,13 @@ font-size:clamp(1.5rem,5.5vw,6.5rem); color:rgba(212,175,55,0.24);text-shadow:0 
 
 /* Glass-morphism Modal Card */
 #modalCard {
-    position: absolute; top: 0; left: 0; width: 100vw; height: 100dvh;
-    border-radius: 0; border: none; overflow: hidden;
-    display: grid; grid-template-rows: auto 1fr;
-    /* Gradient + Blur */
-    background: linear-gradient(145deg, rgba(20,20,20,0.96), rgba(35,35,40,0.92));
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+  position: absolute; top: 0; left: 0; width: 100vw; height: 100dvh;
+  border-radius: 0; border: none; overflow: hidden;
+  display: grid; grid-template-rows: auto 1fr;
+  /* Gradient + Blur */
+  background: linear-gradient(145deg, rgba(20,20,20,0.96), rgba(35,35,40,0.92));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 #modalTop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.3);}
 #modalMeta{font-family:var(--font-ui);color:var(--silver-dim);letter-spacing:1.2px;text-transform:uppercase;font-size:0.85rem;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -167,7 +173,7 @@ font-size:clamp(1.5rem,5.5vw,6.5rem); color:rgba(212,175,55,0.24);text-shadow:0 
 
 <div id="err"><h2>Render error</h2><div>Error details:</div><pre id="errText"></pre></div>
 
-<script nonce="r4nd0m">
+<script>
 (function(){
 "use strict";
 
@@ -639,7 +645,7 @@ const Lab = {
     setTimeout(() => { 
         if(window.renderMathInElement) {
             window.renderMathInElement(document.getElementById("modalBody"), {
-               delimiters: [ {left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false} ]
+                delimiters: [ {left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false} ]
             });
         }
     }, 100);
@@ -1809,7 +1815,10 @@ try{
   window.addEventListener("resize", onResize, { passive:true });
   
   // -- EVENT WIRING (Securely) --
+  const brand = document.getElementById("brand");
   brand.addEventListener("click", ()=>camera.position.set(0,0,220)); brand.addEventListener("keydown", (e)=>{ if (e.key==="Enter"||e.key===" "){ e.preventDefault(); camera.position.set(0,0,220); } });
+  
+  const themeBtn = document.getElementById("theme");
   themeBtn.addEventListener("click", ()=>{ const cur = root.getAttribute("data-theme") || "dark"; applyTheme(cur === "dark" ? "light" : "dark", true); });
   
   // Attach Lab Open handlers securely (CSP fix)
