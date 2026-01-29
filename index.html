@@ -52,6 +52,7 @@ a:hover{opacity:0.9}
 .lab-input-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .lab-slider { flex: 1; accent-color: var(--gold); cursor: pointer; height: 32px; }
 .lab-select { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--silver); padding: 12px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.9rem; width: 100%; margin-top: 4px; cursor: pointer; }
+.lab-text-input { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--silver); padding: 10px; border-radius: 6px; font-family: var(--font-ui); width: 100%; font-size: 0.9rem; }
 .lab-val { font-variant-numeric: tabular-nums; width: 60px; text-align: right; font-size: 0.95rem; color: var(--silver); font-weight: 600; }
 .lab-hint { font-size: 0.75rem; color: var(--silver-dim); font-style: italic; margin-top: -4px; line-height: 1.2; opacity: 0.7; }
 
@@ -151,6 +152,7 @@ font-size:clamp(1.5rem,5.5vw,6.5rem); color:rgba(212,175,55,0.24);text-shadow:0 
 <nav id="nav" aria-label="Primary">
   <button id="brand" type="button" aria-label="Reset View">Anıl Kaya</button>
   <div id="actions">
+    <button class="btn lab-btn" data-type="RISK">Bayesian VaR</button>
     <button class="btn lab-btn" data-type="IV">IV / 2SLS</button>
     <button class="btn lab-btn" data-type="VAR">VAR</button>
     <button class="btn lab-btn" data-type="VECM">VECM</button>
@@ -593,7 +595,11 @@ const MathLab = {
    ========================= */
 const Lab = {
   chartInstances: [],
-  state: { distType: 'normal', distDf: 5, seed: 12345, showCI: false, instRel: 0.8, endog: 0.5, ouMean: 0, ouTheta: 0.5, ouSigma: 0.5, mcmcIter: 2000, bootstrap: false, varNoise: 1, constTerm: 0 },
+  state: { 
+      distType: 'normal', distDf: 5, seed: 12345, showCI: false, instRel: 0.8, endog: 0.5, 
+      ouMean: 0, ouTheta: 0.5, ouSigma: 0.5, mcmcIter: 2000, bootstrap: false, varNoise: 1, constTerm: 0,
+      riskTicker: "SPY", riskAlpha: 0.99, riskMCMC: 2000
+  },
   
   open: (type) => {
     try {
@@ -637,6 +643,7 @@ const Lab = {
     if(type === 'ARDL') Lab.initARDL();
     if(type === 'OU') Lab.initOU();
     if(type === 'MCMC') Lab.initMCMC();
+    if(type === 'RISK') Lab.initRisk();
     
     Lab.renderMath();
   },
@@ -1366,6 +1373,186 @@ const Lab = {
      
      Lab.renderACFPACF(cleanChain, 'mcmcACF', '(Autocorrelation)');
      Lab.renderMath();
+  },
+
+  // --- NEW: BAYESIAN RISK LAB (VaR/CVaR) ---
+  initRisk: () => {
+      const controls = document.getElementById("labControls");
+      const main = document.getElementById("labMain");
+      
+      // Control UI
+      const divTicker = document.createElement("div"); divTicker.className="lab-group";
+      divTicker.innerHTML = `<span class="lab-label">Asset Ticker (Yahoo)</span><input type="text" id="riskTicker" value="${Lab.state.riskTicker}" class="lab-text-input"><div class="lab-hint">e.g. SPY, ^GSPC, AAPL, BTC-USD</div>`;
+      
+      controls.appendChild(divTicker);
+      document.getElementById("riskTicker").addEventListener("change", (e)=>{ Lab.state.riskTicker=e.target.value.toUpperCase(); });
+      
+      controls.appendChild(Lab.generateButton("Fetch & Run MCMC", Lab.updateRisk));
+      controls.appendChild(Lab.createControl("Confidence Level", "riskAlpha", 0.90, 0.99, 0.01, 0.99, "VaR Confidence", v=>{Lab.state.riskAlpha=v;}));
+      controls.appendChild(Lab.createControl("MCMC Iterations", "riskMCMC", 1000, 10000, 1000, 2000, "Simulation steps", v=>{Lab.state.riskMCMC=v;}));
+
+      main.innerHTML = `
+        <div class="lab-spec-container" id="labSpecContainer"></div>
+        <div class="lab-chart-box"><canvas id="riskTrace"></canvas></div>
+        <div class="lab-chart-row">
+           <div class="lab-chart-box"><canvas id="riskDist"></canvas></div>
+           <div class="lab-chart-box" style="display:flex; flex-direction:column; justify-content:center; padding:20px;"><div id="riskMetrics"></div></div>
+        </div>
+      `;
+      // Trigger initial load
+      Lab.updateRisk();
+  },
+
+  updateRisk: async () => {
+      // 1. Data Fetching
+      const ticker = Lab.state.riskTicker;
+      const statusDiv = document.getElementById("labSpecContainer");
+      statusDiv.innerHTML = `<div class="lab-spec-title">Status</div><div class="lab-spec-eq">Fetching ${ticker}...</div>`;
+      
+      let prices = [];
+      try {
+          // Use a public CORS proxy to access Yahoo Finance API
+          const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=2y`;
+          // api.allorigins.win is a reliable CORS proxy for JSON
+          const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+          const res = await fetch(proxy);
+          const data = await res.json();
+          const json = JSON.parse(data.contents);
+          
+          if(!json.chart || !json.chart.result) throw new Error("Invalid API response");
+          const result = json.chart.result[0];
+          prices = result.indicators.quote[0].close.filter(x=>x!=null);
+          
+          if(prices.length < 50) throw new Error("Insufficient data");
+      } catch(e) {
+          console.warn("Fetch failed, using simulation", e);
+          statusDiv.innerHTML = `<div class="lab-spec-title">Warning</div><div class="lab-spec-eq" style="color:#ffbb00">API blocked/failed. Using simulated data.</div>`;
+          // Fallback: Simulate GARCH-like returns
+          let p = 100; prices = [p];
+          for(let i=0; i<500; i++){
+              p *= Math.exp(0.0005 + 0.015 * MathLab.generateRandom('normal', {mean:0, std:1}));
+              prices.push(p);
+          }
+      }
+
+      // 2. Compute Returns
+      let returns = [];
+      for(let i=1; i<prices.length; i++){
+          returns.push(Math.log(prices[i]/prices[i-1]));
+      }
+      
+      // 3. Bayesian MCMC (Student-t fit)
+      // Model: r ~ t(mu, sigma, df)
+      const iter = Lab.state.riskMCMC;
+      let chainMu=[], chainSig=[], chainDf=[];
+      let currMu=0, currSig=0.01, currDf=5; // Inits
+      
+      const logLik = (mu, sig, df, data) => {
+          if(sig<=0 || df<=2) return -1e9;
+          const c = MathLab.logGamma((df+1)/2) - MathLab.logGamma(df/2) - 0.5*Math.log(Math.PI*df) - Math.log(sig);
+          let sum=0;
+          for(let r of data){
+              const z = (r - mu)/sig;
+              sum += c - ((df+1)/2) * Math.log(1 + (z*z)/df);
+          }
+          return sum;
+      };
+      
+      let currLL = logLik(currMu, currSig, currDf, returns);
+      
+      for(let i=0; i<iter; i++){
+          // Propose
+          let propMu = currMu + MathLab.generateRandom('normal',{mean:0, std:0.001});
+          let propSig = currSig + MathLab.generateRandom('normal',{mean:0, std:0.001});
+          let propDf = currDf + MathLab.generateRandom('normal',{mean:0, std:0.5});
+          
+          let propLL = logLik(propMu, propSig, propDf, returns);
+          if(Math.log(Math.random()) < (propLL - currLL)){
+              currMu=propMu; currSig=propSig; currDf=propDf; currLL=propLL;
+          }
+          if(i > iter*0.2) { // Burn-in
+              chainMu.push(currMu); chainSig.push(currSig); chainDf.push(currDf);
+          }
+      }
+      
+      // 4. Posterior Predictive & Risk Metrics
+      const alpha = Lab.state.riskAlpha;
+      let predictiveSamples = [];
+      // Generate 5 samples per retained chain step
+      for(let i=0; i<chainMu.length; i+=10){ 
+          const mu=chainMu[i], sig=chainSig[i], df=chainDf[i];
+          // Generate t-dist sample: Z = N(0,1) / sqrt(Chi2(df)/df)
+          for(let k=0; k<5; k++){
+             const u = MathLab.generateRandom('normal',{mean:0,std:1});
+             let chi = 0; for(let j=0; j<Math.floor(df); j++) chi += Math.pow(MathLab.generateRandom('normal',{mean:0,std:1}),2);
+             // Approximation for non-integer df, close enough for risk viz
+             const t = u / Math.sqrt(Math.max(0.1, chi)/df); 
+             predictiveSamples.push(mu + sig*t);
+          }
+      }
+      predictiveSamples.sort((a,b)=>a-b);
+      
+      const idx = Math.floor(predictiveSamples.length * (1-alpha));
+      const VaR = -predictiveSamples[idx]; // Loss is positive convention often, but here returns are negative
+      // CVaR: Mean of samples < -VaR
+      let tailSum=0, tailCount=0;
+      for(let r of predictiveSamples){ if(r < -VaR){ tailSum+=r; tailCount++; } }
+      const CVaR = -(tailSum/tailCount);
+
+      // Update UI
+      Lab.updateSpecPanel(
+          `$$ r_t \\sim t_\\nu(\\mu, \\sigma) $$`,
+          `$$ \\text{VaR}_{${(alpha*100).toFixed(0)}\\%} = ${(VaR*100).toFixed(2)}\\%, \\quad \\text{CVaR} = ${(CVaR*100).toFixed(2)}\\% $$`
+      );
+      
+      document.getElementById("riskMetrics").innerHTML = `
+         <div class="diag-head" style="font-size:1rem; margin-bottom:15px;">Posterior Estimates</div>
+         <table class="lab-metrics-table">
+           <tr><td>Parameter</td><td>Mean</td><td>Std Err</td></tr>
+           <tr><td>Mean (μ)</td><td>${(MathLab.mean(chainMu)*100).toFixed(4)}%</td><td>${(Math.sqrt(MathLab.variance(chainMu))*100).toFixed(4)}</td></tr>
+           <tr><td>Vol (σ)</td><td>${(MathLab.mean(chainSig)*100).toFixed(2)}%</td><td>${(Math.sqrt(MathLab.variance(chainSig))*100).toFixed(4)}</td></tr>
+           <tr><td>DoF (ν)</td><td>${MathLab.mean(chainDf).toFixed(1)}</td><td>${Math.sqrt(MathLab.variance(chainDf)).toFixed(2)}</td></tr>
+         </table>
+      `;
+
+      // Charts
+      if(Lab.chartInstances[0]) Lab.chartInstances[0].destroy();
+      Lab.chartInstances[0] = new Chart(document.getElementById("riskTrace").getContext('2d'), {
+         type: 'line',
+         data: { labels: Array.from({length:prices.length},(_,i)=>i), datasets: [{ label: 'Price History', data: prices, borderColor: '#D4AF37', borderWidth:1.5, pointRadius:0 }] },
+         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: `${ticker} Price History`, color:'#fff' } }, scales:{ x:{display:false}, y:{grid:{display:false}} } }
+      });
+
+      // Histogram
+      const bins=40;
+      const minRet = Math.min(...returns), maxRet = Math.max(...returns);
+      const step = (maxRet-minRet)/bins;
+      let hist = new Array(bins).fill(0);
+      returns.forEach(r=>{ let b=Math.floor((r-minRet)/step); if(b>=bins)b=bins-1; hist[b]++; });
+      
+      if(Lab.chartInstances[1]) Lab.chartInstances[1].destroy();
+      Lab.chartInstances[1] = new Chart(document.getElementById("riskDist").getContext('2d'), {
+         type: 'bar',
+         data: { 
+             labels: hist.map((_,i)=>(minRet+i*step).toFixed(3)), 
+             datasets: [
+                 { label: 'Returns', data: hist, backgroundColor: '#7aa6ff' }
+             ] 
+         },
+         options: { 
+             responsive: true, maintainAspectRatio: false, 
+             plugins: { 
+                 title: { display: true, text: 'Return Distribution vs Tail Risk', color:'#fff' },
+                 annotation: {
+                     annotations: {
+                         line1: { type: 'line', xMin: (-VaR-minRet)/step, xMax: (-VaR-minRet)/step, borderColor: 'rgb(255, 99, 132)', borderWidth: 2, label:{content:'VaR', enabled:true} }
+                     }
+                 }
+             }, 
+             scales:{ x:{grid:{display:false}}, y:{display:false} } 
+         }
+      });
+      Lab.renderMath();
   }
 };
 window.Lab = Lab;
