@@ -397,6 +397,35 @@ const MathLab = {
           A[1][0]*v[0] + A[1][1]*v[1]
       ];
   },
+  
+  // Granger Causality F-Test: Tests if Y2 Granger-causes Y1
+  grangerTest: (y1, y2, lags) => {
+    const n = y1.length;
+    // Restricted Model: Y1_t = c + a*Y1_{t-1} + e
+    // Unrestricted Model: Y1_t = c + a*Y1_{t-1} + b*Y2_{t-1} + u
+    let X_r = [], X_u = [], Y = [];
+    for(let t = lags; t < n; t++) {
+      Y.push(y1[t]);
+      let row_r = [1]; // intercept
+      let row_u = [1]; // intercept
+      for(let l = 1; l <= lags; l++) {
+        row_r.push(y1[t-l]);
+        row_u.push(y1[t-l]);
+        row_u.push(y2[t-l]);
+      }
+      X_r.push(row_r);
+      X_u.push(row_u);
+    }
+    const res_r = MathLab.olsMultivariate(Y, X_r);
+    const res_u = MathLab.olsMultivariate(Y, X_u);
+    const rss_r = res_r.ssr;
+    const rss_u = res_u.ssr;
+    const k_r = X_r[0].length;
+    const k_u = X_u[0].length;
+    const nObs = Y.length;
+    const fStat = ((rss_r - rss_u) / (k_u - k_r)) / (rss_u / (nObs - k_u));
+    return Math.max(0, fStat);
+  },
   // Statistics Module
   stats: {
       skewness: (arr) => {
