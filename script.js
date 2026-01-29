@@ -1,6 +1,19 @@
 (function(){
 "use strict";
-// v1.1 Hotfix Force Deploy
+
+/* =========================
+   ERROR HANDLING
+   ========================= */
+function showError(e) {
+    console.error(e);
+    const el = document.getElementById("err");
+    const txt = document.getElementById("errText");
+    if(el && txt) {
+        txt.textContent = e.message || e.toString();
+        el.style.display = "block";
+        el.style.zIndex = "9999";
+    }
+}
 
 /* =========================
    UTILS & HELPERS
@@ -64,13 +77,15 @@ function fbm2(x, y, octaves) {
 }
 function to255(v){ return Math.min(255, Math.max(0, Math.floor(v*255))); }
 function makeCanvasTexture(drawFn, size=512){
-    const canvas = document.createElement("canvas"); canvas.width = size; canvas.height = size;
-    const ctx = canvas.getContext("2d");
-    drawFn(ctx, size);
-    if(window.THREE) {
-        const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace;
-        return tex;
-    }
+    try {
+        const canvas = document.createElement("canvas"); canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        drawFn(ctx, size);
+        if(window.THREE) {
+            const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace;
+            return tex;
+        }
+    } catch(e) { showError("Texture Error: " + e.message); }
 }
 
 /* =========================
@@ -209,7 +224,7 @@ const Visuals = {
 };
 
 /* =========================
-   LAB LOGIC (ALL MODELS)
+   LAB LOGIC
    ========================= */
 const Lab = {
   chartInstances: [],
@@ -221,7 +236,7 @@ const Lab = {
         MathLab.rng = MathLab.sfc32(Lab.state.seed, 1, 1, 1);
         Lab.renderUI(type);
         FocusTrap.activate(modal);
-    } catch(e) { window.alert("Lab Error: "+e.message); }
+    } catch(e) { showError(e); }
   },
   renderUI: (type) => {
       modal.innerHTML = `<div id="modalCard"><div id="modalTop"><div id="modalMeta"><strong>LAB</strong><span>•</span><span>${type}</span></div><button id="close">X</button></div><div id="modalBody"><div class="lab-container"><div class="lab-controls" id="labControls"></div><div class="lab-main" id="labMain"></div></div></div></div>`;
@@ -245,7 +260,7 @@ const Lab = {
      Lab.chartInstances.push(c); return c;
   },
 
-  // 1. IV / 2SLS
+  // LABS (IV, VAR, VECM, ARDL, OU, MCMC, RISK, GBM)
   initIV: () => {
     const c=document.getElementById("labControls"), m=document.getElementById("labMain");
     c.appendChild(Lab.uiBtn("Simulate", Lab.updateIV));
@@ -264,16 +279,12 @@ const Lab = {
         x.push(xi); y.push(1 + 1.5*xi + u); z.push(zi);
     }
     const ols = MathLab.ols(x,y);
-    // 2SLS simplified for demo (using fitted x)
     const st1 = MathLab.ols(z,x);
     const xhat = x.map((_,i)=>st1.alpha+st1.beta*z[i]);
-    const st2 = MathLab.ols(xhat,y); // 2SLS estimator
-    
+    const st2 = MathLab.ols(xhat,y); 
     Lab.chart("ivC", 'scatter', {datasets:[{label:'Data',data:x.map((v,i)=>({x:v,y:y[i]})),backgroundColor:'#333'},{label:'OLS',data:[{x:-3,y:ols.alpha+ols.beta*-3},{x:3,y:ols.alpha+ols.beta*3}],type:'line',borderColor:'#f44'},{label:'2SLS',data:[{x:-3,y:st2.alpha+st2.beta*-3},{x:3,y:st2.alpha+st2.beta*3}],type:'line',borderColor:'#4f8',borderWidth:3}]});
     document.getElementById("ivStats").innerHTML = `<div class="diag-card">OLS Beta: ${ols.beta.toFixed(3)}</div><div class="diag-card">2SLS Beta: ${st2.beta.toFixed(3)}</div>`;
   },
-
-  // 2. VAR
   initVAR: () => {
      const c=document.getElementById("labControls"), m=document.getElementById("labMain");
      c.appendChild(Lab.uiBtn("Simulate", Lab.updateVAR));
@@ -290,8 +301,6 @@ const Lab = {
      Lab.chart("varC", 'line', {labels:y1.map((_,i)=>i), datasets:[{label:'Y1',data:y1,borderColor:'#D4AF37'},{label:'Y2',data:y2,borderColor:'#aaa'}]});
      document.getElementById("varStats").innerText = `System simulated with cross-correlation ${varRho}. Granger Test: Valid.`;
   },
-
-  // 3. VECM
   initVECM: () => {
     const c=document.getElementById("labControls"), m=document.getElementById("labMain");
     m.innerHTML = `<div class="lab-chart-box"><canvas id="vecmC"></canvas></div><div class="robustness-box warn" id="vecmStats"></div>`;
@@ -301,16 +310,13 @@ const Lab = {
   updateVECM: () => {
      let y1=[0], y2=[0]; 
      for(let i=1;i<150;i++){ 
-         let u1=Math.random()-0.5; y1.push(y1[i-1]+u1); 
-         y2.push(0.7*y1[i] + (Math.random()-0.5)); // Cointegrated
+         let u1=Math.random()-0.5; y1.push(y1[i-1]+u1); y2.push(0.7*y1[i] + (Math.random()-0.5)); 
      }
      const ols = MathLab.ols(y1, y2);
      const adf = MathLab.adf(ols.resid);
      Lab.chart("vecmC", 'line', {labels:y1.map((_,i)=>i), datasets:[{label:'Y1',data:y1,borderColor:'#aaa'},{label:'Y2',data:y2,borderColor:'#4f8'}]});
      document.getElementById("vecmStats").innerHTML = `Engle-Granger ADF t-stat: <strong>${adf.tStat.toFixed(2)}</strong>. (Crit < -3.0). System is ${adf.tStat<-3?"Cointegrated":"Unknown"}.`;
   },
-
-  // 4. ARDL (Bounds)
   initARDL: () => {
      const c=document.getElementById("labControls"), m=document.getElementById("labMain");
      c.appendChild(Lab.uiBtn("Simulate", Lab.updateARDL));
@@ -318,13 +324,10 @@ const Lab = {
      Lab.updateARDL();
   },
   updateARDL: () => {
-      let y=[0], x=[0];
-      for(let i=1;i<100;i++){ x.push(0.5*x[i-1]+Math.random()); y.push(0.4*y[i-1] + 1.2*x[i] + Math.random()); }
+      let y=[0], x=[0]; for(let i=1;i<100;i++){ x.push(0.5*x[i-1]+Math.random()); y.push(0.4*y[i-1] + 1.2*x[i] + Math.random()); }
       Lab.chart("ardlC", 'line', {labels:y.map((_,i)=>i), datasets:[{label:'Y',data:y,borderColor:'#4f8'},{label:'X',data:x,borderColor:'#777'}]});
       document.getElementById("ardlStats").innerText = "Bounds Test F-statistic: 14.22 (Significant). Cointegration likely.";
   },
-
-  // 5. OU
   initOU: () => { 
       const c=document.getElementById("labControls"), m=document.getElementById("labMain");
       c.appendChild(Lab.uiSlider("Rev", "rev",0.01,0.5,0.01,Lab.state.ouRev,v=>{Lab.state.ouRev=v;Lab.updateOU();}));
@@ -336,8 +339,6 @@ const Lab = {
       for(let i=1;i<200;i++) p.push(p[i-1] + ouRev*(0-p[i-1]) + 0.5*MathLab.generateRandom('normal',{mean:0,std:1}));
       Lab.chart("ouC",'line',{labels:p.map((_,i)=>i),datasets:[{label:'OU',data:p,borderColor:'#f44'}]});
   },
-  
-  // 6. MCMC
   initMCMC: () => {
       const c=document.getElementById("labControls"), m=document.getElementById("labMain");
       c.appendChild(Lab.uiBtn("Run Sampler", Lab.updateMCMC));
@@ -346,19 +347,11 @@ const Lab = {
       Lab.updateMCMC();
   },
   updateMCMC: () => {
-      const {mcmcMean} = Lab.state;
-      let chain=[0], curr=0;
-      const target = x => Math.exp(-0.5*((x-mcmcMean)/2)**2); // Normal(mean, 2)
-      for(let i=0;i<2000;i++){
-          let prop = curr + (Math.random()-0.5)*2;
-          let ratio = target(prop)/target(curr);
-          if(Math.random()<ratio) curr=prop;
-          chain.push(curr);
-      }
+      const {mcmcMean} = Lab.state; let chain=[0], curr=0;
+      const target = x => Math.exp(-0.5*((x-mcmcMean)/2)**2); 
+      for(let i=0;i<2000;i++){ let prop = curr + (Math.random()-0.5)*2; if(Math.random()<target(prop)/target(curr)) curr=prop; chain.push(curr); }
       Lab.chart("mcmcC", 'line', {labels:chain.map((_,i)=>i), datasets:[{label:'Trace',data:chain,borderColor:'#4f8',pointRadius:0}]});
   },
-
-  // 7. RISK
   initRISK: () => {
       const c=document.getElementById("labControls"), m=document.getElementById("labMain");
       c.appendChild(Lab.uiBtn("Calc VaR/ES", Lab.updateRISK));
@@ -367,14 +360,11 @@ const Lab = {
   },
   updateRISK: () => {
       let r=[]; for(let i=0;i<1000;i++) r.push(MathLab.generateRandom('normal',{mean:0,std:1}));
-      r.sort((a,b)=>a-b);
-      const var95 = r[Math.floor(0.05*1000)];
+      r.sort((a,b)=>a-b); const var95 = r[Math.floor(0.05*1000)];
       const es95 = r.slice(0, Math.floor(0.05*1000)).reduce((a,b)=>a+b,0) / (0.05*1000);
       Lab.chart("riskC", 'bar', {labels:r.map((_,i)=>i), datasets:[{label:'Returns',data:r,backgroundColor:'#333'}]});
       document.getElementById("riskRes").innerHTML = `VaR (95%): ${var95.toFixed(2)}<br>Expected Shortfall: ${es95.toFixed(2)}`;
   },
-
-  // 8. GBM
   initGBM: () => {
      const c=document.getElementById("labControls"), m=document.getElementById("labMain");
      c.appendChild(Lab.uiBtn("Simulate", Lab.updateGBM));
@@ -393,7 +383,7 @@ const Lab = {
 window.Lab = Lab;
 
 /* =========================
-   3D ENGINE & INIT
+   3D ENGINE
    ========================= */
 const $ = id => document.getElementById(id);
 const modal = $("modal");
@@ -411,73 +401,73 @@ async function openArticle(a){
         modal.innerHTML = `<div id="modalCard"><div id="modalTop"><div>${a.title}</div><button id="closeBtn">X</button></div><div id="modalBody" class="article-content">${sanitizeHTML(t)}</div></div>`;
         document.getElementById("closeBtn").addEventListener("click", closeModal);
         if(window.renderMathInElement) window.renderMathInElement(modal);
+        FocusTrap.activate(modal);
     } catch(e){ modal.innerHTML="Error loading article."; }
 }
 
 if(window.THREE) {
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 1, 1000); camera.position.z=250;
-    const renderer = new THREE.WebGLRenderer({canvas:$("gl"), antialias:true});
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    try {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 1, 1000); camera.position.z=250;
+        const renderer = new THREE.WebGLRenderer({canvas:$("gl"), antialias:true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Textures
-    const texs = {
-        earth: makeCanvasTexture(Visuals.drawEarth),
-        moon: makeCanvasTexture(Visuals.drawMoon),
-        mars: makeCanvasTexture(Visuals.drawMars),
-        venus: makeCanvasTexture(Visuals.drawVenus),
-        gbm: makeCanvasTexture(Visuals.drawGBM),
-        mc: makeCanvasTexture(Visuals.drawMC)
-    };
+        const texs = {
+            earth: makeCanvasTexture(Visuals.drawEarth),
+            moon: makeCanvasTexture(Visuals.drawMoon),
+            mars: makeCanvasTexture(Visuals.drawMars),
+            venus: makeCanvasTexture(Visuals.drawVenus),
+            gbm: makeCanvasTexture(Visuals.drawGBM),
+            mc: makeCanvasTexture(Visuals.drawMC)
+        };
 
-    // Planets
-    const grp = new THREE.Group(); scene.add(grp);
-    const mkP = (tex, x, sz, data) => { 
-        const m = new THREE.Mesh(new THREE.SphereGeometry(sz,32,32), new THREE.MeshBasicMaterial({map:tex})); 
-        m.position.x = x; m.userData={article:data}; grp.add(m); 
-    };
-    mkP(texs.earth, 0, 30, { title: "About Me", file: "articles/about.html" });
-    mkP(texs.mars, 80, 20, { title: "IV Lab", file: "#IV", category: "Lab" });
-    mkP(texs.venus, -80, 22, { title: "VECM Lab", file: "#VECM", category: "Lab" });
-    mkP(texs.gbm, 140, 18, { title: "GBM Lab", file: "#GBM", category: "Lab" });
-    mkP(texs.mc, -140, 18, { title: "Risk Lab", file: "#RISK", category: "Lab" });
-    mkP(texs.moon, 40, 8, { title: "Research", file: "articles/research.html" });
+        const grp = new THREE.Group(); scene.add(grp);
+        const mkP = (tex, x, sz, data) => { 
+            const m = new THREE.Mesh(new THREE.SphereGeometry(sz,32,32), new THREE.MeshBasicMaterial({map:tex})); 
+            m.position.x = x; m.userData={article:data}; grp.add(m); 
+        };
+        mkP(texs.earth, 0, 30, { title: "About Me", file: "articles/about.html" });
+        mkP(texs.mars, 80, 20, { title: "IV Lab", file: "#IV", category: "Lab" });
+        mkP(texs.venus, -80, 22, { title: "VECM Lab", file: "#VECM", category: "Lab" });
+        mkP(texs.gbm, 140, 18, { title: "GBM Lab", file: "#GBM", category: "Lab" });
+        mkP(texs.mc, -140, 18, { title: "Risk Lab", file: "#RISK", category: "Lab" });
+        mkP(texs.moon, 40, 8, { title: "Research", file: "articles/research.html" });
 
-    // Stars
-    const sG = new THREE.BufferGeometry();
-    const sP = []; for(let i=0;i<2000;i++) sP.push((Math.random()-0.5)*800, (Math.random()-0.5)*800, (Math.random()-0.5)*500);
-    sG.setAttribute('position', new THREE.Float32BufferAttribute(sP, 3));
-    scene.add(new THREE.Points(sG, new THREE.PointsMaterial({color:0xffffff, size:1.5})));
+        const sG = new THREE.BufferGeometry();
+        const sP = []; for(let i=0;i<2000;i++) sP.push((Math.random()-0.5)*800, (Math.random()-0.5)*800, (Math.random()-0.5)*500);
+        sG.setAttribute('position', new THREE.Float32BufferAttribute(sP, 3));
+        scene.add(new THREE.Points(sG, new THREE.PointsMaterial({color:0xffffff, size:1.5})));
 
-    // Interaction
-    const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
-    window.addEventListener("click", e => {
-        ptr.x = (e.clientX/window.innerWidth)*2-1; ptr.y = -(e.clientY/window.innerHeight)*2+1;
-        ray.setFromCamera(ptr, camera);
-        const hits = ray.intersectObjects(grp.children);
-        if(hits.length){ const d=hits[0].object.userData.article; if(d.file.startsWith("#")) Lab.open(d.file.substring(1)); else openArticle(d); }
-    });
-    
-    // Mouse Glow
-    window.addEventListener("mousemove", e => {
-        document.querySelectorAll(".glass-panel").forEach(p => {
-           const r=p.getBoundingClientRect(); p.style.setProperty("--mouse-x", (e.clientX-r.left)+"px"); p.style.setProperty("--mouse-y", (e.clientY-r.top)+"px");
+        const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+        window.addEventListener("click", e => {
+            ptr.x = (e.clientX/window.innerWidth)*2-1; ptr.y = -(e.clientY/window.innerHeight)*2+1;
+            ray.setFromCamera(ptr, camera);
+            const hits = ray.intersectObjects(grp.children);
+            if(hits.length){ const d=hits[0].object.userData.article; if(d.file.startsWith("#")) Lab.open(d.file.substring(1)); else openArticle(d); }
         });
-        grp.rotation.y = e.clientX * 0.0005; 
-        grp.rotation.x = e.clientY * 0.0005;
-    });
+        
+        window.addEventListener("mousemove", e => {
+            document.querySelectorAll(".glass-panel").forEach(p => {
+               const r=p.getBoundingClientRect(); p.style.setProperty("--mouse-x", (e.clientX-r.left)+"px"); p.style.setProperty("--mouse-y", (e.clientY-r.top)+"px");
+            });
+            grp.rotation.y = e.clientX * 0.0005; 
+            grp.rotation.x = e.clientY * 0.0005;
+        });
 
-    // Equations
-    const eqL = $("eqLayer");
-    if(eqL && window.katex) {
-        const eqs=["E=mc^2", "\\beta = (X'X)^{-1}X'y", "i\\hbar\\frac{\\partial}{\\partial t}\\psi = \\hat{H}\\psi", "e^{i\\pi}+1=0", "\\nabla \\cdot B = 0", "\\mathcal{L}(\\theta|X)"];
-        eqs.forEach(tex=>{ const d=document.createElement("div"); d.className="eq"; d.style.position="absolute"; d.style.left=Math.random()*100+"vw"; d.style.top=Math.random()*100+"vh"; d.innerHTML=katex.renderToString(tex,{displayMode:true}); eqL.appendChild(d); });
-    }
+        const eqL = $("eqLayer");
+        if(eqL && window.katex) {
+            const eqs=["E=mc^2", "\\beta = (X'X)^{-1}X'y", "i\\hbar\\frac{\\partial}{\\partial t}\\psi = \\hat{H}\\psi", "e^{i\\pi}+1=0", "\\nabla \\cdot B = 0", "\\mathcal{L}(\\theta|X)"];
+            eqs.forEach(tex=>{ const d=document.createElement("div"); d.className="eq"; d.style.position="absolute"; d.style.left=Math.random()*100+"vw"; d.style.top=Math.random()*100+"vh"; d.innerHTML=katex.renderToString(tex,{displayMode:true}); eqL.appendChild(d); });
+        }
 
-    const animate = () => { requestAnimationFrame(animate); renderer.render(scene, camera); };
-    animate();
+        const animate = () => { requestAnimationFrame(animate); renderer.render(scene, camera); };
+        animate();
+    } catch(e) { showError("3D Init Error: " + e.message); }
+} else {
+    showError("WebGL (Three.js) failed to load.");
 }
 
 // Global Event Listeners
 document.querySelectorAll(".lab-btn").forEach(b => b.addEventListener("click", () => Lab.open(b.getAttribute("data-type"))));
 
+})();
