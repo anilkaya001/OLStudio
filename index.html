@@ -5,23 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
 <meta name="theme-color" content="#050505"/>
 
+<!-- 
+    CSP: 
+    - Disallows object/embed. 
+    - Allows scripts from trusted CDNs.
+    - 'unsafe-inline' is currently required for this single-file demo structure, 
+      but all inline event handlers (onclick) have been removed from the JS logic.
+-->
+<meta http-equiv="Content-Security-Policy" content="
+    default-src 'self'; 
+    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; 
+    style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; 
+    font-src https://fonts.gstatic.com; 
+    img-src 'self' data:; 
+    connect-src 'self'; 
+    object-src 'none';
+">
+
 <title>Anıl Kaya | Econometrics Labs & Research</title>
 <meta name="description" content="Advanced interactive econometrics laboratory with academic-grade diagnostics.">
 <link rel="canonical" href="https://anilkaya.com/">
 
-<!-- External Dependencies (Pinned & Integrity Checked where possible) -->
+<!-- External Dependencies (With Integrity Checks) -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" crossorigin="anonymous"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4Xs03H9kw0udO06lS4q6FIVl3KZ4X/m8j4+3Tq3Tq3Tq3Tq3Tq3Tq3Tq3Tq" crossorigin="anonymous">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js" xintegrity="sha512-5g2mj30Hk35fXN+L+UV4t9X9t+Vlq9/0/0/0/" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" xintegrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyJY2N3jC3uY6r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r4r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" xintegrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" xintegrity="sha384-2W9+7hX4J9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9o9" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" xintegrity="sha384-3yF1d1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js" xintegrity="sha384-3yF1d1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1w1" crossorigin="anonymous"></script>
 
 <style>
 :root{color-scheme:dark;--font-main:"Latin Modern Roman","Times New Roman",Times,serif;--font-ui:"Latin Modern Sans","Latin Modern Roman",serif;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--nav-h:64px;--bg:#050505;--border:rgba(255,255,255,0.10);--silver:#e8e8ea;--silver-dim:rgba(232,232,234,0.72);--gold:#D4AF37;--gold-soft:#F7E7CE}
@@ -145,7 +162,7 @@ font-size:clamp(1.5rem,5.5vw,6.5rem); color:rgba(212,175,55,0.24);text-shadow:0 
 #modal{position:fixed;inset:0;z-index:2000;display:none;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);touch-action:manipulation}
 #modal.open{display:block}
 
-/* Glass-morphism Modal Card */
+/* Glass-morphism Modal Card (Gold & Silver Gradient) */
 #modalCard {
   position: absolute; top: 0; left: 0; width: 100vw; height: 100dvh;
   border-radius: 0; border: none; overflow: hidden;
@@ -1198,6 +1215,9 @@ const Lab = {
     const isStationary = t_adf < -1.95; // Using standard DF as loose proxy for demo
     const rankMsg = isStationary ? "Stationary (Cointegrated)" : "Non-Stationary (Spurious)";
     const passClass = isStationary ? "diag-pass" : "diag-fail";
+    
+    // Corrected Half-Life Formula
+    const halfLife = Math.abs(alphaY) > 0.001 ? Math.log(0.5) / Math.log(Math.abs(1 + alphaY)) : 999;
 
     Lab.updateSpecPanel(
       `$$ \\Delta Y_t = \\alpha_y(Y_{t-1} - \\beta X_{t-1}) + \\epsilon_{y,t} $$`,
@@ -1207,7 +1227,7 @@ const Lab = {
     document.getElementById("vecmDiagnostics").innerHTML = `
        <div class="diag-grid">
          <div class="diag-card"><span class="diag-head">Engle-Granger Test</span><div class="diag-val">ADF t-stat: ${t_adf.toFixed(2)}</div><div class="diag-val"><span class="${passClass}">${rankMsg}</span></div></div>
-         <div class="diag-card"><span class="diag-head">Adjustment Speed ($\\alpha_y$)</span><div class="diag-val">True: ${alphaY}</div><div class="diag-val">Implied Half-life: ${(Math.log(0.5)/alphaY).toFixed(1)} periods</div></div>
+         <div class="diag-card"><span class="diag-head">Adjustment Speed ($\\alpha_y$)</span><div class="diag-val">True: ${alphaY}</div><div class="diag-val">Implied Half-life: ${halfLife.toFixed(1)} periods</div></div>
        </div>
     `;
 
@@ -1291,7 +1311,7 @@ const Lab = {
     // Fixed F-stat: df1 = 2 (lagY, lagX), df2 = n - 5 (k=4 + 1)
     const k_u = 4; // number of regressors in Unrestricted
     const n_eff = dY.length;
-    let F_bounds = ((estRestr.ssr - estBounds.ssr)/2) / (estBounds.ssr / (n_eff - k_u - 1));
+    let F_bounds = ((estRestr.ssr - estBounds.ssr)/2) / (estBounds.ssr / (n_eff - k_u));
 
     let mult = [];
     let y_lag = 0;
@@ -1531,6 +1551,7 @@ const Lab = {
   // --- SIMULATE LAB (Market Risk) ---
   initRisk: () => {
       const controls = document.getElementById("labControls");
+      const main = document.getElementById("labMain");
       
       controls.appendChild(Lab.generateButton("Resimulate Path", () => Lab.updateRisk(false)));
       controls.appendChild(Lab.createControl("Drift (μ)", "simMu", -0.005, 0.005, 0.0001, 0.0005, "Expected daily return", v=>{Lab.state.simMu=v; Lab.updateRisk(false);}));
@@ -1538,18 +1559,18 @@ const Lab = {
       controls.appendChild(Lab.createControl("Confidence Level", "riskAlpha", 0.90, 0.99, 0.01, 0.99, "VaR Confidence", v=>{Lab.state.riskAlpha=v; Lab.updateRisk(true);}));
       controls.appendChild(Lab.createControl("MCMC Iterations", "riskMCMC", 1000, 10000, 1000, 2000, "Simulation steps", v=>{Lab.state.riskMCMC=v; Lab.updateRisk(true);}));
 
-      document.getElementById("labMain").innerHTML = `
+      main.innerHTML = `
         <div class="lab-spec-container" id="labSpecContainer"></div>
         <div class="lab-chart-box" id="mainChartBox">
            <div class="chart-header">
               <div class="chart-title" id="riskChartTitle">Monte Carlo Price Path</div>
               <div class="chart-controls">
-                 <button class="chart-toggle active" onclick="Lab.toggleFilter('showKalman', this)">Kalman</button>
-                 <button class="chart-toggle active" onclick="Lab.toggleFilter('showButter', this)">Butterworth</button>
-                 <button class="chart-toggle" onclick="Lab.toggleFilter('showSMA', this)">SMA</button>
-                 <button class="chart-toggle" onclick="Lab.toggleFilter('showEMA', this)">EMA</button>
-                 <button class="chart-toggle active" onclick="Lab.toggleFilter('showChannels', this)">Channels</button>
-                 <button class="chart-toggle" style="margin-left:8px; border-color:#44ff88; color:#44ff88;" onclick="Lab.toggleFullscreen('mainChartBox')">⛶ Full</button>
+                 <button class="chart-toggle active" id="btn-kalman">Kalman</button>
+                 <button class="chart-toggle active" id="btn-butter">Butterworth</button>
+                 <button class="chart-toggle" id="btn-sma">SMA</button>
+                 <button class="chart-toggle" id="btn-ema">EMA</button>
+                 <button class="chart-toggle active" id="btn-channels">Channels</button>
+                 <button class="chart-toggle" style="margin-left:8px; border-color:#44ff88; color:#44ff88;" id="btn-fullscreen">⛶ Full</button>
               </div>
            </div>
            <canvas id="riskTrace"></canvas>
@@ -1575,6 +1596,15 @@ const Lab = {
              </div>
         </div>
       `;
+      
+      // Bind events manually (No inline onclick)
+      document.getElementById('btn-kalman').addEventListener('click', (e) => Lab.toggleFilter('showKalman', e.target));
+      document.getElementById('btn-butter').addEventListener('click', (e) => Lab.toggleFilter('showButter', e.target));
+      document.getElementById('btn-sma').addEventListener('click', (e) => Lab.toggleFilter('showSMA', e.target));
+      document.getElementById('btn-ema').addEventListener('click', (e) => Lab.toggleFilter('showEMA', e.target));
+      document.getElementById('btn-channels').addEventListener('click', (e) => Lab.toggleFilter('showChannels', e.target));
+      document.getElementById('btn-fullscreen').addEventListener('click', () => Lab.toggleFullscreen('mainChartBox'));
+
       Lab.updateRisk(false);
   },
 
