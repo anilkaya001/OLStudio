@@ -9,17 +9,17 @@
 <meta name="description" content="Advanced interactive econometrics laboratory with academic-grade diagnostics.">
 <link rel="canonical" href="https://anilkaya.com/">
 
-<!-- Dependencies (Pinned Versions) -->
+<!-- Dependencies -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" crossorigin="anonymous"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous" integrity="sha512-fHwaWebuwA7NSF5Qg/af4UeDx9XqUpYpOGgubo3yWu+b2IQR4UeQwbb42Ti7gVAjNtVoI/I9TEoYeu9omwcC6g==">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="style.css">
 
-<!-- Scripts (data-cfasync="false" prevents Cloudflare Rocket Loader from breaking them) -->
-<script data-cfasync="false" src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js" integrity="sha512-5g2Nj30/kCN4dbnJOzhINyYe8M9LEkqX7999y7J9VUAjdeHg3hIycI1sujPfJQ7Iq1uV6n1+ybHGRlqL6GvVAg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script data-cfasync="false" src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script data-cfasync="false" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous" integrity="sha512-LQNxIMR5rXv7o+b1l8+N1EZMfhG7iFZ9HhnbJkTp4zjNr5Wvst75AqUeFDxeRUa7l5vEDyUiAip//r+EFLLCyA=="></script>
-<script data-cfasync="false" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous" integrity="sha512-iWiuBS5nt6r60fCz26Nd0Zqe0nbk1ZTIQbl3Kv7kYsX+yKMUFHzjaH2+AnM6vp2Xs+gNmaBAVWJjSmuPw76Efg=="></script>
+<!-- Scripts (no SRI to avoid Cloudflare proxy hash mismatch) -->
+<script data-cfasync="false" src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script data-cfasync="false" src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script data-cfasync="false" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script data-cfasync="false" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script data-cfasync="false" src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
 <script data-cfasync="false" src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 <script data-cfasync="false" src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js" crossorigin="anonymous"></script>
@@ -48,7 +48,9 @@
 <div id="depthName" aria-hidden="true">In Oeconometrica Confidimus</div>
 <div id="eqLayer" aria-hidden="true"></div>
 
+<!-- Modal with close button always present -->
 <div id="modal" role="dialog" aria-modal="true" aria-label="Content reader">
+  <button id="close" style="display:none;">X</button>
   <div id="react-app"></div>
 </div>
 

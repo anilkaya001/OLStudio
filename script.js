@@ -390,7 +390,8 @@ const modal = $("modal");
 let modalJustOpenedAt = 0;
 function closeModal(){ modal.classList.remove("open"); FocusTrap.deactivate(modal); }
 modal.addEventListener("click", e=>{ if(performance.now()-modalJustOpenedAt>200 && e.target===modal) closeModal(); });
-document.getElementById("close").addEventListener("click", closeModal);
+const closeBtn = document.getElementById("close");
+if(closeBtn) closeBtn.addEventListener("click", closeModal);
 
 async function openArticle(a){
     modalJustOpenedAt = performance.now();
