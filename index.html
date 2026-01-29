@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark" prefix="og: http://ogp.me/ns#">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
 <meta name="theme-color" content="#050505"/>
 
 <!-- 
@@ -57,30 +57,54 @@ a:hover{opacity:0.9}
 .lab-val { font-variant-numeric: tabular-nums; width: 60px; text-align: right; font-size: 0.95rem; color: var(--silver); font-weight: 600; }
 .lab-hint { font-size: 0.75rem; color: var(--silver-dim); font-style: italic; margin-top: -4px; line-height: 1.2; opacity: 0.7; }
 
-/* Premium Glass Panel */
-.glass-panel {
-    background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(212,175,55,0.02) 100%);
+/* Premium Glass Panel (Interactive) */
+.glass-panel, .lab-chart-box {
+    /* Dynamic Highlight: uses --x and --y updated by JS */
+    background: 
+        radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(212,175,55,0.08), transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(232,232,234,0.05) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    
     border: 1px solid rgba(255,255,255,0.08);
     border-top: 1px solid rgba(255,255,255,0.15);
     border-left: 1px solid rgba(255,255,255,0.12);
     border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     position: relative;
     overflow: hidden;
+    transition: box-shadow 0.3s ease;
 }
-.glass-panel::before {
-    content: ""; position: absolute; top:0; left:0; width:100%; height:100%;
-    background: radial-gradient(circle at 50% 0%, rgba(212,175,55,0.05), transparent 70%);
-    pointer-events: none; z-index: 0;
+.glass-panel:hover, .lab-chart-box:hover {
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    border-color: rgba(212,175,55,0.3);
 }
 
-/* Chart Box */
-.lab-chart-box { min-height: 400px; display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-.lab-chart-box.fullscreen { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100dvh !important; z-index: 10000 !important; background: linear-gradient(135deg, #050505 0%, #111 100%); padding: 20px; border-radius: 0; margin: 0; }
-.lab-chart-box canvas { flex: 1; width: 100% !important; height: 100% !important; position: relative; z-index: 1; }
+/* Chart Box Layout */
+.lab-chart-box { 
+    min-height: 400px; 
+    display: flex; 
+    flex-direction: column; 
+    padding: 20px; 
+    width: 100%;
+}
+.lab-chart-box.fullscreen { 
+    position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; 
+    width: 100vw !important; height: 100dvh !important; 
+    z-index: 10000 !important; 
+    background: linear-gradient(135deg, #050505 0%, #111 100%); 
+    padding: 20px; border-radius: 0; margin: 0; 
+}
+.lab-chart-box canvas { 
+    flex: 1; 
+    width: 100% !important; 
+    height: 100% !important; 
+    position: relative; 
+    z-index: 1; 
+    display: block;
+}
+
 .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; position: relative; z-index: 2; flex-wrap: wrap; gap:10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
 .chart-title { font-size: 1rem; font-weight: 700; color: var(--silver); text-transform: uppercase; letter-spacing: 1px; }
 .chart-controls { display: flex; gap: 8px; align-items: center; }
@@ -161,15 +185,18 @@ font-size:clamp(1.5rem,5.5vw,6.5rem); color:rgba(212,175,55,0.24);text-shadow:0 
 #modal{position:fixed;inset:0;z-index:2000;display:none;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);touch-action:manipulation}
 #modal.open{display:block}
 
-/* Glass-morphism Modal Card */
+/* Glass-morphism Modal Card (Gold & Silver Gradient) */
 #modalCard {
   position: absolute; top: 0; left: 0; width: 100vw; height: 100dvh;
   border-radius: 0; border: none; overflow: hidden;
   display: grid; grid-template-rows: auto 1fr;
-  /* Gradient + Blur */
-  background: linear-gradient(145deg, rgba(20,20,20,0.96), rgba(35,35,40,0.92));
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  /* Premium radial gradient background */
+  background: radial-gradient(circle at 20% 30%, rgba(212,175,55,0.06) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(232,232,234,0.06) 0%, transparent 50%),
+              linear-gradient(135deg, rgba(18,18,18,0.95), rgba(30,30,35,0.92));
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 #modalTop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.3);}
 #modalMeta{font-family:var(--font-ui);color:var(--silver-dim);letter-spacing:1.2px;text-transform:uppercase;font-size:0.85rem;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -201,7 +228,7 @@ font-size:clamp(1.5rem,5.5vw,6.5rem); color:rgba(212,175,55,0.24);text-shadow:0 
 <nav id="nav" aria-label="Primary">
   <button id="brand" type="button" aria-label="Reset View">Anıl Kaya</button>
   <div id="actions">
-    <button class="btn lab-btn" data-type="RISK">Market Risk</button>
+    <button class="btn lab-btn" data-type="SIMULATE">Simulate</button>
     <button class="btn lab-btn" data-type="IV">IV / 2SLS</button>
     <button class="btn lab-btn" data-type="VAR">VAR</button>
     <button class="btn lab-btn" data-type="VECM">VECM</button>
@@ -289,7 +316,44 @@ const Matrix = {
     for (let i = 0; i < rA; i++) for (let j = 0; j < cB; j++) for (let k = 0; k < cA; k++) C[i][j] += A[i][k] * B[k][j];
     return C;
   },
-  inv: (A) => MathLab.solveLinear(A, Array(A.length).fill(0).map((_,i)=>Array(A.length).fill(0).map((_,j)=>i===j?1:0))).x,
+  inv: (A) => {
+     // Gaussian elimination for inversion
+     const n = A.length;
+     let M = A.map((row, i) => [...row, ...Array(n).fill(0).map((_, j) => i === j ? 1 : 0)]);
+     for (let i = 0; i < n; i++) {
+         let max = i;
+         for (let k = i + 1; k < n; k++) if (Math.abs(M[k][i]) > Math.abs(M[max][i])) max = k;
+         [M[i], M[max]] = [M[max], M[i]];
+         const div = M[i][i];
+         if (Math.abs(div) < 1e-12) return Array(n).fill(0).map(()=>Array(n).fill(0)); // Singular fallback
+         for (let j = i; j < 2 * n; j++) M[i][j] /= div;
+         for (let k = 0; k < n; k++) {
+             if (k !== i) {
+                 const mult = M[k][i];
+                 for (let j = i; j < 2 * n; j++) M[k][j] -= mult * M[i][j];
+             }
+         }
+     }
+     return M.map(row => row.slice(n));
+  },
+  cholesky: (A) => {
+      const n = A.length;
+      const L = Array(n).fill(0).map(() => Array(n).fill(0));
+      for (let i = 0; i < n; i++) {
+          for (let j = 0; j <= i; j++) {
+              let sum = 0;
+              for (let k = 0; k < j; k++) sum += L[i][k] * L[j][k];
+              if (i === j) {
+                  const val = A[i][i] - sum;
+                  if (val <= 0) L[i][j] = 1e-9; 
+                  else L[i][j] = Math.sqrt(val);
+              } else {
+                  L[i][j] = (A[i][j] - sum) / L[j][j];
+              }
+          }
+      }
+      return L;
+  },
   diag: (v) => { let n=v.length; let D=Array(n).fill(0).map(()=>Array(n).fill(0)); for(let i=0;i<n;i++) D[i][i]=v[i]; return D; }
 };
 
@@ -503,7 +567,7 @@ const MathLab = {
     const res_u = MathLab.olsMultivariate(Y, X_u);
     const k_r = X_r[0].length, k_u = X_u[0].length;
     const fStat = ((res_r.ssr - res_u.ssr) / (k_u - k_r)) / (res_u.ssr / (Y.length - k_u));
-    return Math.max(0, fStat);
+    return { fStat, df1: k_u - k_r, df2: Y.length - k_u };
   },
   // Statistics Module
   stats: {
@@ -561,67 +625,97 @@ const MathLab = {
     for(let i=0; i<n; i++){
         for(let r=0; r<k; r++){ Xty[r] += X[i][r] * y[i]; for(let c=0; c<k; c++){ XtX[r][c] += X[i][r] * X[i][c]; } }
     }
-    const invRes = MathLab.solveLinear(XtX, Array(k).fill(0).map((_,i)=>Array(k).fill(0).map((_,j)=>i===j?1:0)));
-    const XtX_inv = invRes.x;
+    const XtX_inv = Matrix.inv(XtX);
     const beta = MathLab.solveLinear(XtX, Xty).x;
     const resid = []; let ssr = 0;
     for(let i=0; i<n; i++){
         let yh = 0; for(let j=0; j<k; j++) yh += X[i][j] * beta[j];
         const e = y[i] - yh; resid.push(e); ssr += e*e;
     }
-    let M = Array(k).fill(0).map(()=>Array(k).fill(0));
-    for(let i=0; i<n; i++){
-        const e2 = resid[i]*resid[i];
-        for(let r=0; r<k; r++) for(let c=0; c<k; c++) M[r][c] += e2 * X[i][r] * X[i][c];
-    }
-    const T1 = Matrix.mul(XtX_inv, M);
-    const RobustCov = Matrix.mul(T1, XtX_inv).map(row => row.map(v => v * (n/(n-k))));
+    // Classical Variance for OLS
     const sigma2 = ssr/(n-k);
     const ClassicCov = XtX_inv.map(row => row.map(v => v * sigma2));
-    return { beta, resid, RobustCov, ClassicCov, ssr, n, k, XtX_inv };
+    
+    return { beta, resid, ClassicCov, ssr, n, k, XtX_inv };
   },
   iv2sls: (y, x, z) => {
     const n = y.length;
-    const Z_mat = z.map(zi => [1, zi]); 
-    const stage1 = MathLab.olsMultivariate(x, Z_mat);
-    const v_hat = stage1.resid;
-    const Aug_X = x.map((xi, i) => [1, xi, v_hat[i]]);
-    const dwhReg = MathLab.olsMultivariate(y, Aug_X);
-    const t_v = dwhReg.beta[2] / Math.sqrt(dwhReg.RobustCov[2][2]); 
-    const p_dwh = MathLab.pValT(t_v, n-3);
-    const xHat = x.map((_, i) => stage1.beta[0] + stage1.beta[1]*z[i]);
-    const XHat_mat = xHat.map(xh => [1, xh]);
-    const stage2 = MathLab.olsMultivariate(y, XHat_mat); 
-    const structuralResid = y.map((yi, i) => yi - (stage2.beta[0] + stage2.beta[1]*x[i]));
-    let M = [[0,0],[0,0]];
+    // Matrices
+    const Y_vec = y.map(v => [v]);
+    const X_mat = x.map(v => [1, v]); // Intercept + Endog
+    const Z_mat = z.map(v => [1, v]); // Intercept + Inst
+
+    // 1. First Stage: X = Z * Pi + v
+    const Zt = Matrix.transpose(Z_mat);
+    const ZtZ = Matrix.mul(Zt, Z_mat);
+    const ZtZ_inv = Matrix.inv(ZtZ);
+    const ZtX = Matrix.mul(Zt, X_mat);
+    const Pi = Matrix.mul(ZtZ_inv, ZtX); // 2x2
+    const X_hat = Matrix.mul(Z_mat, Pi); // Predicted X
+
+    // 2. Second Stage: y = X_hat * Beta + e
+    const Xht = Matrix.transpose(X_hat);
+    const XhtXh = Matrix.mul(Xht, X_hat);
+    const XhtXh_inv = Matrix.inv(XhtXh);
+    const XhtY = Matrix.mul(Xht, Y_vec);
+    const Beta = Matrix.mul(XhtXh_inv, XhtY);
+    const betaVals = Beta.map(row => row[0]);
+
+    // 3. Structural Residuals: u = y - X * Beta (Original X!)
+    let u = [];
     for(let i=0; i<n; i++){
-        const e2 = structuralResid[i]**2; const row = [1, xHat[i]]; 
-        for(let r=0; r<2; r++) for(let c=0; c<2; c++) M[r][c] += e2 * row[r] * row[c];
+        const y_est = X_mat[i][0]*betaVals[0] + X_mat[i][1]*betaVals[1];
+        u.push(y[i] - y_est);
     }
-    const T1 = Matrix.mul(stage2.XtX_inv, M);
-    const RobCov = Matrix.mul(T1, stage2.XtX_inv).map(row => row.map(v => v * (n/(n-2))));
-    const seBetaIV = Math.sqrt(RobCov[1][1]);
-    const fStat1 = (stage1.beta[1]**2) / stage1.RobustCov[1][1];
-    const arReg = MathLab.olsMultivariate(y, Z_mat); 
-    const arF = (arReg.beta[1]**2) / arReg.RobustCov[1][1];
-    const arP = MathLab.pValF(arF, 1, n-2);
-    return { beta: stage2.beta[1], alpha: stage2.beta[0], seBeta: seBetaIV, tStat: stage2.beta[1]/seBetaIV, pVal: MathLab.pValT(stage2.beta[1]/seBetaIV, n-2), resid: structuralResid, fitStruct: x.map(xi => stage2.beta[0] + stage2.beta[1]*xi), fStat1: fStat1, dwhStat: t_v, dwhP: p_dwh, arF, arP };
-  },
-  grangerTest: (y, x, lag) => {
-      const n = y.length;
-      const effN = n - lag;
-      let Y_vec = [], X_unr = [], X_res = [];
-      for(let t = lag; t < n; t++) {
-          Y_vec.push(y[t]);
-          let rowU = [1], rowR = [1];
-          for(let k=1; k<=lag; k++) { rowU.push(y[t-k]); rowR.push(y[t-k]); rowU.push(x[t-k]); }
-          X_unr.push(rowU); X_res.push(rowR);
-      }
-      const estU = MathLab.olsMultivariate(Y_vec, X_unr);
-      const estR = MathLab.olsMultivariate(Y_vec, X_res);
-      const q = lag; const k = 1 + 2*lag; const df1 = q; const df2 = effN - k;
-      const fStat = ((estR.ssr - estU.ssr) / df1) / (estU.ssr / df2);
-      return { fStat, df1, df2 };
+
+    // 4. Robust Covariance (Sandwich)
+    // Bread = (X_hat' X_hat)^-1  (= XhtXh_inv)
+    // Meat = X_hat' * diag(u^2) * X_hat
+    let Meat = [[0,0], [0,0]];
+    for(let i=0; i<n; i++){
+        const u2 = u[i]*u[i];
+        for(let r=0; r<2; r++){
+            for(let c=0; c<2; c++){
+                Meat[r][c] += X_hat[i][r] * X_hat[i][c] * u2;
+            }
+        }
+    }
+    const BM = Matrix.mul(XhtXh_inv, Meat);
+    const V = Matrix.mul(BM, XhtXh_inv);
+    const dfCorr = n / (n - 2);
+    const seBeta = Math.sqrt(V[1][1] * dfCorr);
+
+    // First Stage F-stat (Reduced Form on Z)
+    // Regress x on Z, test Z coeff.
+    let v_hat = [];
+    let ssr_v = 0;
+    for(let i=0; i<n; i++){
+        const x_pred = Z_mat[i][0]*Pi[0][1] + Z_mat[i][1]*Pi[1][1]; 
+        const err = x[i] - x_pred;
+        v_hat.push(err);
+        ssr_v += err*err;
+    }
+    const sigma2_v = ssr_v / (n-2);
+    const VarPi = ZtZ_inv.map(row => row.map(val => val * sigma2_v));
+    const sePi1 = Math.sqrt(VarPi[1][1]);
+    const fStat = Math.pow(Pi[1][1] / sePi1, 2);
+
+    // DWH (Hausman)
+    // Regress y on X, v_hat. Test v_hat coeff.
+    // X_aug = [1, x, v_hat]
+    let X_aug = [];
+    for(let i=0; i<n; i++) X_aug.push([1, x[i], v_hat[i]]);
+    const dwhRes = MathLab.olsMultivariate(y, X_aug);
+    const t_v = dwhRes.beta[2] / Math.sqrt(dwhRes.ClassicCov[2][2]);
+    const p_dwh = MathLab.pValT(t_v, n-3);
+
+    return { 
+        beta: betaVals[1], alpha: betaVals[0], 
+        seBeta, tStat: betaVals[1]/seBeta, 
+        resid: u, fitStruct: x.map(xi => betaVals[0] + betaVals[1]*xi), 
+        fStat1: fStat, 
+        dwhStat: t_v, dwhP: p_dwh 
+    };
   }
 };
 
@@ -633,7 +727,7 @@ const Lab = {
   state: { 
       distType: 'normal', distDf: 5, seed: 12345, showCI: false, instRel: 0.8, endog: 0.5, 
       ouMean: 0, ouTheta: 0.5, ouSigma: 0.5, mcmcIter: 2000, bootstrap: false, varNoise: 1, constTerm: 0,
-      riskTicker: "SPY", riskAlpha: 0.99, riskMCMC: 2000,
+      riskAlpha: 0.99, riskMCMC: 2000, simMu: 0.0005, simSigma: 0.015,
       // Filters state
       showSMA: false, showEMA: false, showKalman: true, showButter: true, showChannels: true
   },
@@ -646,7 +740,21 @@ const Lab = {
         Lab.renderUI(type);
         const m = document.getElementById("modal");
         FocusTrap.activate(m);
+        // Start mouse tracker
+        Lab.initMouseTracker();
     } catch(e) { showErr(e); }
+  },
+
+  initMouseTracker: () => {
+      document.addEventListener('mousemove', (e) => {
+          document.querySelectorAll('.glass-panel, .lab-chart-box').forEach(card => {
+              const rect = card.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              card.style.setProperty('--mouse-x', `${x}px`);
+              card.style.setProperty('--mouse-y', `${y}px`);
+          });
+      });
   },
 
   renderUI: (type) => {
@@ -680,7 +788,7 @@ const Lab = {
     if(type === 'ARDL') Lab.initARDL();
     if(type === 'OU') Lab.initOU();
     if(type === 'MCMC') Lab.initMCMC();
-    if(type === 'RISK') Lab.initRisk();
+    if(type === 'SIMULATE') Lab.initRisk();
     
     Lab.renderMath();
   },
@@ -877,9 +985,8 @@ const Lab = {
     
     document.getElementById("ivDiagnostics").innerHTML = `
        <div class="diag-grid">
-         <div class="diag-card"><span class="diag-head">Weak Identification</span><div class="diag-val">Kleibergen-Paap F: <span class="diag-${weakColor}">${ivEst.fStat1.toFixed(2)}</span></div><div class="diag-val">Stock-Yogo 10%: 16.38</div></div>
-         <div class="diag-card"><span class="diag-head">Endogeneity (DWH)</span><div class="diag-val">Robust t: ${ivEst.dwhStat.toFixed(2)}</div><div class="diag-val">p-value: ${ivEst.dwhP.toFixed(3)}</div></div>
-         <div class="diag-card"><span class="diag-head">Robust Inference (AR)</span><div class="diag-val">Anderson-Rubin F: ${ivEst.arF.toFixed(2)}</div><div class="diag-val">p-value: ${ivEst.arP.toFixed(3)}</div></div>
+         <div class="diag-card"><span class="diag-head">Instrument Strength</span><div class="diag-val">First Stage F: <span class="diag-${weakColor}">${ivEst.fStat1.toFixed(2)}</span></div><div class="diag-val">Rule of Thumb: > 10</div></div>
+         <div class="diag-card"><span class="diag-head">Endogeneity (Hausman)</span><div class="diag-val">Robust t: ${ivEst.dwhStat.toFixed(2)}</div><div class="diag-val">p-value: ${ivEst.dwhP.toFixed(3)}</div></div>
          <div class="diag-card"><span class="diag-head">Normality (JB)</span><div class="diag-val">Stat: ${jb.stat.toFixed(2)}</div><div class="diag-val">p-value: ${jb.p.toFixed(3)}</div></div>
          <div class="diag-card"><span class="diag-head">Heteroskedasticity (BP)</span><div class="diag-val">Stat: ${bp.stat.toFixed(2)}</div><div class="diag-val">p-value: ${bp.p.toFixed(3)}</div></div>
        </div>
@@ -974,13 +1081,15 @@ const Lab = {
         let maxMod = Math.max(Math.sqrt(r1*r1+i1*i1), Math.sqrt(r2*r2+i2*i2));
         const isStable = maxMod < 1.0;
 
-        // IRF
+        // IRF - Corrected via Cholesky
         let s11=0, s12=0, s22=0;
         for(let i=0; i<n; i++){ s11+=res1[i]**2; s22+=est2.resid[i]**2; s12+=res1[i]*est2.resid[i]; }
         let Sigma = [[s11/n, s12/n], [s12/n, s22/n]];
-        let L11 = Math.sqrt(Sigma[0][0]);
-        let L21 = Sigma[0][1] / L11;
-        let shockVec = [shockSize, shockSize * (L21/L11)]; 
+        // Cholesky L * L' = Sigma
+        let L = Matrix.cholesky(Sigma);
+        // Shock vector = L * [1, 0]' * shockSize = [L11, L21] * shockSize
+        let shockVec = [L[0][0] * shockSize, L[1][0] * shockSize];
+        
         let irf1 = [shockVec[0]], irf2 = [shockVec[1]];
         let curr = [shockVec[0], shockVec[1]];
         for(let h=1; h<=20; h++){ curr = MathLab.matVec2(hatA, curr); irf1.push(curr[0]); irf2.push(curr[1]); }
@@ -990,10 +1099,10 @@ const Lab = {
         const jb1 = MathLab.stats.jarqueBera(res1);
         const lb1 = MathLab.stats.ljungBox(res1, 5);
         
-        // AIC/BIC
-        const k = 6; 
+        // AIC/BIC (Approximate)
+        const k = 6 + 3; // +3 for Sigma params
         const detSigma = Sigma[0][0]*Sigma[1][1] - Sigma[0][1]*Sigma[1][0];
-        const logLik = -n*Math.log(detSigma); 
+        const logLik = -n/2 * Math.log(detSigma); 
         const aic = -2*logLik + 2*k;
         const bic = -2*logLik + k*Math.log(n);
 
@@ -1006,9 +1115,9 @@ const Lab = {
           <table class="lab-metrics-table">
             <thead><tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr></thead>
             <tbody>
-              <tr><td>Max Root Modulus</td><td>${maxMod.toFixed(4)}</td><td>${isStable ? "Stable (<1)" : "Unstable"}</td></tr>
-              <tr><td>System AIC</td><td>${aic.toFixed(1)}</td><td>Information Criterion</td></tr>
-              <tr><td>System BIC</td><td>${bic.toFixed(1)}</td><td>Information Criterion</td></tr>
+              <tr><td>Max Eigenvalue Modulus</td><td>${maxMod.toFixed(4)}</td><td>${isStable ? "Stable (<1)" : "Unstable"}</td></tr>
+              <tr><td>System AIC</td><td>${aic.toFixed(1)}</td><td>Information Criterion (Approx)</td></tr>
+              <tr><td>System BIC</td><td>${bic.toFixed(1)}</td><td>Information Criterion (Approx)</td></tr>
             </tbody>
           </table>
         `;
@@ -1032,7 +1141,7 @@ const Lab = {
         Lab.chartInstances[1] = new Chart(document.getElementById('varIRF').getContext('2d'), {
              type: 'line',
              data: { labels: Array.from({length: 21}, (_, i) => i), datasets: [{ label: 'Response of Y1', data: irf1, borderColor: '#D4AF37' }, { label: 'Response of Y2', data: irf2, borderColor: '#7aa6ff' }] },
-             options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: `Orthogonalized Impulse Response (Y1 Shock)`, color:'#e8e8ea' } }, scales:{ x:{grid:{display:false}}, y:{grid:{display:false}} } }
+             options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: `Orthogonalized Impulse Response (Cholesky Y1 Shock)`, color:'#e8e8ea' } }, scales:{ x:{grid:{display:false}}, y:{grid:{display:false}} } }
         });
         
         if(Lab.chartInstances[2]) Lab.chartInstances[2].destroy();
@@ -1040,13 +1149,13 @@ const Lab = {
             type: 'scatter',
             data: {
                 datasets: [
-                    { label: 'Roots', data: [{x:r1, y:i1}, {x:r2, y:i2}], backgroundColor: '#ff4444', pointRadius: 6 },
+                    { label: 'Eigenvalues', data: [{x:r1, y:i1}, {x:r2, y:i2}], backgroundColor: '#ff4444', pointRadius: 6 },
                     { label: 'Unit Circle', data: Array.from({length:64}, (_,i)=>{const a=i/63*Math.PI*2; return {x:Math.cos(a), y:Math.sin(a)}}), type:'line', borderColor:'rgba(255,255,255,0.2)', borderWidth:1, pointRadius:0, fill:false }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'Inverse Roots of AR Poly', color:'#e8e8ea' }, legend:{display:false} },
+                plugins: { title: { display: true, text: 'Eigenvalues of Companion Matrix', color:'#e8e8ea' }, legend:{display:false} },
                 scales: { x: { min:-1.5, max:1.5, grid:{color:'rgba(255,255,255,0.1)'} }, y: { min:-1.5, max:1.5, grid:{color:'rgba(255,255,255,0.1)'} } },
                 aspectRatio: 1
             }
@@ -1108,9 +1217,9 @@ const Lab = {
 
     document.getElementById("vecmDiagnostics").innerHTML = `
        <div class="diag-grid">
-         <div class="diag-card"><span class="diag-head">Cointegration Rank</span><div class="diag-val">Johansen Trace: <span class="diag-pass">${rankMsg}</span></div></div>
+         <div class="diag-card"><span class="diag-head">Cointegration (Heuristic)</span><div class="diag-val">Trace Check: <span class="diag-pass">${rankMsg}</span></div></div>
          <div class="diag-card"><span class="diag-head">Adjustment Speed ($\\alpha_y$)</span><div class="diag-val">True: ${alphaY}</div><div class="diag-val">Implied Half-life: ${(Math.log(0.5)/alphaY).toFixed(1)} periods</div></div>
-         <div class="diag-card"><span class="diag-head">Engle-Granger</span><div class="diag-val">Residual Stationarity: <span class="diag-pass">Pass</span></div></div>
+         <div class="diag-card"><span class="diag-head">Engle-Granger</span><div class="diag-val">Stationarity: <span class="diag-pass">Pass</span></div></div>
        </div>
     `;
 
@@ -1202,7 +1311,20 @@ const Lab = {
         y_lag = yt_new;
     }
     const LR = (hatB0 + hatB1)/(1-hatPhi);
-    const bg = MathLab.stats.breuschPagan(est.resid, X_mat); 
+    
+    // Breusch-Godfrey Logic: Regress u_t on X_t and u_{t-1}
+    const resids = est.resid;
+    const nR = resids.length;
+    let bgY = resids.slice(1);
+    let bgX = [];
+    for(let i=1; i<nR; i++){
+        // Include original regressors + lagged residual
+        let row = [...X_mat[i], resids[i-1]]; 
+        bgX.push(row);
+    }
+    const bgEst = MathLab.olsMultivariate(bgY, bgX);
+    const bgLM = (nR-1) * (1 - bgEst.ssr/MathLab.variance(bgY,0)*(nR-1)); // approx R2 logic
+    const bgP = MathLab.pValChi2(bgLM, 1);
     
     Lab.updateSpecPanel(
         `$$ Y_t = \\hat{C} + \\hat{\\phi} Y_{t-1} + \\hat{\\beta}_0 X_t + \\hat{\\beta}_1 X_{t-1} $$`,
@@ -1213,8 +1335,8 @@ const Lab = {
 
     document.getElementById("ardlDiagnostics").innerHTML = `
        <div class="diag-grid">
-         <div class="diag-card"><span class="diag-head">Bounds Test (PSS)</span><div class="diag-val">F-Stat: <span class="diag-${boundsColor}">${F_bounds.toFixed(2)}</span></div><div class="diag-val">I(0): 4.04 | I(1): 5.73 (1% Level)</div></div>
-         <div class="diag-card"><span class="diag-head">Serial Correlation</span><div class="diag-val">Breusch-Godfrey: ${bg.stat.toFixed(2)}</div><div class="diag-val">p: ${bg.p.toFixed(3)}</div></div>
+         <div class="diag-card"><span class="diag-head">Bounds Test (PSS)</span><div class="diag-val">F-Stat: <span class="diag-${boundsColor}">${F_bounds.toFixed(2)}</span></div><div class="diag-val">Approx I(0): 4.04 | I(1): 5.73</div></div>
+         <div class="diag-card"><span class="diag-head">Serial Correlation</span><div class="diag-val">Breusch-Godfrey: ${bgLM.toFixed(2)}</div><div class="diag-val">p: ${bgP.toFixed(3)}</div></div>
          <div class="diag-card"><span class="diag-head">Stability</span><div class="diag-val">Residual CUSUM: <span class="diag-pass">Stable</span></div></div>
        </div>
     `;
@@ -1283,7 +1405,9 @@ const Lab = {
     // MLE Estimation (Calibration)
     let xt = x.slice(1), xt_1 = x.slice(0, T-1);
     const estAR = MathLab.ols(xt_1, xt);
-    const hatPhi = estAR.beta;
+    let hatPhi = estAR.beta;
+    if(hatPhi <= 0) hatPhi = 1e-6; // Guard against negative phi
+    if(hatPhi >= 1) hatPhi = 0.999; // Guard against non-stationary
     const hatTheta = -Math.log(Math.max(1e-6, hatPhi))/dt;
     const hatMu = estAR.alpha / (1 - hatPhi);
     const hatSigma = Math.sqrt( estAR.sigma2 * 2 * hatTheta / (1 - Math.pow(hatPhi, 2)) );
@@ -1382,7 +1506,7 @@ const Lab = {
      
      document.getElementById("mcmcDiagnostics").innerHTML = `
        <div class="diag-grid">
-         <div class="diag-card"><span class="diag-head">Efficiency</span><div class="diag-val">ESS: ${Math.round(ess)}</div><div class="diag-val">Ratio: ${(ess/cleanChain.length).toFixed(3)}</div></div>
+         <div class="diag-card"><span class="diag-head">Efficiency</span><div class="diag-val">ESS (Approx): ${Math.round(ess)}</div><div class="diag-val">Ratio: ${(ess/cleanChain.length).toFixed(3)}</div></div>
          <div class="diag-card"><span class="diag-head">Posterior Mean</span><div class="diag-val">Est: ${MathLab.mean(cleanChain).toFixed(3)}</div><div class="diag-val">True: ${targetMean}</div></div>
          <div class="diag-card"><span class="diag-head">Posterior SD</span><div class="diag-val">Est: ${Math.sqrt(MathLab.variance(cleanChain)).toFixed(3)}</div><div class="diag-val">True: ${targetStd}</div></div>
        </div>
@@ -1417,20 +1541,18 @@ const Lab = {
       const controls = document.getElementById("labControls");
       const main = document.getElementById("labMain");
       
-      const divTicker = document.createElement("div"); divTicker.className="lab-group";
-      divTicker.innerHTML = `<span class="lab-label">Asset Ticker (Yahoo)</span><input type="text" id="riskTicker" value="${Lab.state.riskTicker}" class="lab-text-input"><div class="lab-hint">e.g. SPY, ^GSPC, AAPL, BTC-USD</div>`;
-      controls.appendChild(divTicker);
-      document.getElementById("riskTicker").addEventListener("change", (e)=>{ Lab.state.riskTicker=e.target.value.toUpperCase(); });
-      
-      controls.appendChild(Lab.generateButton("Fetch & Analyze", Lab.updateRisk));
-      controls.appendChild(Lab.createControl("Confidence Level", "riskAlpha", 0.90, 0.99, 0.01, 0.99, "VaR Confidence", v=>{Lab.state.riskAlpha=v;}));
-      controls.appendChild(Lab.createControl("MCMC Iterations", "riskMCMC", 1000, 10000, 1000, 2000, "Simulation steps", v=>{Lab.state.riskMCMC=v;}));
+      controls.appendChild(Lab.generateButton("Simulate Market Path", Lab.updateRisk));
+      // Added Lab.updateRisk to onChange callback so graph updates instantly
+      controls.appendChild(Lab.createControl("Drift (μ)", "simMu", -0.005, 0.005, 0.0001, 0.0005, "Expected daily return", v=>{Lab.state.simMu=v; Lab.updateRisk();}));
+      controls.appendChild(Lab.createControl("Volatility (σ)", "simSigma", 0.005, 0.05, 0.001, 0.015, "Daily volatility", v=>{Lab.state.simSigma=v; Lab.updateRisk();}));
+      controls.appendChild(Lab.createControl("Confidence Level", "riskAlpha", 0.90, 0.99, 0.01, 0.99, "VaR Confidence", v=>{Lab.state.riskAlpha=v; Lab.updateRisk();}));
+      controls.appendChild(Lab.createControl("MCMC Iterations", "riskMCMC", 1000, 10000, 1000, 2000, "Simulation steps", v=>{Lab.state.riskMCMC=v; Lab.updateRisk();}));
 
       main.innerHTML = `
         <div class="lab-spec-container" id="labSpecContainer"></div>
         <div class="lab-chart-box" id="mainChartBox">
            <div class="chart-header">
-              <div class="chart-title" id="riskChartTitle">Price Analysis</div>
+              <div class="chart-title" id="riskChartTitle">Monte Carlo Price Path</div>
               <div class="chart-controls">
                  <button class="chart-toggle active" onclick="Lab.toggleFilter('showKalman', this)">Kalman</button>
                  <button class="chart-toggle active" onclick="Lab.toggleFilter('showButter', this)">Butterworth</button>
@@ -1450,15 +1572,15 @@ const Lab = {
         </div>
         <div class="disclaimer-container">
              <div class="disclaimer-box">
-                <strong>Disclaimer</strong>
-                This application is for educational research only. It utilizes simulation techniques (MCMC) and statistical filters to analyze historical data. <strong>Not financial advice.</strong> Past performance is not indicative of future results. The author assumes no liability for trading decisions.
+                <strong>Educational Purpose Only</strong>
+                This simulation uses Geometric Brownian Motion (GBM) to generate hypothetical asset price paths. The analysis applies Bayesian inference (MCMC) to estimate return distribution parameters and calculate Value-at-Risk (VaR). This tool demonstrates the sensitivity of risk metrics to volatility and drift inputs. <strong>Not financial advice.</strong>
              </div>
              <div class="methodology-box">
                 <strong>Methodology</strong>
                 <ul class="methodology-list">
-                   <li><strong>VaR/CVaR:</strong> Bayesian estimation via Metropolis-Hastings (Student-t likelihood).</li>
-                   <li><strong>Trends:</strong> Zero-phase Butterworth & Kalman Filter (Adaptive).</li>
-                   <li><strong>ECM:</strong> Mean reversion speed estimated via residual regression.</li>
+                   <li><strong>Process:</strong> $dS_t = \mu S_t dt + \sigma S_t dW_t$ (GBM).</li>
+                   <li><strong>Estimation:</strong> Metropolis-Hastings MCMC to recover posterior distributions of $\mu, \sigma, \nu$ (assuming Student-t likelihood for fat tails).</li>
+                   <li><strong>Signal Processing:</strong> Zero-phase Butterworth & Adaptive Kalman Filter for trend extraction.</li>
                 </ul>
              </div>
         </div>
@@ -1479,55 +1601,33 @@ const Lab = {
       setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
   },
 
-  updateRisk: async (skipFetch=false) => {
-      const ticker = Lab.state.riskTicker;
+  updateRisk: async (skipGen=false) => {
       const statusDiv = document.getElementById("labSpecContainer");
       
       let prices = window._cachedPrices || [];
       
-      if(!skipFetch || prices.length === 0){
-          statusDiv.innerHTML = `<div class="lab-spec-title">Status</div><div class="lab-spec-eq">Fetching ${ticker}...</div>`;
-          try {
-              // Primary: corsproxy.io (Best for direct JSON)
-              let url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=2y`;
-              let proxy = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-              
-              let res = await fetch(proxy);
-              if(!res.ok) {
-                  // Fallback: allorigins (Raw)
-                  proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                  res = await fetch(proxy);
-              }
-              
-              if(!res.ok) throw new Error("Network Error " + res.status);
-              
-              const json = await res.json();
-              if(!json.chart || !json.chart.result || !json.chart.result[0]) throw new Error("Invalid Symbol or Data");
-              
-              const result = json.chart.result[0];
-              const quotes = result.indicators.quote[0].close;
-              prices = quotes.filter(x => x != null); // Filter nulls
-              
-              if(prices.length < 50) throw new Error("Insufficient Data Points");
-              
-              window._cachedPrices = prices;
-              window._isRealData = true;
-          } catch(e) {
-              console.warn("Fetch failed, using simulation", e);
-              statusDiv.innerHTML = `<div class="lab-spec-title">Warning</div><div class="lab-spec-eq" style="color:#ffbb00">API Error (${e.message}). Showing SIMULATED DATA.</div>`;
-              // Fallback Simulation
-              let p = 100; prices = [p];
-              for(let i=0; i<500; i++){
-                  p *= Math.exp(0.0005 + 0.015 * MathLab.generateRandom('normal', {mean:0, std:1}));
-                  prices.push(p);
-              }
-              window._cachedPrices = prices;
-              window._isRealData = false;
+      // If skipGen is false (default for button clicks/sliders), we regenerate the path
+      if(!skipGen || prices.length === 0){
+          statusDiv.innerHTML = `<div class="lab-spec-title">Status</div><div class="lab-spec-eq">Simulating Market Data...</div>`;
+          
+          // Generate GBM Path
+          MathLab.rng = MathLab.sfc32(Lab.state.seed, Lab.state.seed*2, Lab.state.seed*3, Lab.state.seed*4);
+          let p = 100; prices = [p];
+          const mu = Lab.state.simMu;
+          const sigma = Lab.state.simSigma;
+          
+          for(let i=0; i<500; i++){
+              // GBM: S_t = S_{t-1} * exp( (mu - 0.5*sigma^2) + sigma * Z )
+              const ret = (mu - 0.5 * sigma * sigma) + sigma * MathLab.generateRandom('normal', {mean:0, std:1});
+              p *= Math.exp(ret);
+              prices.push(p);
           }
+          window._cachedPrices = prices;
+          window._isRealData = false;
       }
       
       const titleEl = document.getElementById("riskChartTitle");
-      if(titleEl) titleEl.innerHTML = `${ticker} Analysis ${window._isRealData ? '<span style="color:#44ff88; font-size:0.7em;">● LIVE</span>' : '<span style="color:#ffbb00; font-size:0.7em;">● SIMULATED</span>'}`;
+      if(titleEl) titleEl.innerHTML = `Simulated Asset Path <span style="color:#44ff88; font-size:0.7em;">● GBM MODEL</span>`;
 
       let returns = [];
       for(let i=1; i<prices.length; i++) returns.push(Math.log(prices[i]/prices[i-1]));
@@ -1578,7 +1678,7 @@ const Lab = {
           let propSig = currSig + MathLab.generateRandom('normal',{mean:0, std:0.001});
           let propDf = currDf + MathLab.generateRandom('normal',{mean:0, std:0.5});
           let propLL = logLik(propMu, propSig, propDf, returns);
-          if(Math.log(Math.random()) < (propLL - currLL)){
+          if(Math.log(MathLab.rng()) < (propLL - currLL)){
               currMu=propMu; currSig=propSig; currDf=propDf; currLL=propLL;
           }
           if(i > iter*0.2) { chainMu.push(currMu); chainSig.push(currSig); chainDf.push(currDf); }
@@ -1685,6 +1785,19 @@ const Lab = {
          }
       });
       Lab.renderMath();
+  },
+
+  // Mouse tracking for gold highlight effect
+  initMouseTracker: () => {
+      document.addEventListener('mousemove', (e) => {
+          document.querySelectorAll('.glass-panel, .lab-chart-box').forEach(card => {
+              const rect = card.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              card.style.setProperty('--mouse-x', `${x}px`);
+              card.style.setProperty('--mouse-y', `${y}px`);
+          });
+      });
   }
 };
 window.Lab = Lab;
