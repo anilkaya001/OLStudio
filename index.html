@@ -20,6 +20,26 @@
     connect-src 'self'; 
     object-src 'none';
 ">
+<style>
+/* Academic Lab Styling */
+input[type="text"], input[type="number"], select {
+    background: transparent !important;
+    color: #e8e8ea !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: 'Latin Modern Sans', sans-serif;
+}
+.lab-metrics-table td, .lab-metrics-table th {
+    background: transparent !important;
+}
+.diag-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+</style>
 
 <title>Anıl Kaya | Econometrics Labs & Research</title>
 <meta name="description" content="Advanced interactive econometrics laboratory with academic-grade diagnostics.">
@@ -128,6 +148,7 @@ a:hover{opacity:0.9}
 .diag-pass { color: #44ff88; font-weight: 700; }
 .diag-fail { color: #ff4444; font-weight: 700; }
 .diag-warn { color: #ffbb00; font-weight: 700; }
+.diag-sub { font-size: 0.75rem; color: rgba(232,232,234,0.6); font-style: italic; margin-top: 4px; line-height: 1.3; }
 
 /* Specification Window */
 .lab-spec-container { background: rgba(0,0,0,0.6); padding: 14px 20px; border-radius: 6px; border: 1px solid rgba(212,175,55,0.25); box-shadow: inset 0 0 20px rgba(255,255,255,0.02); margin-bottom: 20px; color: #fff; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px; margin-top: 5px; flex-wrap: wrap; max-width: 100%; }
@@ -988,14 +1009,38 @@ const Lab = {
       </table>
     `;
     
-    const weakColor = ivEst.fStat1 < 10 ? 'fail' : 'pass';
+    // Color-coded diagnostics
+    const weakPass = ivEst.fStat1 >= 10;
+    const hausmanPass = ivEst.dwhP < 0.05;
+    const jbPass = jb.p > 0.05;
+    const bpPass = bp.p > 0.05;
     
     document.getElementById("ivDiagnostics").innerHTML = `
        <div class="diag-grid">
-         <div class="diag-card"><span class="diag-head">Instrument Strength</span><div class="diag-val">First Stage F: <span class="diag-${weakColor}">${ivEst.fStat1.toFixed(2)}</span></div><div class="diag-val">Rule of Thumb: > 10</div></div>
-         <div class="diag-card"><span class="diag-head">Endogeneity (Hausman)</span><div class="diag-val">Robust t: ${ivEst.dwhStat.toFixed(2)}</div><div class="diag-val">p-value: ${ivEst.dwhP.toFixed(3)}</div></div>
-         <div class="diag-card"><span class="diag-head">Normality (JB)</span><div class="diag-val">Stat: ${jb.stat.toFixed(2)}</div><div class="diag-val">p-value: ${jb.p.toFixed(3)}</div></div>
-         <div class="diag-card"><span class="diag-head">Heteroskedasticity (BP)</span><div class="diag-val">Stat: ${bp.stat.toFixed(2)}</div><div class="diag-val">p-value: ${bp.p.toFixed(3)}</div></div>
+         <div class="diag-card">
+           <span class="diag-head">Instrument Strength</span>
+           <div class="diag-val">First Stage F: ${ivEst.fStat1.toFixed(2)}</div>
+           <div class="${weakPass?'diag-pass':'diag-fail'}">${weakPass?'STRONG':'WEAK'} (Threshold: 10)</div>
+           <div class="diag-sub">${weakPass?'IV is reliable':'Consider stronger instruments'}</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Endogeneity (Hausman)</span>
+           <div class="diag-val">Robust t: ${ivEst.dwhStat.toFixed(2)}</div>
+           <div class="${hausmanPass?'diag-pass':'diag-warn'}">${hausmanPass?'ENDOGENEITY CONFIRMED':'USE OLS'} (p=${ivEst.dwhP.toFixed(3)})</div>
+           <div class="diag-sub">${hausmanPass?'IV is necessary, OLS is biased':'OLS may be consistent'}</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Normality (Jarque-Bera)</span>
+           <div class="diag-val">Stat: ${jb.stat.toFixed(2)}</div>
+           <div class="${jbPass?'diag-pass':'diag-fail'}">${jbPass?'NORMAL':'NON-NORMAL'} (p=${jb.p.toFixed(3)})</div>
+           <div class="diag-sub">${jbPass?'Errors are Gaussian':'Consider robust inference'}</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Heteroskedasticity (BP)</span>
+           <div class="diag-val">LM Stat: ${bp.stat.toFixed(2)}</div>
+           <div class="${bpPass?'diag-pass':'diag-fail'}">${bpPass?'HOMOSKEDASTIC':'HETEROSKEDASTIC'} (p=${bp.p.toFixed(3)})</div>
+           <div class="diag-sub">${bpPass?'Constant variance':'Use robust SEs (already applied)'}</div>
+         </div>
        </div>
     `;
 
@@ -1097,9 +1142,13 @@ const Lab = {
         // Shock vector = L * [1, 0]' * shockSize = [L11, L21] * shockSize
         let shockVec = [L[0][0] * shockSize, L[1][0] * shockSize];
         
+        // CIRF = Cumulative IRF
         let irf1 = [shockVec[0]], irf2 = [shockVec[1]];
         let curr = [shockVec[0], shockVec[1]];
         for(let h=1; h<=20; h++){ curr = MathLab.matVec2(hatA, curr); irf1.push(curr[0]); irf2.push(curr[1]); }
+        // Cumulative sum for CIRF
+        let cirf1 = [], cirf2 = [], sum1 = 0, sum2 = 0;
+        for(let i=0; i<irf1.length; i++) { sum1 += irf1[i]; sum2 += irf2[i]; cirf1.push(sum1); cirf2.push(sum2); }
         
         // Diagnostics
         const grangerRes = MathLab.grangerTest(y1, y2, 1);
@@ -1129,11 +1178,32 @@ const Lab = {
           </table>
         `;
         
+        // Color-coded Diagnostics
+        const lbPass = lb1.p > 0.05;
+        const jbPass = jb1.p > 0.05;
+        const grangerP = MathLab.pValF(grangerRes.fStat, grangerRes.df1, grangerRes.df2);
+        const grangerPass = grangerP < 0.05;
+        
         document.getElementById("varDiagnostics").innerHTML = `
            <div class="diag-grid">
-             <div class="diag-card"><span class="diag-head">Serial Correlation (Eq 1)</span><div class="diag-val">Ljung-Box Q(5): ${lb1.stat.toFixed(2)}</div><div class="diag-val">p-value: ${lb1.p.toFixed(3)}</div></div>
-             <div class="diag-card"><span class="diag-head">Normality (Eq 1)</span><div class="diag-val">Jarque-Bera: ${jb1.stat.toFixed(2)}</div><div class="diag-val">p-value: ${jb1.p.toFixed(3)}</div></div>
-             <div class="diag-card"><span class="diag-head">Granger Causality</span><div class="diag-val">Y2 -> Y1 F-stat: ${grangerRes.fStat.toFixed(2)}</div><div class="diag-val">p-value: ${MathLab.pValF(grangerRes.fStat, grangerRes.df1, grangerRes.df2).toFixed(3)}</div></div>
+             <div class="diag-card">
+               <span class="diag-head">Serial Correlation (Eq 1)</span>
+               <div class="diag-val">Ljung-Box Q(5): ${lb1.stat.toFixed(2)}</div>
+               <div class="${lbPass?'diag-pass':'diag-fail'}">${lbPass?'PASS':'FAIL'} (p=${lb1.p.toFixed(3)})</div>
+               <div class="diag-sub">${lbPass?'No autocorrelation detected':'Residuals are autocorrelated'}</div>
+             </div>
+             <div class="diag-card">
+               <span class="diag-head">Normality (Eq 1)</span>
+               <div class="diag-val">Jarque-Bera: ${jb1.stat.toFixed(2)}</div>
+               <div class="${jbPass?'diag-pass':'diag-fail'}">${jbPass?'PASS':'FAIL'} (p=${jb1.p.toFixed(3)})</div>
+               <div class="diag-sub">${jbPass?'Residuals are normally distributed':'Non-normal residuals'}</div>
+             </div>
+             <div class="diag-card">
+               <span class="diag-head">Granger Causality (Y2→Y1)</span>
+               <div class="diag-val">F-stat: ${grangerRes.fStat.toFixed(2)}</div>
+               <div class="${grangerPass?'diag-pass':'diag-fail'}">${grangerPass?'SIGNIFICANT':'NOT SIGNIFICANT'} (p=${grangerP.toFixed(3)})</div>
+               <div class="diag-sub">${grangerPass?'Y2 Granger-causes Y1':'No Granger causality detected'}</div>
+             </div>
            </div>
         `;
 
@@ -1147,8 +1217,8 @@ const Lab = {
         if(Lab.chartInstances[1]) Lab.chartInstances[1].destroy();
         Lab.chartInstances[1] = new Chart(document.getElementById('varIRF').getContext('2d'), {
              type: 'line',
-             data: { labels: Array.from({length: 21}, (_, i) => i), datasets: [{ label: 'Response of Y1', data: irf1, borderColor: '#D4AF37' }, { label: 'Response of Y2', data: irf2, borderColor: '#7aa6ff' }] },
-             options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: `Orthogonalized Impulse Response (Cholesky Y1 Shock)`, color:'#e8e8ea' } }, scales:{ x:{grid:{display:false}}, y:{grid:{display:false}} } }
+             data: { labels: Array.from({length: 21}, (_, i) => i), datasets: [{ label: 'CIRF of Y1', data: cirf1, borderColor: '#D4AF37', borderWidth:2 }, { label: 'CIRF of Y2', data: cirf2, borderColor: '#7aa6ff', borderWidth:2 }] },
+             options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: `Cumulative IRF (CIRF) - Y1 Shock`, color:'#e8e8ea' } }, scales:{ x:{grid:{display:false}}, y:{grid:{display:false}} } }
         });
         
         if(Lab.chartInstances[2]) Lab.chartInstances[2].destroy();
@@ -1239,10 +1309,34 @@ const Lab = {
       `$$ \\text{True } \\beta = ${vecmBeta}, \\quad \\text{OLS } \\hat{\\beta} = ${est.beta.toFixed(4)} $$`
     );
 
+    // Color-coded diagnostics
+    const cointPass = isStationary;
+    const speedQuality = Math.abs(alphaY) > 0.1 && Math.abs(alphaY) < 0.7;
+    
     document.getElementById("vecmDiagnostics").innerHTML = `
        <div class="diag-grid">
-         <div class="diag-card"><span class="diag-head">Engle-Granger Test</span><div class="diag-val">ADF t-stat: ${t_adf.toFixed(2)}</div><div class="diag-val"><span class="${passClass}">${rankMsg}</span></div></div>
-         <div class="diag-card"><span class="diag-head">Adjustment Speed ($\\alpha_y$)</span><div class="diag-val">True: ${alphaY}</div><div class="diag-val">Implied Half-life: ${halfLife.toFixed(1)} periods</div></div>
+         <div class="diag-card">
+           <span class="diag-head">Engle-Granger Test</span>
+           <div class="diag-val">ADF t-stat: ${t_adf.toFixed(2)}</div>
+           <div class="${cointPass?'diag-pass':'diag-fail'}">${cointPass?'COINTEGRATION':'SPURIOUS'}</div>
+           <div class="diag-sub">${cointPass?'Y and X have a long-run relationship':'No stable equilibrium detected'}</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Adjustment Speed (α_y)</span>
+           <div class="diag-val">${alphaY.toFixed(2)}</div>
+           <div class="${speedQuality?'diag-pass':'diag-warn'}">${speedQuality?'NORMAL':'EXTREME'}</div>
+           <div class="diag-sub">Half-life: ${halfLife.toFixed(1)} periods</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Long-Run OLS (β)</span>
+           <div class="diag-val">True: ${vecmBeta} | Est: ${est.beta.toFixed(4)}</div>
+           <div class="${Math.abs(est.beta-vecmBeta)<0.3?'diag-pass':'diag-warn'}">${Math.abs(est.beta-vecmBeta)<0.3?'ACCURATE':'BIAS'} (Err: ${(est.beta-vecmBeta).toFixed(3)})</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Model Fit (R²)</span>
+           <div class="diag-val">${(est.r2*100).toFixed(1)}%</div>
+           <div class="${est.r2>0.8?'diag-pass':'diag-warn'}">${est.r2>0.9?'EXCELLENT':(est.r2>0.8?'GOOD':'MODERATE')}</div>
+         </div>
        </div>
     `;
 
@@ -1359,12 +1453,31 @@ const Lab = {
         `$$ \\hat{\\phi}=${hatPhi.toFixed(2)}, \\quad \\hat{\\theta}_{LR} = ${LR.toFixed(3)} $$`
     );
 
-    const boundsColor = F_bounds > 5.73 ? 'pass' : (F_bounds < 4.04 ? 'fail' : 'warn');
+    // Color-coded diagnostics
+    const boundsPass = F_bounds > 5.73;
+    const boundsFail = F_bounds < 4.04;
+    const boundsIncon = !boundsPass && !boundsFail;
+    const bgPass = bgP > 0.05;
 
     document.getElementById("ardlDiagnostics").innerHTML = `
        <div class="diag-grid">
-         <div class="diag-card"><span class="diag-head">Bounds Test (PSS)</span><div class="diag-val">F-Stat: <span class="diag-${boundsColor}">${F_bounds.toFixed(2)}</span></div><div class="diag-val">Approx I(0): 4.04 | I(1): 5.73</div></div>
-         <div class="diag-card"><span class="diag-head">Serial Correlation</span><div class="diag-val">Breusch-Godfrey LM: ${bgLM.toFixed(2)}</div><div class="diag-val">p: ${bgP.toFixed(3)}</div></div>
+         <div class="diag-card">
+           <span class="diag-head">Bounds Test (PSS)</span>
+           <div class="diag-val">F-Stat: ${F_bounds.toFixed(2)}</div>
+           <div class="${boundsPass?'diag-pass':(boundsFail?'diag-fail':'diag-warn')}">${boundsPass?'COINTEGRATION':(boundsFail?'NO COINTEGRATION':'INCONCLUSIVE')}</div>
+           <div class="diag-sub">I(0): 4.04 | I(1): 5.73</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Serial Correlation (BG)</span>
+           <div class="diag-val">LM: ${bgLM.toFixed(2)}</div>
+           <div class="${bgPass?'diag-pass':'diag-fail'}">${bgPass?'PASS':'FAIL'} (p=${bgP.toFixed(3)})</div>
+           <div class="diag-sub">${bgPass?'No autocorrelation':'Residuals are autocorrelated'}</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Long-Run Multiplier (θ)</span>
+           <div class="diag-val">${LR.toFixed(4)}</div>
+           <div class="diag-sub">Cumulative effect of X on Y</div>
+         </div>
        </div>
     `;
 
@@ -1429,30 +1542,84 @@ const Lab = {
        x.push(next);
     }
     
-    // MLE Estimation (Calibration)
-    let xt = x.slice(1), xt_1 = x.slice(0, T-1);
-    const estAR = MathLab.ols(xt_1, xt);
-    let hatPhi = estAR.beta;
-    if(hatPhi >= 1) hatPhi = 0.999; 
+    // MLE Estimation (Calibration via OLS on AR(1))
+    // X_t = c + phi * X_{t-1} + e_t
+    // theta = -ln(phi)/dt, mu = c/(1-phi), sigma = ...
     
-    const hatTheta = -Math.log(Math.max(1e-6, hatPhi))/dt;
-    const hatMu = estAR.alpha / (1 - hatPhi);
-    const hatSigma = Math.sqrt( estAR.sigma2 * 2 * hatTheta / (1 - Math.pow(hatPhi, 2)) );
+    let xt = x.slice(1), xt_1 = x.slice(0, T-1);
+    const N_est = xt.length;
+    
+    // Build design matrix [1, X_{t-1}]
+    const Xmat = []; 
+    for(let i=0; i<N_est; i++) Xmat.push([1, xt_1[i]]);
+    
+    // Use existing MathLab.olsMultivariate
+    const ols = MathLab.olsMultivariate(xt, Xmat);
+    
+    let phi = ols.beta[1];
+    let c = ols.beta[0];
+    
+    // Compute SEs from ClassicCov (variance-covariance matrix)
+    let se_phi = Math.sqrt(ols.ClassicCov[1][1]);
+    let se_c = Math.sqrt(ols.ClassicCov[0][0]);
+    
+    // Constraints
+    if(phi >= 1.0) phi = 0.999;
+    if(phi <= 0.0) phi = 0.001;
+    
+    // Delta Method for SEs (approx)
+    // theta = -ln(phi)/dt  => dtheta/dphi = -1/(phi*dt)
+    let hatTheta = -Math.log(phi)/dt;
+    let se_theta = Math.abs(se_phi / (phi * dt));
+    
+    // mu = c / (1-phi) => dmu/dc = 1/(1-phi), dmu/dphi = c/(1-phi)^2
+    let hatMu = c / (1 - phi);
+    let se_mu = Math.sqrt( (se_c/(1-phi))**2 + (c*se_phi/((1-phi)**2))**2 ); 
 
+    // Sigma
+    const residSSR = ols.ssr;
+    let residStd = Math.sqrt(residSSR / (N_est-2));
+    let hatSigma = residStd * Math.sqrt( Math.abs(-2*Math.log(phi) / (dt*(1-phi*phi))) );
+    if(!isFinite(hatSigma)) hatSigma = ouSigma; // Fallback
+    
     Lab.updateSpecPanel(
       `$$ dX_t = \\theta(\\mu - X_t)dt + \\sigma dW_t $$`,
-      `$$ \\hat{\\mu}=${hatMu.toFixed(2)}, \\hat{\\theta}=${hatTheta.toFixed(2)}, \\hat{\\sigma}=${hatSigma.toFixed(2)} $$`
+      `$$ \\hat{\\theta}=${hatTheta.toFixed(3)} \\pm ${se_theta.toFixed(3)} $$`
     );
+
+    
+    // Quality metrics
+    const muBias = Math.abs(hatMu - ouMean);
+    const thetaBias = Math.abs(hatTheta - ouTheta);
+    const sigmaBias = Math.abs(hatSigma - ouSigma);
+    const muPass = muBias < 1.0;
+    const thetaPass = thetaBias < 0.2;
+    const sigmaPass = sigmaBias < 0.3;
     
     document.getElementById("ouStats").innerHTML = `
        <div class="diag-head" style="font-size:1rem; margin-bottom:15px;">Model Calibration (MLE)</div>
-       <table class="lab-metrics-table">
-         <tr><td>Parameter</td><td>True</td><td>Estimated</td></tr>
-         <tr><td>Mean (μ)</td><td>${ouMean}</td><td>${hatMu.toFixed(3)}</td></tr>
-         <tr><td>Reversion (θ)</td><td>${ouTheta}</td><td>${hatTheta.toFixed(3)}</td></tr>
-         <tr><td>Volatility (σ)</td><td>${ouSigma}</td><td>${hatSigma.toFixed(3)}</td></tr>
-         <tr><td>Half-Life</td><td>${(Math.log(2)/ouTheta).toFixed(2)}</td><td>${(Math.log(2)/hatTheta).toFixed(2)}</td></tr>
-       </table>
+       <div class="diag-grid" style="grid-template-columns: 1fr 1fr;">
+         <div class="diag-card">
+           <span class="diag-head">Mean (μ)</span>
+           <div class="diag-val">True: ${ouMean} | Est: ${hatMu.toFixed(3)}</div>
+           <div class="${muPass?'diag-pass':'diag-fail'}">${muPass?'ACCURATE':'BIAS'} (SE: ±${se_mu.toFixed(3)})</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Reversion (θ)</span>
+           <div class="diag-val">True: ${ouTheta} | Est: ${hatTheta.toFixed(3)}</div>
+           <div class="${thetaPass?'diag-pass':'diag-fail'}">${thetaPass?'ACCURATE':'BIAS'} (SE: ±${se_theta.toFixed(3)})</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Volatility (σ)</span>
+           <div class="diag-val">True: ${ouSigma} | Est: ${hatSigma.toFixed(3)}</div>
+           <div class="${sigmaPass?'diag-pass':'diag-warn'}">${sigmaPass?'ACCURATE':'APPROX'}</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Half-Life</span>
+           <div class="diag-val">True: ${(Math.log(2)/ouTheta).toFixed(2)} | Est: ${(Math.log(2)/hatTheta).toFixed(2)}</div>
+           <div class="diag-sub">Time to 50% mean reversion</div>
+         </div>
+       </div>
     `;
     
     if(Lab.chartInstances[0]) Lab.chartInstances[0].destroy();
@@ -1522,20 +1689,75 @@ const Lab = {
      const burn = Math.floor(mcmcIter * 0.2);
      const cleanChain = chain.slice(burn);
      
-     let rhoSum = 0;
-     for(let k=1; k<50; k++){ rhoSum += MathLab.acf(cleanChain, k); }
-     const ess = Math.min(cleanChain.length, Math.max(1, cleanChain.length / (1 + 2*rhoSum)));
+     // Robust ESS (Geyer's Initial Monotone Sequence Estimator)
+     const mean = MathLab.mean(cleanChain);
+     const n = cleanChain.length;
+     
+     // Variogram based autocorrelation or simple ACF sum
+     // We will use sum of rho until Rho_t + Rho_{t+1} < 0 (Geyer's simple rule for monotone)
+     // Calculate autocovariance gamma_k
+     const gamma = (k) => {
+         let s = 0;
+         for(let i=0; i<n-k; i++) s += (cleanChain[i]-mean)*(cleanChain[i+k]-mean);
+         return s/n;
+     };
+     const gamma0 = gamma(0);
+     let sumRho = 0;
+     
+     for(let k=1; k<Math.min(500, n/2); k+=2){
+         let g_k = gamma(k);
+         let g_k1 = gamma(k+1);
+         if (g_k + g_k1 <= 0) break; // Truncation
+         sumRho += (g_k + g_k1) / gamma0;
+     }
+     
+     const tau = 1 + 2*sumRho; // Integrated Autocorrelation Time
+     const ess = n / tau;
+     const mcse = Math.sqrt(gamma0 / ess);
+
 
      Lab.updateSpecPanel(
         `$$ \\alpha = \\min(1, \\frac{P(\\theta^*)}{P(\\theta_{t-1})}) $$`,
         `Acc. Rate: ${acceptanceRate}%`
      );
      
+     // Quality Thresholds
+     const essRatio = ess / cleanChain.length;
+     const essPass = essRatio > 0.1; // >10% ESS is good
+     const accRate = parseFloat(acceptanceRate);
+     const accPass = accRate > 15 && accRate < 50; // Optimal 23-44%
+     
+     const estMean = MathLab.mean(cleanChain);
+     const estSD = Math.sqrt(MathLab.variance(cleanChain));
+     const meanError = Math.abs(estMean - targetMean);
+     const sdError = Math.abs(estSD - targetStd);
+     const meanPass = meanError < 0.5;
+     const sdPass = sdError < 0.5;
+     
      document.getElementById("mcmcDiagnostics").innerHTML = `
        <div class="diag-grid">
-         <div class="diag-card"><span class="diag-head">Efficiency</span><div class="diag-val">ESS (Approx): ${Math.round(ess)}</div><div class="diag-val">Ratio: ${(ess/cleanChain.length).toFixed(3)}</div></div>
-         <div class="diag-card"><span class="diag-head">Posterior Mean</span><div class="diag-val">Est: ${MathLab.mean(cleanChain).toFixed(3)}</div><div class="diag-val">True: ${targetMean}</div></div>
-         <div class="diag-card"><span class="diag-head">Posterior SD</span><div class="diag-val">Est: ${Math.sqrt(MathLab.variance(cleanChain)).toFixed(3)}</div><div class="diag-val">True: ${targetStd}</div></div>
+         <div class="diag-card">
+           <span class="diag-head">Sampling Efficiency</span>
+           <div class="diag-val">ESS: ${Math.round(ess)} / ${cleanChain.length}</div>
+           <div class="${essPass?'diag-pass':'diag-fail'}">${essPass?'GOOD':'LOW'} (Ratio: ${essRatio.toFixed(2)})</div>
+           <div class="diag-sub">${essPass?'Chain mixes well':'Increase iterations or tune proposal'}</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Acceptance Rate</span>
+           <div class="diag-val">${acceptanceRate}%</div>
+           <div class="${accPass?'diag-pass':'diag-warn'}">${accPass?'OPTIMAL':'TUNE PROPOSAL'}</div>
+           <div class="diag-sub">Target: 23-44% for RW-MH</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">Mean Recovery</span>
+           <div class="diag-val">Est: ${estMean.toFixed(3)} | True: ${targetMean}</div>
+           <div class="${meanPass?'diag-pass':'diag-fail'}">${meanPass?'ACCURATE':'BIAS'} (Err: ${meanError.toFixed(3)})</div>
+         </div>
+         <div class="diag-card">
+           <span class="diag-head">SD Recovery</span>
+           <div class="diag-val">Est: ${estSD.toFixed(3)} | True: ${targetStd}</div>
+           <div class="${sdPass?'diag-pass':'diag-fail'}">${sdPass?'ACCURATE':'BIAS'} (Err: ${sdError.toFixed(3)})</div>
+         </div>
        </div>
      `;
 
@@ -1689,7 +1911,7 @@ const Lab = {
       const lambda = ecmReg.beta; // Speed of adjustment
       const halfLife = Math.abs(lambda) > 0.001 ? Math.log(0.5)/Math.log(1+lambda) : 999;
 
-      // MCMC
+      // MCMC for Posterior Sampling
       const iter = Lab.state.riskMCMC;
       let chainMu=[], chainSig=[], chainDf=[];
       let currMu=mu, currSig=sigma, currDf=5; 
@@ -1717,41 +1939,70 @@ const Lab = {
           if(i > iter*0.2) { chainMu.push(currMu); chainSig.push(currSig); chainDf.push(currDf); }
       }
       
-      const alpha = Lab.state.riskAlpha;
+      const alpha = Lab.state.riskAlpha; // e.g., 0.95
+      
+      // VaR from Posterior Predictive Distribution
+      // Sample r_next from Student-t equations using parameter chains
       let predictiveSamples = [];
-      // Use Gamma for Chi-square to handle float df
-      for(let i=0; i<chainMu.length; i+=10){ 
-          const m=chainMu[i], s=chainSig[i], d=chainDf[i];
-          for(let k=0; k<5; k++){
-             const z = MathLab.generateRandom('normal',{mean:0,std:1});
-             const chi = MathLab.gamma(d/2) * 2; // Chi2(d)
-             const t = z / Math.sqrt(chi/d); 
-             predictiveSamples.push(m + s*t);
-          }
+      const nSamples = 2000;
+      for(let i=0; i<nSamples; i++){
+          // Randomly pick a parameter set from posterior
+          const idx = Math.floor(MathLab.rng() * chainMu.length);
+          const m = chainMu[idx], s = chainSig[idx], d = Math.max(3, chainDf[idx]); // Ensure df > 2
+          // Draw from Student-t(d, m, s): t = Z / sqrt(Chi2(d)/d)
+          // Chi2(d) = 2 * Gamma(d/2)
+          const z = MathLab.generateRandom('normal',{mean:0, std:1});
+          const chi2 = 2 * MathLab.gamma(d/2); 
+          const t_rnd = z / Math.sqrt(chi2/d);
+          predictiveSamples.push(m + s*t_rnd);
       }
+      
       predictiveSamples.sort((a,b)=>a-b);
-      const idx = Math.floor(predictiveSamples.length * (1-alpha));
-      const VaR = -predictiveSamples[idx]; 
-      let tailSum=0, tailCount=0;
-      for(let r of predictiveSamples){ if(r < -VaR){ tailSum+=r; tailCount++; } }
-      const CVaR = -(tailSum/tailCount);
+      const varIdx = Math.floor((1-alpha) * predictiveSamples.length);
+      const VaR = -predictiveSamples[varIdx]; // Positive number representing loss
+      
+      // CVaR (Expected Shortfall)
+      let tailLosses = predictiveSamples.slice(0, varIdx);
+      const CVaR = -(tailLosses.reduce((a,b)=>a+b,0) / tailLosses.length);
+
+      // Backtesting: Kupiec's POF Test (Unconditional Coverage)
+      // Count actual violations in historical data (using current model params as proxy for simplicity in this static view)
+      // Ideally, specific VaR would be calculated for each day in history ('rolling'), 
+      // but here we test if the fitted distribution explains the history well.
+      let violations = 0;
+      for(let r of returns){ if(r < -VaR) violations++; }
+      const N = returns.length;
+      const p_obs = violations/N;
+      const p_exp = 1 - alpha;
+      
+      // Likelihood Ratio (with safeguards for log(0))
+      const p_safe = Math.max(1e-10, Math.min(1-1e-10, p_obs));
+      const nullL = (N-violations)*Math.log(1-p_exp) + violations*Math.log(Math.max(1e-10, p_exp));
+      const altL = (N-violations)*Math.log(1-p_safe) + violations*Math.log(p_safe);
+      const LR_pof = -2 * (nullL - altL);
+      const critVal = 3.84; // Chi2(1) at 5%
+      const passed = isFinite(LR_pof) ? LR_pof < critVal : false;
 
       Lab.updateSpecPanel(
           `$$ \\Delta(P_t - T_t) = \\lambda(P_{t-1} - T_{t-1}) + \\epsilon_t $$`,
-          `$$ \\lambda = ${lambda.toFixed(4)}, \\quad \\text{Half-Life} \\approx ${halfLife.toFixed(1)} \\text{ days} $$`
+          `$$ \\lambda = ${lambda.toFixed(4)}, \\quad \\text{Coverage} = ${(p_obs*100).toFixed(2)}\\% $$`
       );
       
       document.getElementById("riskMetrics").innerHTML = `
-         <div class="diag-head">Bayesian Estimates (Student-t)</div>
+         <div class="diag-head">Posterior Estimates (MCMC)</div>
          <table class="lab-metrics-table" style="margin-bottom:15px;">
-           <tr><td>μ (Drift)</td><td>${(MathLab.mean(chainMu)*100).toFixed(3)}%</td></tr>
-           <tr><td>σ (Vol)</td><td>${(MathLab.mean(chainSig)*100).toFixed(2)}%</td></tr>
-           <tr><td>ν (DoF)</td><td>${MathLab.mean(chainDf).toFixed(1)}</td></tr>
+           <tr><td>μ (Drift)</td><td>${(MathLab.mean(chainMu)*100).toFixed(3)}%</td><td>CI: [${(chainMu[Math.floor(0.025*chainMu.length)]*100).toFixed(3)}, ${(chainMu[Math.floor(0.975*chainMu.length)]*100).toFixed(3)}]</td></tr>
+           <tr><td>σ (Vol)</td><td>${(MathLab.mean(chainSig)*100).toFixed(2)}%</td><td>CI: [${(chainSig[Math.floor(0.025*chainSig.length)]*100).toFixed(2)}, ${(chainSig[Math.floor(0.975*chainSig.length)]*100).toFixed(2)}]</td></tr>
+           <tr><td>ν (DoF)</td><td>${MathLab.mean(chainDf).toFixed(1)}</td><td>CI: [${chainDf[Math.floor(0.025*chainDf.length)].toFixed(1)}, ${chainDf[Math.floor(0.975*chainDf.length)].toFixed(1)}]</td></tr>
          </table>
          <div class="diag-head">Tail Risk (${(alpha*100).toFixed(0)}% Confidence)</div>
          <div style="display:flex; gap:10px; margin-top:5px;">
             <div class="diag-card" style="flex:1; text-align:center;"><span class="diag-head">VaR</span><div class="diag-fail">${(VaR*100).toFixed(2)}%</div></div>
-            <div class="diag-card" style="flex:1; text-align:center;"><span class="diag-head">CVaR</span><div class="diag-fail">${(CVaR*100).toFixed(2)}%</div></div>
+            <div class="diag-card" style="flex:1; text-align:center;">
+                <span class="diag-head">Kupiec Test</span>
+                <div class="${passed?'diag-pass':'diag-fail'}">${passed?'PASS':'FAIL'}</div>
+                <div class="diag-sub">LR=${LR_pof.toFixed(2)}</div>
+            </div>
          </div>
       `;
 
@@ -2100,7 +2351,7 @@ try{
   const galaxy = new THREE.Group(); scene.add(galaxy);
 
   function buildStars(){
-    const starCount = 18000;
+    const starCount = 35000;
     const geom = new THREE.BufferGeometry(), pos = new Float32Array(starCount*3), col = new Float32Array(starCount*3), size = new Float32Array(starCount);
     const cGold = new THREE.Color(0xD4AF37), cSilver = new THREE.Color(0xe8e8ea), cOrange = new THREE.Color(0xff9900), cBlue = new THREE.Color(0x001d4a);
     
@@ -2150,10 +2401,11 @@ try{
 
   function labelSprite(text){
     const w=1200, h=380, c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
-    const bg = g.createLinearGradient(0,0,w,h); bg.addColorStop(0,"rgba(232,232,234,0.16)"); bg.addColorStop(0.55,"rgba(212,175,55,0.12)"); bg.addColorStop(1,"rgba(232,232,234,0.08)");
-    const r=52; g.beginPath(); g.moveTo(r,0); g.lineTo(w-r,0); g.quadraticCurveTo(w,0,w,r); g.lineTo(w,h-r); g.quadraticCurveTo(w,h,w-r,h); g.lineTo(r,h); g.quadraticCurveTo(0,h,0,h-r); g.lineTo(0,r); g.quadraticCurveTo(0,0,r,0); g.closePath(); g.fillStyle = bg; g.fill(); g.strokeStyle = "rgba(255,255,255,0.18)"; g.lineWidth = 2; g.stroke();
-    g.shadowColor = "rgba(212,175,55,0.26)"; g.shadowBlur = 14;
-    g.fillStyle = "rgba(255,255,255,0.94)"; g.textAlign = "center"; g.textBaseline = "middle"; g.font = "800 90px 'Latin Modern Sans','Latin Modern Roman',system-ui,sans-serif";
+    // Removed background opacity/fill to leave text only
+    g.shadowColor = "rgba(0,0,0,0.8)"; g.shadowBlur = 18;
+    g.fillStyle = "rgba(255,255,255,0.95)"; g.textAlign = "center"; g.textBaseline = "middle"; 
+    // Enforcing Latin Modern Sans
+    g.font = "800 90px 'Latin Modern Sans','Latin Modern Roman',system-ui,sans-serif";
     const pad=48, maxW=w-pad*2, words=String(text).split(/\s+/).filter(Boolean);
     let line="", lines=[]; for(let i=0;i<words.length;i++){ const test=line? (line+" "+words[i]) : words[i]; if(g.measureText(test).width<=maxW) line=test; else{ lines.push(line); line=words[i]; } } if(line) lines.push(line);
     const lineH=104, y0=h/2 - ((lines.length-1)*lineH)/2; for(let i=0;i<lines.length;i++) g.fillText(lines[i], w/2, y0+i*lineH);
