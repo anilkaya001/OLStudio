@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#050505" />
+
+  <title>FX Smoothing, Broken Anchors, and USD-Price Inflation | Technical Note</title>
+  <meta name="description" content="Mathematical analysis of how administrative FX management during disinflation breaks nominal anchors and generates arbitrary mispricing, increasing domestic prices in FX terms despite lower measured pass-through." />
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root{
+      color-scheme: dark;
+      --font-main: "Latin Modern Roman", serif;
+      --font-ui: "Latin Modern Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --nav-h: 64px;
+      --bg: #050505;
+      --border: rgba(255,255,255,0.10);
+      --silver: #e8e8ea;
+      --silver-dim: rgba(232,232,234,0.72);
+      --gold: #D4AF37;
+      --gold-soft: #F7E7CE;
+      --maxw: 1080px;
+      --mouse-x: 50%;
+      --mouse-y: 50%;
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--silver);
+      font-family: var(--font-main);
+      overflow-x:hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a{color: var(--gold-soft); text-decoration:none;}
+    a:hover{opacity:0.92;}
+    code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: rgba(255,255,255,0.05);
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.92em;
+    }
+
+    .ambient{
+      position: fixed; inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.12), rgba(0,0,0,0) 60%),
+        radial-gradient(900px 520px at 82% 70%, rgba(232,232,234,0.08), rgba(0,0,0,0) 58%),
+        linear-gradient(135deg, rgba(10,10,10,0.88), rgba(18,18,18,0.58));
+      z-index:0;
+    }
+
+    nav{
+      position:fixed; top:0; left:0; right:0;
+      height: calc(var(--nav-h) + var(--safe-top));
+      padding-top: var(--safe-top);
+      padding-left: clamp(14px, 4vw, 44px);
+      padding-right: clamp(14px, 4vw, 44px);
+      display:flex; align-items:center; justify-content:space-between;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.11), rgba(0,0,0,0) 60%),
+        linear-gradient(135deg, rgba(10,10,10,0.82), rgba(18,18,18,0.60));
+      backdrop-filter: blur(18px);
+    }
+    #brand{
+      appearance:none; border:none; background:transparent;
+      font-family: var(--font-ui);
+      font-size: 0.92rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: color-mix(in oklab, var(--gold) 70%, var(--silver));
+      user-select:none;
+      cursor:pointer;
+      padding:0;
+    }
+    #actions{display:flex; align-items:center; gap:10px;}
+    .btn{
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(212,175,55,0.25);
+      background: linear-gradient(135deg, rgba(18,18,18,0.58), rgba(18,18,18,0.34));
+      color: var(--silver);
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      transition: all 0.22s ease;
+      min-height: 38px;
+      display:flex; align-items:center;
+    }
+    .btn:hover{
+      background: rgba(212,175,55,0.14);
+      border-color: rgba(212,175,55,0.52);
+    }
+
+    main{
+      position:relative;
+      z-index:2;
+      padding-top: calc(var(--nav-h) + var(--safe-top) + 26px);
+      padding-bottom: calc(40px + var(--safe-bottom));
+      padding-left: clamp(16px, 5vw, 60px);
+      padding-right: clamp(16px, 5vw, 60px);
+    }
+
+    .wrap{
+      max-width: var(--maxw);
+      margin: 0 auto;
+      display:flex;
+      flex-direction:column;
+      gap: 18px;
+    }
+
+    .glass{
+      background:
+        radial-gradient(circle at var(--mouse-x) var(--mouse-y),
+          rgba(255,255,255,0.03) 0%,
+          rgba(255,255,255,0.012) 48%,
+          rgba(0,0,0,0.0) 100%),
+        linear-gradient(135deg,
+          rgba(255,255,255,0.03) 0%,
+          rgba(212,175,55,0.02) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-top: 1px solid rgba(255,255,255,0.15);
+      border-left: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 26px 28px;
+      box-shadow: 0 10px 34px rgba(0,0,0,0.34);
+      backdrop-filter: blur(24px);
+      position: relative;
+      overflow:hidden;
+    }
+    .glass::after{
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(650px circle at var(--mouse-x) var(--mouse-y),
+        rgba(212,175,55,0.08), transparent 42%);
+      opacity: 0;
+      transition: opacity 0.26s ease;
+      pointer-events:none;
+    }
+    .glass:hover::after{ opacity: 1; }
+
+    header h1{
+      margin:0;
+      font-size: clamp(1.95rem, 4.0vw, 2.95rem);
+      line-height: 1.08;
+      color: color-mix(in oklab, var(--gold-soft) 66%, var(--silver));
+      letter-spacing: 0.2px;
+    }
+    .submeta{
+      margin-top: 12px;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      line-height: 1.65;
+      color: rgba(232,232,234,0.64);
+      max-width: 82ch;
+    }
+
+    .article{
+      font-size: 1.08rem;
+      line-height: 1.85;
+      color: color-mix(in oklab, var(--silver) 88%, var(--silver-dim));
+      text-align: justify;
+      text-justify: inter-word;
+    }
+    .article h2{
+      margin: 2.2rem 0 0.85rem 0;
+      font-family: var(--font-ui);
+      font-size: 0.88rem;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: color-mix(in oklab, var(--gold) 62%, var(--silver));
+      border-left: 3px solid var(--gold);
+      padding-left: 12px;
+    }
+    .article h3{
+      margin: 1.6rem 0 0.7rem 0;
+      font-family: var(--font-main);
+      font-size: 1.22rem;
+      font-style: italic;
+      color: color-mix(in oklab, var(--gold-soft) 55%, var(--silver));
+    }
+    .article p{ margin: 0 0 1.25rem 0; }
+    .article ul{ margin: 0 0 1.25rem 0; padding-left: 22px; }
+    .article li{ margin: 0.5rem 0; }
+    .article ol{ margin: 0 0 1.25rem 0; padding-left: 22px; }
+
+    .eq{
+      margin: 1.4rem 0;
+      padding: 18px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.22);
+      overflow-x:auto;
+      color: rgba(232,232,234,0.94);
+      font-size: 1.05rem;
+    }
+    .eq-title{
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .proof{
+      margin: 1.5rem 0;
+      padding: 20px 20px;
+      border-radius: 12px;
+      border-left: 4px solid var(--gold);
+      background: rgba(212,175,55,0.04);
+      position: relative;
+    }
+    .proof-label{
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .policy-box{
+      margin: 1.5rem 0;
+      padding: 18px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(122,166,255,0.25);
+      background: linear-gradient(135deg, rgba(10,20,40,0.5), rgba(5,10,20,0.7));
+      backdrop-filter: blur(10px);
+    }
+    .policy-box h4{
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #7aa6ff;
+      margin: 0 0 10px 0;
+    }
+    .policy-box ul{
+      margin:0; padding-left:18px;
+      color: rgba(179,209,255,0.88);
+      font-size: 0.98rem;
+      line-height: 1.65;
+    }
+
+    .refs{
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      line-height: 1.7;
+      color: rgba(232,232,234,0.68);
+    }
+    .refs ol{ margin: 0; padding-left: 20px; }
+    .refs li{ margin: 0.65rem 0; }
+
+    footer{
+      margin-top: 8px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      color: rgba(232,232,234,0.58);
+      text-align: center;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .btn, .glass::after{ transition: none !important; }
+    }
+
+    @media (max-width: 760px){
+      .glass{ padding: 20px 18px; }
+      .article{ font-size: 1.02rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+
+  <nav aria-label="Primary">
+    <button id="brand" type="button" aria-label="Back to index">Anıl Kaya</button>
+    <div id="actions">
+      <a class="btn" href="index.html">Home</a>
+      <button class="btn" id="theme" type="button" aria-pressed="false" aria-label="Toggle theme">Light</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="wrap">
+
+      <section class="glass" aria-label="Header">
+        <header>
+          <h1>How Smoothing FX Variation Breaks Nominal Anchors and Generates Arbitrary Mispricing Signals (Though Sort of Necessarily)</h1>
+          <p class="submeta">
+            <strong>Abstract:</strong> During the 2023–2024 policy-rate tightening (8.5% to 50%), Türkiye deployed aggressive administrative FX management (mandatory conversion requirements for exporters (peaking at 70%), differential reserve requirements penalizing FX deposits, and liraization incentives. While these measures reduced observed exchange-rate volatility and lowered measured "direct" pass-through, they simultaneously broke the exchange rate's coordinating role as a nominal anchor. In  this piece I try to give my take on the mechanism through which FX smoothing reduces the information content of the observed rate, induces pricing based on "shadow" replacement-cost expectations, and paradoxically raises domestic prices in FX terms even as measured So pass-through declines. Mathematical guidance preliminarily and institutional evidence demonstrate that mispricing is not a second-order effect but an inherent feature of managed regimes that suppress price signals.
+          </p>
+        </header>
+      </section>
+
+      <section class="glass article" aria-label="Article content">
+
+        <h2>1. Introduction: The Türkiye FX Management Regime (2023–2024)</h2>
+        
+        <p>
+          The Central Bank of the Republic of Türkiye (CBRT) initiated aggressive monetary tightening in June 2023, raising the policy rate from 8.5% to 50% by March 2024 to re-establish disinflation and anchor expectations (Central Bank of the Republic of Türkiye [CBRT], 2024a). Simultaneously, authorities maintained and refined a suite of administrative FX interventions designed to smooth nominal exchange-rate volatility and support "liraization."
+        </p>
+
+        <div class="policy-box">
+          <h4>Key FX Management Instruments (2022–2025)</h4>
+          <ul>
+            <li><strong>Mandatory FX conversion for exporters:</strong> Introduced January 2022 at 25%, raised to 40% (April 2022), peaked at 70% (mid-2023 including rediscount credit conditions), reduced to 40% (November 2023), then 30% (June 2024), then 25% (February 2025), then increased again to 35% (May 2025) (CBRT, 2024b; Tacirler Investment, 2025).</li>
+            <li><strong>Reserve requirement (RR) Uptake:</strong> RR ratios for FX deposits raised by 200 basis points across all maturities; additional RR for FX-denominated deposits maintained in Turkish lira increased from 4% to 8%; remuneration rates adjusted to favor TL deposits (CBRT, 2024c; Daily Sabah, 2024a).</li>
+            <li><strong>Transition-to-lira incentives:</strong> Banks with TL deposit share below 60% faced monthly increase targets of 0.3 percentage points; commission rates tied to liraization performance; FX conversion support rate set at 3% for exporters converting to TL (Tacirler Investment, 2025).</li>
+            <li><strong>Loan-growth-based RR:</strong> Reserve requirements introduced for loan growth exceeding 2% monthly, reinforcing quantitative tightening (Daily Sabah, 2024b).</li>
+          </ul>
+        </div>
+
+        <p>
+          This constellation of policies created a de facto "managed float with heavy administrative controls" this is technically not a declared crawling band or hard peg, but a regime where FX supply was forced (via conversion mandates), FX demand was penalized (via differential RR), and the observed exchange rate was systematically smoothed relative to fundamentals.
+        </p>
+
+        <h2>2. Why Smoothing Lowers Measured ERPT</h2>
+
+        <p>
+          A canonical reduced-form specification for domestic inflation is
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Equation 1: Reduced-form inflation</div>
+          \[
+          \pi_t = \alpha + \rho\,\pi_{t-1} + \gamma\,x_t + \beta\,\Delta e_t + \delta\,\pi_t^{*} + u_t
+          \]
+          <p style="margin:10px 0 0 0; font-size:0.92rem; color:rgba(232,232,234,0.68);">
+            where \(\pi_t\) is inflation, \(x_t\) is the output gap, \(\Delta e_t\) is nominal depreciation, \(\pi_t^{*}\) is foreign inflation, and \(\beta\) is the "direct" pass-through coefficient.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="proof-label">Proposition 1 (Variance Decomposition)</div>
+          <p style="margin:0;">
+            If policy reduces \(\mathrm{Var}(\Delta e_t)\) by administrative smoothing, the variance contribution of the exchange-rate channel to inflation variance declines mechanically:
+          </p>
+          \[
+          \mathrm{Var}(\beta\,\Delta e_t) = \beta^2 \, \mathrm{Var}(\Delta e_t).
+          \]
+          <p style="margin:10px 0 0 0;">
+            Empirically, this manifests as lower observed correlation between \(\Delta e_t\) and \(\pi_t\), even if the structural pass-through parameter \(\beta\) (the deep pricing rule) is unchanged.
+          </p>
+        </div>
+
+        <p>
+          For Türkiye, Kara et al. (2005) documented declining pass-through post-2001, attributing this to reduced indexation and improved credibility, while noting that ERPT remained economically significant especially for traded goods. Similarly, cross-country evidence from BIS (Mihaljek & Klau, 2008) and IMF (Carrière-Swallow et al., 2016) confirms that lower pass-through is associated with credible inflation-targeting regimes and anchored expectations, not with mechanical suppression of FX volatility.
+        </p>
+
+        <h2>3. How FX Smoothing Breaks the Nominal Anchor</h2>
+
+        <p>
+          When the exchange rate is <em>freely floating</em> or lightly managed, \(e_t\) aggregates dispersed information about fundamentals (\(F_t\): productivity, terms of trade, policy stance) and coordinates private-sector pricing and wage setting. Under heavy administrative management, \(e_t\) becomes a contaminated signal.
+        </p>
+
+        <h3>3.1 Signal Extraction and Posterior Uncertainty</h3>
+
+        <p>
+          Lets consider a firm forming expectations about the persistent component of costs. Let \(F_t\) be the unobserved fundamental (e.g., long-run equilibrium exchange rate), and \(s_t\) the observed (managed) signal. Under Gaussian assumptions,
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Equation 2: Posterior variance (signal extraction)</div>
+          \[
+          \mathrm{Var}(F_t \mid s_t) = \mathrm{Var}(F_t) - \frac{\mathrm{Cov}(F_t, s_t)^2}{\mathrm{Var}(s_t)}.
+          \]
+          <p style="margin:10px 0 0 0; font-size:0.92rem; color:rgba(232,232,234,0.68);">
+            Administrative smoothing reduces \(\mathrm{Cov}(F_t, s_t)\) (less information about \(F_t\) in \(s_t\)), thereby <em>raising</em> \(\mathrm{Var}(F_t \mid s_t)\)—posterior uncertainty increases.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="proof-label">Proposition 2 (Loss of Anchoring)</div>
+          <p style="margin:0 0 10px 0;">
+            When \(\mathrm{Var}(F_t \mid s_t)\) rises, rational agents reduce their reliance on \(s_t\) for coordination and substitute alternative anchors: lagged inflation, administered prices, sectoral rules-of-thumb, or forecast \(e_{t+k}^{\text{shadow}}\).
+          </p>
+          <p style="margin:0;">
+            <strong>Implication:</strong> Even if measured pass-through (on \(s_t\)) is low, pricing rules incorporate "shadow" exchange-rate expectations that differ systematically from \(s_t\), generating wedges and arbitrary relative-price dispersion.
+          </p>
+        </div>
+
+        <p>
+          This theoretical prediction aligns with BIS findings that pass-through is higher in economies where the exchange rate serves as an inflation anchor (Mihaljek & Klau, 2008, p. 109). Conversely, when the observed rate is heavily managed, the anchoring property degrades, and pricing coordination shifts to less efficient mechanisms.
+        </p>
+
+        <h2>4. The Mispricing Mechanism: Why Domestic Prices Rise in FX Terms</h2>
+
+        <h3>4.1 Observed vs. Shadow Exchange Rate</h3>
+
+        <p>
+          Denote the observed (administratively smoothed) exchange rate as \(\bar{e}_t\) and the replacement-cost or "shadow" rate as \(e_t^{*}\). The wedge \(\omega_t \equiv e_t^{*} - \bar{e}_t\) reflects firms' expectations of future discrete adjustments, FX rationing risk, or the effective rate faced for marginal transactions outside official channels.
+        </p>
+
+        <p>
+          For a firm using imported inputs with share \(\alpha\), the domestic log price is
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Equation 3: Pricing with shadow FX</div>
+          \[
+          p_t = \mu_t + (1-\alpha)\,c_t^{\text{dom}} + \alpha\,(e_t^{*} + p_t^{*}),
+          \]
+          <p style="margin:10px 0 0 0; font-size:0.92rem; color:rgba(232,232,234,0.68);">
+            where \(\mu_t\) is the log markup, \(c_t^{\text{dom}}\) is domestic cost, and \(p_t^{*}\) is the foreign input price.
+          </p>
+        </div>
+
+        <p>
+          The domestic price <strong>in USD terms</strong> (using the observed rate) is
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Equation 4: USD-denominated price</div>
+          \[
+          p_t^{\$} \equiv p_t - \bar{e}_t = \mu_t + (1-\alpha)\,c_t^{\text{dom}} + \alpha\,p_t^{*} + \alpha\,\omega_t.
+          \]
+        </div>
+
+        <div class="proof">
+          <div class="proof-label">Prop. 3 (FX-Mispricing Under Smoothing)</div>
+          <p style="margin:0 0 10px 0;">
+            If administrative controls raise the wedge \(\omega_t = e_t^{*} - \bar{e}_t > 0\) (shadow rate exceeds observed rate), then \(p_t^{\$}\) increases <em>even if</em> \(\Delta \bar{e}_t \approx 0\). Measured pass-through on \(\bar{e}_t\) appears low, but effective USD prices rise because firms price off \(e_t^{*}\).
+          </p>
+          <p style="margin:0;">
+            <strong>Corollary:</strong> If \(\omega_t\) varies across sectors or time (differential access to official FX, varying expectations about policy duration), relative-price dispersion increases, arbitrary mispricing emerges structurally.
+          </p>
+        </div>
+
+        <h3>4.2 Cross-Sectional Dispersion</h3>
+
+        <p>
+          The variance of log prices in FX terms across \(N\) firms is
+        </p>
+
+        <div class="eq">
+          \[
+          \mathrm{Var}_i(p_{i,t}^{\$}) = \mathrm{Var}_i(\mu_{i,t}) + \alpha^2\,\mathrm{Var}_i(\omega_{i,t}) + \text{cross-terms}.
+          \]
+          <p style="margin:10px 0 0 0; font-size:0.92rem; color:rgba(232,232,234,0.68);">
+            Administrative controls that create differential \(\omega_{i,t}\) (e.g., exporters with mandatory conversion face different effective rates than importers accessing spot markets) directly inflate price dispersion.
+          </p>
+        </div>
+
+        <h2>5. Empirical Predictions and Policy Evidence</h2>
+
+        <h3>5.1 Testable Implications</h3>
+
+        <p>
+          The framework generates falsifiable predictions:
+        </p>
+
+        <ul>
+          <li><strong>Prediction 1:</strong> Measured pass-through (regression of \(\pi_t\) on \(\Delta \bar{e}_t\)) declines during heavy FX management periods.</li>
+          <li><strong>Prediction 2:</strong> Real exchange rate (RER) appreciates if domestic inflation \(\pi_t\) exceeds foreign inflation while \(\Delta \bar{e}_t\) is compressed, raising \(p_t - \bar{e}_t\).</li>
+          <li><strong>Prediction 3:</strong> Cross-sectional price dispersion (especially in tradables) rises due to heterogeneous \(\omega_{i,t}\).</li>
+          <li><strong>Prediction 4:</strong> Surveys or micro data reveal firms pricing off "expected future FX" rather than spot \(\bar{e}_t\).</li>
+        </ul>
+
+        <h3>5.2 Türkiye Context (2023–2024)</h3>
+
+        <p>
+          During the tightening episode, the lira exhibited lower daily volatility due to conversion mandates and RR penalties, yet inflation remained elevated (peaking near 75% year-over-year in mid-2022, declining to ~65% by early 2024 before the final rate hikes). The IMF (2024) noted that while disinflation progress was underway, inflation remained well above target, and "the tight monetary stance should be maintained until significant and sustained disinflation is achieved" (para. 3).
+        </p>
+
+        <p>
+          Critically, the IMF emphasized that "structural reforms to improve price formation, reduce administered price rigidities, and enhance competition" were necessary (IMF, 2024), implicitly acknowledging that price-setting mechanisms had become distorted. The CBRT's own communications stressed that "pricing behavior" required correction this is a language consistent with firms coordinating on non-official anchors (CBRT, 2024a).
+        </p>
+
+        <h3>5.3 International Comparative Evidence</h3>
+
+        <p>
+          BIS analysis confirms that ERPT is <em>higher</em> in environments where the exchange rate serves as a nominal anchor, precisely because changes in \(e_t\) move expectations and coordinate pricing (Mihaljek & Klau, 2008). Conversely, in credible inflation-targeting regimes with well-anchored expectations, pass-through declines because firms believe inflation will remain low regardless of transitory \(e_t\) shocks—a benign form of "low pass-through" (Carrière-Swallow et al., 2016).
+        </p>
+
+        <p>
+          Türkiye's case is intermediate, pass-through declined due to administrative smoothing, yet inflation remained high and persistent, this is the "malignant" form of low measured pass-through, low correlation with \(\bar{e}_t\) but high sensitivity to \(e_t^{*}\).
+        </p>
+
+        <h2>6. Formal Proof: Administrative Controls Raise USD Prices</h2>
+
+        <div class="proof">
+          <div class="proof-label">Theorem (FX-Price Inflation Under Managed Regime)</div>
+          <p style="margin:0 0 10px 0;">
+            Let \(\bar{e}_t\) be the observed exchange rate, \(e_t^{*}\) the shadow rate perceived by firms, \(p_t\) the domestic log price level, and \(p_t^{\$} = p_t - \bar{e}_t\) the log domestic price in USD terms. Assume:
+          </p>
+          <ol style="margin:10px 0; padding-left:20px; font-size:0.98rem;">
+            <li>Domestic inflation satisfies \(\pi_t = \Delta p_t = \beta \Delta e_t^{*} + Z_t\), where \(Z_t\) captures non-FX drivers.</li>
+            <li>Administrative policy compresses \(\Delta \bar{e}_t\) such that \(\Delta \bar{e}_t = \theta \Delta e_t^{*}\) with \(0 < \theta < 1\).</li>
+            <li>Domestic inflation \(\pi_t\) exceeds foreign inflation \(\pi_t^{*}\) (partial disinflation).</li>
+          </ol>
+          <p style="margin:10px 0 0 0;"><strong>Then:</strong></p>
+          <p style="margin:5px 0 0 0;">
+            The change in USD-denominated prices is
+          </p>
+          \[
+          \Delta p_t^{\$} = \Delta p_t - \Delta \bar{e}_t = \beta \Delta e_t^{*} + Z_t - \theta \Delta e_t^{*} = \beta(1 - \theta/\beta)\,\Delta e_t^{*} + Z_t.
+          \]
+          <p style="margin:10px 0 0 0;">
+            If \(\theta < \beta\), then \(\Delta p_t^{\$} > Z_t\) whenever \(\Delta e_t^{*} > 0\). Moreover, if \(Z_t > \pi_t^{*}\) (domestic inflation exceeds foreign), cumulative \(p_t^{\$}\) rises over time even if \(\bar{e}_t\) is approximately constant.
+          </p>
+          <p style="margin:10px 0 0 0;"><strong>Interpretation:</strong> Smoothing \(\bar{e}_t\) while firms price off \(e_t^{*}\) mechanically raises domestic prices in FX terms. The "defense against pass-through" succeeds in lowering \(\text{Cov}(\pi_t, \Delta \bar{e}_t)\) but fails to prevent FX-price inflation because the structural pricing rule remains FX-sensitive.</p>
+        </div>
+
+        <h2>7. Conclusion and Policy Implications</h2>
+
+        <p>
+          Removing variation in the nominal exchange rate through administrative mandates (conversion requirements, differential reserve ratios, liraization penalties) can lower the <em>measured</em> contemporaneous pass-through from \(\bar{e}_t\) to \(\pi_t\). However, this comes at the cost of:
+        </p>
+
+        <ol>
+          <li><strong>Breaking the nominal anchor:</strong> Firms stop coordinating on \(\bar{e}_t\) and substitute noisier, heterogeneous anchors (\(e_t^{*}\), lagged inflation, sectoral rules).</li>
+          <li><strong>Generating arbitrary mispricing:</strong> Wedges between \(\bar{e}_t\) and \(e_t^{*}\) vary across firms/sectors, inflating relative-price dispersion and reducing allocative efficiency.</li>
+          <li><strong>Raising prices in FX terms:</strong> If domestic inflation remains above foreign inflation while \(\bar{e}_t\) is smoothed, the real exchange rate appreciates mechanically, and domestic prices become "expensive in dollars" international purchasing power erodes.</li>
+        </ol>
+
+        <p>
+          The Türkiye episode (2023–2024) illustrates this mechanism in practice: aggressive rate hikes combined with heavy FX management reduced observed FX volatility, yet inflation remained elevated, pricing behavior required "correction" (per CBRT language), and the regime generated the conditions for structural mispricing documented in cross-country evidence.
+        </p>
+
+        <p>
+          <strong>Was it necessary?</strong> As a transitional crisis-management tool to prevent discrete devaluation spirals, administrative FX controls can be rationalized. But as a durable regime, they substitute one distortion (high pass-through volatility) for another (broken anchors, shadow-rate pricing, and FX-denominated price inflation). The benign path to low pass-through runs through credibility and anchored expectations (Carrière-Swallow et al., 2016), not through suppressing the exchange rate's information content.
+        </p>
+
+        <h2>References</h2>
+        <div class="refs">
+          <ol>
+            <li>
+              Carrière-Swallow, Y., Gruss, B., Magud, N. E., & Valencia, F. (2016). <em>Monetary policy credibility and exchange rate pass-through</em> (IMF Working Paper No. WP/16/240). International Monetary Fund. https://www.imf.org/external/pubs/ft/wp/2016/wp16240.pdf
+            </li>
+            <li>
+              Central Bank of the Republic of Türkiye. (2024a). <em>Monetary policy for 2024</em>. https://www.tcmb.gov.tr/wps/wcm/connect/bdc8cd52-254c-4c96-8cf8-6d146462f311/2024Monetarypolicy.pdf
+            </li>
+            <li>
+              Central Bank of the Republic of Türkiye. (2024b). Press release on reserve requirements (2024-02). https://www.tcmb.gov.tr/wps/wcm/connect/EN/TCMB+EN/Main+Menu/Announcements/Press+Releases/2024/ANO2024-02
+            </li>
+            <li>
+              Central Bank of the Republic of Türkiye. (2024c). Press release on reserve requirements (2024-23). https://www.tcmb.gov.tr/wps/wcm/connect/EN/TCMB+EN/Main+Menu/Announcements/Press+Releases/2024/ANO2024-23
+            </li>
+            <li>
+              Daily Sabah. (2024a, September 21). Turkish central bank lifts reserve ratios for lira deposits. https://www.dailysabah.com/business/finance/turkish-central-bank-lifts-reserve-ratios-for-lira-deposits
+            </li>
+            <li>
+              Daily Sabah. (2024b, May 17). CBRT introduces reserve requirement based on loan growth. https://www.dailysabah.com/business/economy/cbrt-introduces-reserve-requirement-based-on-loan-growth
+            </li>
+            <li>
+              International Monetary Fund. (2024, August 28). <em>Turkiye: 2024 Article IV Mission press release</em>. https://www.imf.org/en/news/articles/2024/08/28/pr24311-turkiye-2024-article-iv-mission-press-release
+            </li>
+            <li>
+              Kara, H., Küçük-Tuğer, H., Özlale, Ü., Tuğer, B., Yavuz, D., & Yücel, E. M. (2005). <em>Exchange rate pass-through in Turkey: Has it changed and to what extent?</em> (Working Paper No. 05/04). Central Bank of the Republic of Turkey. https://www.tcmb.gov.tr/wps/wcm/connect/e73b26de-2e6e-4949-a7d9-ffd15c737328/WP0504ENG.pdf
+            </li>
+            <li>
+              Mihaljek, D., & Klau, M. (2008). Exchange rate pass-through in emerging market economies: What has changed and why? In <em>BIS Papers No. 35: Transmission mechanisms for monetary policy in emerging market economies</em> (pp. 103–130). Bank for International Settlements. https://www.bis.org/publ/bppdf/bispap35d.pdf
+            </li>
+            <li>
+              Tacirler Investment. (2025, May 5). <em>Macro and politics: CBRT adjustments to macroprudential framework</em>. https://tacirler.com.tr/en/macro-and-politics--2603
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="glass" aria-label="Footer">
+        <footer>
+          © <span id="yr"></span> Anıl Kaya — Technical note on FX management, nominal anchors, and mispricing.
+        </footer>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      "use strict";
+
+      const brand = document.getElementById("brand");
+      brand.addEventListener("click", () => { window.location.href = "index.html"; });
+
+      const LSKEY = "theme";
+      const root = document.documentElement;
+      const themeBtn = document.getElementById("theme");
+
+      function applyTheme(theme, persist){
+        root.setAttribute("data-theme", theme);
+        if(persist) localStorage.setItem(LSKEY, theme);
+        const isLight = (theme === "light");
+        themeBtn.setAttribute("aria-pressed", String(isLight));
+        themeBtn.textContent = isLight ? "Dark" : "Light";
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if(meta) meta.setAttribute("content", isLight ? "#fbfbfc" : "#050505");
+      }
+
+      function getInitialTheme(){
+        const saved = localStorage.getItem(LSKEY);
+        if(saved === "light" || saved === "dark") return saved;
+        return "dark";
+      }
+
+      applyTheme(getInitialTheme(), false);
+      themeBtn.addEventListener("click", () => {
+        const now = (root.getAttribute("data-theme") === "light") ? "dark" : "light";
+        applyTheme(now, true);
+      });
+
+      const updateSpotlight = (e) => {
+        const cards = document.querySelectorAll(".glass");
+        cards.forEach(card => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty("--mouse-x", x + "px");
+          card.style.setProperty("--mouse-y", y + "px");
+        });
+      };
+      document.addEventListener("mousemove", updateSpotlight, { passive: true });
+
+      function renderMath(){
+        if(!window.renderMathInElement) return;
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ]
+        });
+      }
+      window.addEventListener("load", () => { setTimeout(renderMath, 50); });
+
+      document.getElementById("yr").textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>
