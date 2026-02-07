@@ -2084,7 +2084,8 @@ const ARTICLES = [
   { id:"stoch-vol", file:"articles/forecasting.html", category:"Time Series", title:"Why ML is (almost) useless?", date:"JAN 2026", textureKey:"mars", enabled:true },
   { id:"game-theory-cb", file:"articles/game.html", category:"Monetary Economics", title:"Central Bank Credibility", date:"JAN 2026", textureKey:"jupiter", enabled:true },
   { id:"sign-rest", file:"articles/ERPT.html", category:"Macroeconometrics", title:"ERPT", date:"JAN 2026", textureKey:"venus", enabled:true },
-  { id:"monte-carlo", file:"articles/monte-carlo.html", category:"Computational Methods", title:"Monte Carlo Simulation", date:"JAN 2026", textureKey:"mc", enabled:true }
+  { id:"monte-carlo", file:"articles/monte-carlo.html", category:"Computational Methods", title:"Monte Carlo Simulation", date:"JAN 2026", textureKey:"mc", enabled:true },
+  { id:"erpt-defense", file:"articles/price.html", category:"International Finance", title:"ERPT-Defense game", date:"FEB 2026", textureKey:"erpt", enabled:true }
 ].filter(x=>x.enabled);
 
 const TEX = [
@@ -2313,9 +2314,38 @@ function drawMonteCarlo(g, size){
   g.putImageData(img,0,0);
 }
 
+function drawERPT(g, size){
+  const img = g.createImageData(size,size); const d = img.data;
+  const cShield = [0.1, 0.6, 0.6]; // Cyan/Teal base
+  const cDefense = [0.2, 0.1, 0.4]; // Deep Purple
+  for(let y=0;y<size;y++){
+    const v = y/(size-1);
+    for(let x=0;x<size;x++){
+      const u = x/(size-1);
+      // Hexagonal/Grid pattern for "Defense"
+      const hex = fbm2(u*30.0, v*30.0, 4.4);
+      const grid = smoothstep(0.4, 0.6, Math.abs(Math.sin(u*40.0)*Math.sin(v*40.0)));
+      
+      const n = fbm2(u*8.0, v*8.0, 2.2);
+      let r = mix(cDefense[0], cShield[0], n);
+      let gg = mix(cDefense[1], cShield[1], n);
+      let b = mix(cDefense[2], cShield[2], n);
+      
+      // Add "cracks" or "imperfections"
+      const crack = smoothstep(0.45, 0.50, fbm2(u*50.0, v*50.0, 9.9));
+      r += 0.2 * grid; gg += 0.2 * grid; b += 0.3 * grid;
+      
+      if(crack > 0.48 && crack < 0.52) { r=0.9; gg=0.8; b=0.2; } // Gold cracks
+      
+      const i = (y*size + x)*4; d[i+0] = to255(r); d[i+1] = to255(gg); d[i+2] = to255(b); d[i+3] = 255;
+    }
+  }
+  g.putImageData(img,0,0);
+}
+
 function buildBaseTextures(){
   const SZ = 512;
-  return { earth: makeCanvasTexture(drawEarth, SZ), moon: makeCanvasTexture(drawMoon, SZ), mars: makeCanvasTexture(drawMars, SZ), venus: makeCanvasTexture(drawVenus, SZ), mc: makeCanvasTexture(drawMonteCarlo, SZ) };
+  return { earth: makeCanvasTexture(drawEarth, SZ), moon: makeCanvasTexture(drawMoon, SZ), mars: makeCanvasTexture(drawMars, SZ), venus: makeCanvasTexture(drawVenus, SZ), mc: makeCanvasTexture(drawMonteCarlo, SZ), erpt: makeCanvasTexture(drawERPT, SZ) };
 }
 
 function buildEquationLayer(){
@@ -2415,7 +2445,7 @@ try{
 
   const baseTextures = buildBaseTextures();
   const planetMaterial = (art) => {
-    let map = baseTextures.earth; if(art.textureKey==="moon") map=baseTextures.moon; else if(art.textureKey==="mars") map=baseTextures.mars; else if(art.textureKey==="venus") map=baseTextures.venus; else if(art.textureKey==="mc") map=baseTextures.mc;
+    let map = baseTextures.earth; if(art.textureKey==="moon") map=baseTextures.moon; else if(art.textureKey==="mars") map=baseTextures.mars; else if(art.textureKey==="venus") map=baseTextures.venus; else if(art.textureKey==="mc") map=baseTextures.mc; else if(art.textureKey==="erpt") map=baseTextures.erpt;
     return new THREE.MeshStandardMaterial({ map, roughness:0.75, metalness:0.15 });
   };
   const atmosphereMaterial = (color, opacity) => new THREE.ShaderMaterial({
@@ -2475,7 +2505,7 @@ try{
     for (let i=0;i<n;i++){
       const art = ARTICLES[i], radius = planetBaseRadius * finalScale;
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 64), planetMaterial(art)); mesh.userData.article = art; mesh.userData.radius = radius;
-      let atColor = "#90b0ff"; if(art.textureKey==="earth") atColor = "#0066ff"; else if(art.textureKey==="mars") atColor = "#ff4400"; else if(art.textureKey==="venus") atColor = "#ffd080"; else if(art.textureKey==="mc") atColor = "#a7b7ff"; else atColor = "#cfd3ff";
+      let atColor = "#90b0ff"; if(art.textureKey==="earth") atColor = "#0066ff"; else if(art.textureKey==="mars") atColor = "#ff4400"; else if(art.textureKey==="venus") atColor = "#ffd080"; else if(art.textureKey==="mc") atColor = "#a7b7ff"; else if(art.textureKey==="erpt") atColor = "#00e5ff"; else atColor = "#cfd3ff";
       const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 64, 64), atmosphereMaterial(atColor, 0.45)); atmo.userData.article = art;
       const label = labelSprite(art.title); label.scale.multiplyScalar(finalScale * labelScaleMult); label.userData.article = art;
       const baseAngle = (i / n) * Math.PI*2 + Math.PI/5;
