@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta name="theme-color" content="#050505" />
 
-  <title>Nash-Equilibrium Active-Risk Optimization with Robust Validation | Technical Note</title>
-  <meta name="description" content="A game-theoretic, Nash-equilibrium portfolio optimizer for active management: EWMA moments, covariance shrinkage, robust drift-adversary minimax objective, and leakage-resistant walk-forward validation with PSR/DSR and stationary-bootstrap uncertainty." />
+  <title>Nash Equilibrium Active Risk Optimization | Technical Note</title>
+  <meta name="description" content="A game theoretic Nash equilibrium portfolio optimizer for active management." />
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous">
@@ -55,7 +55,7 @@
       margin: 0;
       background: var(--bg);
       color: var(--silver);
-      font-family: var(--font-main);
+      font-family: var(--font-main) !important;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       transition: background 0.3s ease, color 0.3s ease;
@@ -114,7 +114,7 @@
 
     #brand {
       appearance: none; border: none; background: transparent;
-      font-family: var(--font-ui);
+      font-family: var(--font-ui) !important;
       font-size: 0.92rem;
       font-weight: 900;
       letter-spacing: 2px;
@@ -128,7 +128,7 @@
     #actions { display: flex; align-items: center; gap: 10px; }
     
     .btn {
-      font-family: var(--font-ui);
+      font-family: var(--font-ui) !important;
       font-size: 0.75rem;
       letter-spacing: 1px;
       text-transform: uppercase;
@@ -187,7 +187,7 @@
       border-top: 1px solid color-mix(in oklab, var(--border) 150%, white);
       border-left: 1px solid color-mix(in oklab, var(--border) 120%, white);
       border-radius: 14px;
-      padding: 26px 28px;
+      padding: 26px 36px;
       box-shadow: 0 10px 34px rgba(0,0,0,0.15);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
@@ -213,85 +213,113 @@
       letter-spacing: 0.2px;
     }
 
-    /* Condensed Abstract Styling */
-    .submeta {
-      margin-top: 14px;
-      font-family: var(--font-ui);
-      font-size: 0.88rem;
-      line-height: 1.65;
-      color: color-mix(in oklab, var(--silver) 70%, transparent);
-      max-width: 90ch;
-      transition: all 0.3s ease;
+    /* Aesthetically Perfect Read More Component */
+    .abstract-container {
+      position: relative;
+      margin-top: 18px;
     }
     
-    .limit-lines {
+    .abstract-text {
+      font-family: var(--font-ui) !important;
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: color-mix(in oklab, var(--silver) 75%, transparent);
+      max-width: 90ch;
+      transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    
+    .abstract-container:not(.expanded) .abstract-text {
       display: -webkit-box;
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 4;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    }
+
+    .expand-btn-wrapper {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: -12px;
+      position: relative;
+      z-index: 10;
+      opacity: 1;
+    }
+    
+    .abstract-container.expanded .expand-btn-wrapper {
+      margin-top: 20px;
     }
 
     .expand-btn {
-      background: rgba(212,175,55,0.08);
-      border: 1px solid rgba(212,175,55,0.25);
-      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid color-mix(in oklab, var(--gold) 35%, transparent);
+      border-radius: 30px;
       color: var(--gold);
-      font-family: var(--font-ui);
+      font-family: var(--font-ui) !important;
       font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+      font-weight: 800;
+      letter-spacing: 1px;
       text-transform: uppercase;
       cursor: pointer;
-      padding: 6px 12px;
-      margin-top: 12px;
+      padding: 8px 20px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
+    
     .expand-btn:hover {
-      background: rgba(212,175,55,0.15);
-      border-color: rgba(212,175,55,0.5);
+      background: var(--gold);
+      color: #000;
+      border-color: var(--gold);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px color-mix(in oklab, var(--gold) 35%, transparent);
     }
+    
     .expand-btn svg {
-      width: 14px; height: 14px;
-      transition: transform 0.3s ease;
+      width: 16px; height: 16px;
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      stroke: currentColor;
     }
-    .expand-btn[aria-expanded="true"] svg {
+    
+    .abstract-container.expanded .expand-btn svg {
       transform: rotate(180deg);
     }
 
     .article {
-      font-size: 1.08rem;
+      font-size: 1.15rem;
       line-height: 1.85;
-      color: color-mix(in oklab, var(--silver) 88%, var(--silver-dim));
+      color: color-mix(in oklab, var(--silver) 92%, var(--silver-dim));
       text-align: justify;
       text-justify: inter-word;
     }
     .article h2 {
-      margin: 2.2rem 0 0.85rem 0;
-      font-family: var(--font-ui);
-      font-size: 0.88rem;
+      margin: 3.2rem 0 1.2rem 0;
+      font-family: var(--font-ui) !important;
+      font-size: 1rem;
       letter-spacing: 1.3px;
       text-transform: uppercase;
       color: color-mix(in oklab, var(--gold) 62%, var(--silver));
       border-left: 3px solid var(--gold);
-      padding-left: 12px;
+      padding-left: 14px;
     }
     .article h3 {
-      margin: 1.6rem 0 0.7rem 0;
-      font-family: var(--font-main);
-      font-size: 1.22rem;
+      margin: 2.2rem 0 0.8rem 0;
+      font-family: var(--font-main) !important;
+      font-size: 1.35rem;
       font-style: italic;
       color: color-mix(in oklab, var(--gold-soft) 55%, var(--silver));
     }
-    .article p { margin: 0 0 1.25rem 0; }
-    .article ul, .article ol { margin: 0 0 1.25rem 0; padding-left: 22px; }
-    .article li { margin: 0.5rem 0; }
+    .article p { margin: 0 0 1.5rem 0; }
+    .article ul, .article ol { margin: 0 0 1.5rem 0; padding-left: 22px; }
+    .article li { margin: 0.6rem 0; }
 
     .eq {
-      margin: 1.4rem 0;
-      padding: 18px 18px;
+      margin: 1.8rem 0;
+      padding: 22px 22px;
       border-radius: 12px;
       border: 1px solid rgba(128,128,128,0.15);
       background: rgba(0,0,0,0.22);
@@ -302,7 +330,7 @@
     [data-theme="light"] .eq { background: rgba(0,0,0,0.03); }
     
     .eq-title {
-      font-family: var(--font-ui);
+      font-family: var(--font-ui) !important;
       font-size: 0.78rem;
       letter-spacing: 1.1px;
       text-transform: uppercase;
@@ -311,8 +339,8 @@
     }
 
     .proof {
-      margin: 1.5rem 0;
-      padding: 20px 20px;
+      margin: 1.8rem 0;
+      padding: 24px 24px;
       border-radius: 12px;
       border-left: 4px solid var(--gold);
       background: rgba(212,175,55,0.04);
@@ -321,7 +349,7 @@
     [data-theme="light"] .proof { background: rgba(212,175,55,0.08); }
     
     .proof-label {
-      font-family: var(--font-ui);
+      font-family: var(--font-ui) !important;
       font-size: 0.8rem;
       letter-spacing: 1.2px;
       text-transform: uppercase;
@@ -331,8 +359,8 @@
     }
 
     .policy-box {
-      margin: 1.5rem 0;
-      padding: 18px 18px;
+      margin: 1.8rem 0;
+      padding: 22px 22px;
       border-radius: 12px;
       border: 1px solid rgba(122,166,255,0.25);
       background: linear-gradient(135deg, rgba(10,20,40,0.5), rgba(5,10,20,0.7));
@@ -345,38 +373,38 @@
     }
 
     .policy-box h4 {
-      font-family: var(--font-ui);
+      font-family: var(--font-ui) !important;
       font-size: 0.82rem;
       letter-spacing: 1.2px;
       text-transform: uppercase;
       color: #7aa6ff;
-      margin: 0 0 10px 0;
+      margin: 0 0 12px 0;
     }
     [data-theme="light"] .policy-box h4 { color: #0056b3; }
     
     .policy-box ul {
       margin: 0; padding-left: 18px;
       color: rgba(179,209,255,0.88);
-      font-size: 0.98rem;
-      line-height: 1.65;
+      font-size: 1.05rem;
+      line-height: 1.7;
     }
     [data-theme="light"] .policy-box ul { color: #333; }
 
     .refs {
-      font-family: var(--font-ui);
-      font-size: 0.84rem;
+      font-family: var(--font-ui) !important;
+      font-size: 0.88rem;
       line-height: 1.7;
       color: color-mix(in oklab, var(--silver) 68%, transparent);
     }
     .refs ol { margin: 0; padding-left: 20px; }
-    .refs li { margin: 0.65rem 0; }
+    .refs li { margin: 0.75rem 0; }
 
     footer {
       margin-top: 8px;
       padding-top: 18px;
       border-top: 1px solid var(--border);
-      font-family: var(--font-ui);
-      font-size: 0.78rem;
+      font-family: var(--font-ui) !important;
+      font-size: 0.8rem;
       color: color-mix(in oklab, var(--silver) 58%, transparent);
       text-align: center;
     }
@@ -408,89 +436,81 @@
 
       <section class="glass" aria-label="Header">
         <header>
-          <h1>Nash-Equilibrium Portfolio Optimization</h1>
+          <h1>Nash Equilibrium Portfolio Optimization</h1>
           
-          <div class="abstract-container">
-            <p class="submeta limit-lines" id="abstractText">
-              <strong>note:</strong> NOT ANY FINANCIAL ADVICE. We build a monthly-rebalanced active equity strategy (BIST names vs. a benchmark) that is deliberately engineered to be hard to fool.
-              The baseline idea is to maximize the Information Ratio, but solemnly it is ratio-based, non-convex, and often encourages corner solutions driven by estimation noise.
-              We replaced it with a <em>two-player zero-sum game</em> between an investor choosing weights and an adversary perturbing expected returns (“drift uncertainty”).
-              The saddle point of this convex–concave game exists under standard conditions and is a Nash equilibrium as it reduces to a stable constrained quadratic program each month.
-              Moment estimates are EWMA-weighted to emphasize recent regimes, covariance is shrinkage-regularized to reduce optimizer blow-ups, and validation uses walk-forward evaluation with an embargo day, turnover costs, and selection-bias-aware diagnostics (PSR/DSR) plus stationary-bootstrap uncertainty bands.
-            </p>
-            <button class="expand-btn" id="expandBtn" aria-expanded="false" aria-controls="abstractText">
-              <span class="btn-text">Read Full Abstract</span>
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
+          <div class="abstract-container" id="abstractContainer">
+            <div class="abstract-text">
+              <strong>Note</strong> This is definitely not financial advice. I decided to build an active equity strategy balancing BIST names against a benchmark on a monthly basis. The whole thing is built to be extremely difficult to fool. You see most people try to maximize the Information Ratio directly. The problem is that this approach relies on ratios and lacks convexity. It usually just pushes you into corner solutions because of estimation noise. I decided to replace that fragile setup with a two player zero sum game. One player is the investor picking weights and the other is an adversary messing with expected returns to simulate drift uncertainty. We can find a saddle point for this game under standard conditions. This point acts as a Nash equilibrium. Every month it simplifies down into a nice stable quadratic program. I used exponentially weighted moving averages for the moment estimates. This keeps the focus squarely on recent market regimes. The covariance matrix gets regularized through shrinkage so the optimizer does not blow up on us. For validation I relied on a walk forward evaluation. This includes an embargo day along with turnover costs and diagnostics that account for selection bias like PSR and DSR. Finally I wrapped it all in stationary bootstrap uncertainty bands.
+            </div>
+            <div class="expand-btn-wrapper">
+              <button class="expand-btn" id="expandBtn" aria-expanded="false" aria-controls="abstractContainer">
+                <span class="btn-text">Read Full Abstract</span>
+                <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+              </button>
+            </div>
           </div>
         </header>
       </section>
 
       <section class="glass article" aria-label="Article content">
 
-        <h2>1. Problem Setup: Active Management Without Thinking</h2>
+        <h2>1. Problem Setup</h2>
 
         <p>
-          Let \(P_{t,i}\) be the adjusted price of asset \(i\) at trading day \(t\), and \(B_t\) the benchmark price level.
-          Define simple returns \(r_{t,i} = P_{t,i}/P_{t-1,i}-1\) and \(b_t = B_t/B_{t-1}-1\).
-          We focus on <em>active returns</em>:
+          Let us define \(P_{t,i}\) as the adjusted price of an asset \(i\) on a given trading day \(t\). We also need \(B_t\) to represent the benchmark price level. From there we can calculate simple returns. The asset return is \(r_{t,i} = P_{t,i}/P_{t-1,i} - 1\). The benchmark return is \(b_t = B_t/B_{t-1} - 1\). Our primary focus naturally falls on active returns.
         </p>
 
         <div class="eq">
-          <div class="eq-title">Definition 1: Active returns</div>
+          <div class="eq-title">Definition 1 Active returns</div>
           \[
             A_{t,i} \equiv r_{t,i} - b_t,\qquad
             a_t(w) \equiv \sum_{i=1}^{N} w_i\,A_{t,i}.
           \]
-          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
-            Here \(w\in\mathbb{R}^N\) are portfolio weights, \(a_t(w)\) is portfolio active return at time \(t\), and the benchmark has active return \(0\) by definition.
+          <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
+            Here \(w\in\mathbb{R}^N\) represents our portfolio weights. The active return of the portfolio at time \(t\) is \(a_t(w)\). We naturally define the active return of the benchmark as zero.
           </p>
         </div>
 
         <p>
-          “Information Ratio” (IR) is the benchmark-relative analogue of Sharpe: expected active return divided by tracking error, where tracking error is the standard deviation of active returns. This is standard in active risk management and performance evaluation.
+          The Information Ratio serves as a benchmark relative version of the Sharpe ratio. You simply divide the expected active return by the tracking error. Tracking error is just the standard deviation of those active returns. Industry professionals use this metric constantly for active risk management and performance evaluation.
         </p>
 
         <div class="eq">
-          <div class="eq-title">Definition 2: Tracking error and Information Ratio</div>
+          <div class="eq-title">Definition 2 Tracking error and Information Ratio</div>
           \[
             \mathrm{TE}(w) = \sqrt{\mathrm{Var}\big(a_t(w)\big)},\qquad
             \mathrm{IR}(w) = \frac{\mathbb{E}[a_t(w)]}{\mathrm{TE}(w)}.
           \]
-          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
-            In practice, TE is computed as the standard deviation of \((r_p - r_b)\) over a window; this “active risk” definition is widely used.
+          <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
+            In practice we compute tracking error as the standard deviation of relative returns over a specific window. Everyone in the industry accepts this active risk definition.
           </p>
         </div>
 
-        <h2>2. Why Naïvely Maximizing IR Is a Trap</h2>
+        <h2>2. The Danger of Naively Maximizing the Information Ratio</h2>
 
         <p>
-          Directly maximizing a ratio \(\mathrm{IR}(w)=\mu(w)/\sigma(w)\) is not a convex program and is notoriously sensitive to estimation noise.
-          If \(\hat{\sigma}(w)\) becomes small due to sampling artifacts, the ratio can spike, pulling the optimizer toward unstable allocations.
-          Worse, the optimizer can “discover” spurious IR by overfitting the lookback window (classic backtest pathology).
+          Trying to directly maximize the ratio \(\mathrm{IR}(w)=\mu(w)/\sigma(w)\) usually ends badly. The problem is definitely not convex. It is also incredibly sensitive to estimation noise. Sometimes sampling artifacts cause the denominator \(\hat{\sigma}(w)\) to shrink. When that happens the entire ratio spikes artificially. This pulls the optimizer right into highly unstable allocations. Even worse the optimizer might discover a completely fake performance edge by overfitting the lookback window. We see this classic backtest pathology all the time.
         </p>
 
         <div class="proof">
-          <div class="proof-label">Observation (Fragility of ratio objectives)</div>
+          <div class="proof-label">Observation on ratio fragility</div>
           <p style="margin:0;">
-            A ratio objective can be destabilized by either numerator noise (mean estimation error) or denominator noise (tracking error estimation error).
-            In finite samples, the denominator can be especially treacherous because it is a function of covariance estimates—exactly the object that portfolio optimization amplifies.
+            These objectives easily fall apart due to noise in either the numerator or the denominator. Mean estimation error ruins the top part while tracking error estimation ruins the bottom. The denominator acts particularly treacherous in finite samples. It relies heavily on covariance estimates. Portfolio optimization inherently amplifies errors in those exact estimates.
           </p>
         </div>
 
         <p>
-          So the goal is not “maximize a pretty statistic.” The goal is: choose a portfolio rule that is mathematically well-posed, robust to estimation error, and validated in a way that resists leakage.
+          Therefore our goal moves away from just maximizing a pretty statistic. We instead need to choose a portfolio rule that rests on solid mathematical foundations. It must remain robust against estimation errors. The validation method also needs to strictly resist any data leakage.
         </p>
 
-        <h2>3. The Core Modelling Move: A Nash-Equilibrium Drift-Adversary Game</h2>
+        <h2>3. The Core Idea with a Drift Adversary Game</h2>
 
         <p>
-          We model expected active returns as uncertain. At each rebalance time \(t\), we have estimates \(\hat{\mu}_t\in\mathbb{R}^N\) and \(\hat{\Sigma}_t\in\mathbb{R}^{N\times N}\) from a trailing window.
-          But instead of trusting \(\hat{\mu}_t\), we allow an adversary to perturb it by \(\delta\), penalized by a quadratic form that scales with covariance. This yields a two-player zero-sum game:
+          I prefer to treat expected active returns as highly uncertain quantities. We calculate estimates for the mean \(\hat{\mu}_t\) and covariance \(\hat{\Sigma}_t\) from a trailing window at every rebalance time \(t\). However I refuse to blindly trust that mean estimate. Instead I introduce a theoretical adversary allowed to perturb the mean by a vector \(\delta\). This adversary faces a penalty through a quadratic form scaling with the covariance matrix. The setup creates a fascinating two player zero sum game.
         </p>
 
         <div class="eq">
-          <div class="eq-title">Equation 1: Minimax (zero-sum) formulation</div>
+          <div class="eq-title">Equation 1 Minimax formulation</div>
           \[
           \max_{w\in\mathcal{W}}\,\min_{\delta\in\mathbb{R}^N}\;
           (\hat{\mu}_t+\delta)^\top w
@@ -498,27 +518,26 @@
           +\frac{\eta}{2}\,\delta^\top \hat{\Sigma}_t^{-1}\delta
           -\tau\|w\|_2^2.
           \]
-          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
-            \(\gamma\) is risk aversion (active-risk penalty), \(\eta\) is robustness strength (smaller \(\eta\Rightarrow\) stronger adversary), and \(\tau\) is L2 regularization to avoid concentration.
+          <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
+            Here \(\gamma\) represents your risk aversion and acts as an active risk penalty. The variable \(\eta\) determines your robustness strength. A smaller value creates a stronger adversary. Finally \(\tau\) provides regularization to avoid asset concentration.
           </p>
         </div>
 
         <div class="proof">
-          <div class="proof-label">Proposition 1 (Saddle point is Nash equilibrium)</div>
+          <div class="proof-label">Proposition 1 about the Saddle Point</div>
           <p style="margin:0;">
-            Under standard convex–concave conditions (concave in \(w\), convex in \(\delta\), convex feasible set \(\mathcal{W}\)), the minimax saddle point exists and coincides with the Nash equilibrium of the corresponding zero-sum game.
-            This is the mathematical reason we can say “Nash equilibrium at every rebalance.”
+            We assume standard conditions where the function is concave in \(w\) and convex in \(\delta\) over a convex feasible set \(\mathcal{W}\). A minimax saddle point exists naturally under these rules. This point perfectly coincides with the Nash equilibrium of our zero sum game. That specific mathematical property gives us the right to claim a Nash equilibrium at every single rebalance.
           </p>
         </div>
 
-        <h3>3.1 Closed-form adversary and reduction to a stable QP</h3>
+        <h3>3.1 Finding a Closed Form Adversary</h3>
 
         <p>
-          The inner minimization is quadratic in \(\delta\), so the adversary’s best response is explicit. Differentiate with respect to \(\delta\) and set to zero:
+          Notice how the inner minimization is purely quadratic with respect to \(\delta\). This means the best response of the adversary has an explicit mathematical form. You simply take the derivative with respect to \(\delta\) and set it equal to zero.
         </p>
 
         <div class="eq">
-          <div class="eq-title">Equation 2: Adversary best response</div>
+          <div class="eq-title">Equation 2 Adversary best response</div>
           \[
             \nabla_\delta\Big(\delta^\top w + \frac{\eta}{2}\delta^\top\hat{\Sigma}_t^{-1}\delta\Big)=0
             \;\;\Rightarrow\;\;
@@ -527,33 +546,32 @@
         </div>
 
         <p>
-          Plugging \(\delta^\star(w)\) back into the objective collapses the game to a single concave maximization:
+          We then plug the optimal \(\delta^\star(w)\) back into the main objective. The entire game collapses beautifully into a single concave maximization problem.
         </p>
 
         <div class="eq">
-          <div class="eq-title">Equation 3: Reduced Nash objective (single-level)</div>
+          <div class="eq-title">Equation 3 Reduced Nash objective</div>
           \[
           w_t^\star=\arg\max_{w\in\mathcal{W}}\;
           \hat{\mu}_t^\top w
-          -\frac{1}{2}\Big(\gamma+\eta^{-1}\Big)\,w^\top\hat{\Sigma}_t w
+          -\frac{1}{2}\Big(\gamma + \frac{1}{\eta}\Big)\,w^\top\hat{\Sigma}_t w
           -\tau\|w\|_2^2.
           \]
-          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
-            The robustness term \(\eta^{-1}\) effectively adds extra curvature to the risk penalty, making the optimizer more conservative when covariance is large.
+          <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
+            The robustness term \(\eta^{-1}\) effectively adds extra curvature to our risk penalty. This simple addition makes the optimizer substantially more conservative whenever the covariance gets large.
           </p>
         </div>
 
-        <h2>4. Estimation: EWMA Moments + Shrinkage Covariance</h2>
+        <h2>4. Estimation Using Moving Averages and Shrinkage</h2>
 
-        <h3>4.1 EWMA to adapt to regime changes</h3>
+        <h3>4.1 Adapting to Market Regimes</h3>
 
         <p>
-          We use an exponentially weighted scheme so recent active returns matter more than stale history.
-          With span \(s\), the decay parameter satisfies \(\alpha = 2/(s+1)\) (the standard “span” convention in many implementations).
+          I implemented an exponentially weighted scheme. This ensures that recent active returns influence the model much more than stale historical data. We define a span \(s\) and calculate the decay parameter as \(\alpha = 2/(s+1)\). Most programming libraries use this exact span convention.
         </p>
 
         <div class="eq">
-          <div class="eq-title">Equation 4: EWMA mean and covariance</div>
+          <div class="eq-title">Equation 4 EWMA mean and covariance</div>
           \[
             \omega_k = \frac{(1-\alpha)^k}{\sum_{j=0}^{T-1}(1-\alpha)^j},\quad
             \hat{\mu}_t = \sum_{k=0}^{T-1}\omega_k\,A_{t-k},\quad
@@ -561,190 +579,173 @@
           \]
         </div>
 
-        <h3>4.2 Shrinkage to stop covariance from detonating the optimizer</h3>
+        <h3>4.2 Using Shrinkage to Stabilize Covariance</h3>
 
         <p>
-          Sample covariance is a chaos generator in portfolio optimization: small estimation errors can produce huge weight swings.
-          Shrinkage is a standard remedy: blend a noisy covariance estimate with a structured target (often diagonal or constant-correlation).
-          We use a conservative diagonal shrinkage:
+          Relying purely on sample covariance usually acts like a chaos generator during portfolio optimization. Even tiny estimation errors can trigger massive swings in your asset weights. Shrinkage provides a very reliable remedy for this issue. You basically blend a noisy covariance estimate with a highly structured target matrix. People often use a diagonal or constant correlation target. I went with a very conservative diagonal shrinkage approach here.
         </p>
 
         <div class="eq">
-          <div class="eq-title">Equation 5: Diagonal shrinkage</div>
+          <div class="eq-title">Equation 5 Diagonal shrinkage</div>
           \[
             \tilde{\Sigma}_t = (1-s)\hat{\Sigma}_t + s\,\mathrm{diag}(\hat{\Sigma}_t),
             \qquad s\in[0,1].
           \]
-          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
-            Intuition: shrinkage reduces estimation error where it hurts most (the optimizer’s quadratic form), while preserving enough structure to avoid pretending assets are independent.
+          <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
+            The intuition behind this is quite simple. Shrinkage heavily reduces estimation error right where it hurts the optimizer the most. It simultaneously preserves enough structure so we do not pretend the assets are totally independent.
           </p>
         </div>
 
-        <h2>5. Constraints and Execution: Risk Limits That Make the Strategy Real</h2>
+        <h2>5. Execution Constraints and Risk Limits</h2>
 
         <p>
-          The feasible set \(\mathcal{W}\) enforces full investment and a per-asset cap:
+          The feasible set \(\mathcal{W}\) guarantees we stay fully invested while strictly enforcing a maximum cap on any single asset.
         </p>
 
         <div class="eq">
-          <div class="eq-title">Equation 6: Feasible set</div>
+          <div class="eq-title">Equation 6 Feasible set</div>
           \[
             \mathcal{W}=\Big\{w\in\mathbb{R}^N:\;\sum_{i=1}^N w_i = 1,\;\;0\le w_i\le c\Big\}.
           \]
         </div>
 
         <p>
-          We also charge a simple proportional transaction cost based on turnover:
-          \(\mathrm{TO}_t=\|w_t-w_{t-1}\|_1\), cost \(=\kappa\cdot\mathrm{TO}_t\), applied at rebalance.
-          This prevents “paper alpha” driven by frequent reallocation.
+          The model also incorporates a simple proportional transaction cost based strictly on portfolio turnover. We calculate the absolute change in weights and apply a cost multiplier \(\kappa\) at every rebalance. This simple step aggressively prevents the illusion of paper alpha that comes from excessive trading.
         </p>
 
         <div class="policy-box">
-          <h4>Execution & Risk Controls Used</h4>
+          <h4>Execution and Risk Controls</h4>
           <ul>
-            <li><strong>Monthly rebalancing</strong> using last trading day of each month (true trading calendar dates).</li>
-            <li><strong>Per-asset weight cap</strong> \(c=15\%\) to limit concentration and reduce estimation-driven cornering.</li>
-            <li><strong>Turnover costs</strong> in basis points per unit turnover to punish churning.</li>
-            <li><strong>Coverage filter</strong> (drop assets with too many missing returns in the training window).</li>
+            <li>We rebalance monthly using the absolute last trading day of each calendar month.</li>
+            <li>A strict per asset weight cap of 15 percent limits concentration and significantly reduces estimation driven cornering.</li>
+            <li>Turnover costs are charged in basis points per unit of turnover to heavily penalize portfolio churning.</li>
+            <li>A coverage filter automatically drops any assets showing too many missing returns during the training window.</li>
           </ul>
         </div>
 
-        <h2>6. Validation: “Unbiased” Means Fighting Leakage, Not Claiming Purity</h2>
+        <h2>6. Validation by Fighting Data Leakage</h2>
 
         <p>
-          Perfectly unbiased validation is not a thing in finance, but you can aggressively remove the major, known sources of bias:
-          look-ahead, leakage at split boundaries, and performance inflation from multiple-testing.
+          Finding a perfectly unbiased validation method in finance simply does not happen in reality. You can however aggressively strip out the major known sources of bias. This means fighting look ahead errors and stopping leakage at your data split boundaries. You also must control performance inflation caused by running multiple tests.
         </p>
 
         <div class="policy-box">
-          <h4>Leakage-Resistant Validation Used</h4>
+          <h4>Leakage Resistant Validation Used</h4>
           <ul>
-            <li><strong>Walk-forward OOS:</strong> train on a trailing window; apply weights only to future days.</li>
-            <li><strong>Embargo day:</strong> exclude the day immediately preceding rebalance from training to reduce boundary leakage.</li>
-            <li><strong>Selection-bias-aware significance:</strong> PSR/DSR for Sharpe-like performance under skew/kurtosis and multiple testing.</li>
-            <li><strong>Dependent-data uncertainty:</strong> stationary bootstrap confidence interval for the annualized Information Ratio.</li>
+            <li>Walk forward testing ensures we train on a trailing window and apply those exact weights exclusively to future unseen days.</li>
+            <li>An embargo day purposefully excludes the specific day right before rebalancing from our training set to block boundary leakage.</li>
+            <li>Significance testing relies on methods aware of selection bias. We use Probabilistic and Deflated Sharpe Ratios to evaluate performance while adjusting for skewness and kurtosis and the dangers of multiple testing.</li>
+            <li>We handle dependent data uncertainty by generating a stationary bootstrap confidence interval for the annualized Information Ratio.</li>
           </ul>
         </div>
 
-        <h3>6.1 PSR/DSR: correcting performance claims for “researcher degrees of freedom”</h3>
+        <h3>6.1 Correcting Claims for Researcher Bias</h3>
 
         <p>
-          The Probabilistic Sharpe Ratio (PSR) estimates \(P(\mathrm{SR} > \mathrm{SR}^*)\) accounting for non-normality (skewness/kurtosis) and finite sample length.
-          The Deflated Sharpe Ratio (DSR) further adjusts the threshold for multiple testing / selection bias: the more strategies you tried, the more likely your “best” is just noise.
-          In our run, we computed PSR/DSR on <em>active returns</em> (so the statistic aligns with IR-like evaluation).
+          The Probabilistic Sharpe Ratio helps estimate the probability that our true performance exceeds a benchmark while accounting for non normal distributions and finite sample lengths. The Deflated Sharpe Ratio takes this a step further by adjusting the threshold for multiple testing and selection bias. If you try hundreds of strategies your best one is probably just pure statistical noise. I ran these diagnostics directly on the active returns so the final statistics align perfectly with our Information Ratio goals.
         </p>
 
-        <h3>6.2 Stationary bootstrap for IR uncertainty</h3>
+        <h3>6.2 Bootstrap Methods for Uncertainty</h3>
 
         <p>
-          Returns are weakly dependent, so IID bootstrap confidence intervals are optimistic.
-          Stationary bootstrap resamples blocks of random length (geometric) to preserve short-range dependence while still producing a stationary pseudo-series.
-          We used it to form a rough 95% uncertainty interval for annualized IR.
+          Financial returns exhibit weak dependence which makes standard independent bootstrap confidence intervals far too optimistic. The stationary bootstrap fixes this by resampling blocks of random lengths drawn from a geometric distribution. This preserves short range dependence while still generating a strictly stationary pseudo series. I applied this technique to construct a rigorous 95 percent uncertainty interval around the annualized Information Ratio.
         </p>
 
-        <h2>7. Empirical Output From the Run (2023–Present)</h2>
+        <h2>7. Empirical Output From the Recent Run</h2>
 
         <p>
-          Below are the audit metrics reported by the backtest execution (walk-forward OOS, transaction cost model enabled).
-          Treat them as <em>an output of a specific run</em>, not a universal law: uncertainty is the point.
+          You can review the specific audit metrics reported by the recent backtest execution below. This run used strict walk forward testing with the transaction cost model fully enabled. Please treat these numbers simply as the output of one specific run rather than some universal law. Acknowledging that inherent uncertainty is the entire point of this exercise.
         </p>
 
         <div class="eq">
-          <div class="eq-title">Backtest audit metrics (OOS)</div>
+          <div class="eq-title">Backtest audit metrics</div>
           \[
           \begin{aligned}
           \text{CAGR (Portfolio)} &= 63.3654\%,\quad \text{CAGR (Benchmark)} = 49.4504\%\\
           \sigma_{\text{ann}}(\text{Portfolio}) &= 30.4660\%,\quad \sigma_{\text{ann}}(\text{Benchmark}) = 27.9692\%\\
           \text{Sharpe (Portfolio)} &= 1.7650,\quad \text{Sharpe (Benchmark)} = 1.5773\\
           \text{Tracking Error (Ann.)} &= 13.7237\%,\quad \text{Information Ratio (Ann.)} = 0.7036\\
-          \text{IR 95\% CI (stationary bootstrap)} &= [-0.5191,\; 1.9841]\\
+          \text{IR 95\% CI} &= [-0.5191,\; 1.9841]\\
           \text{Max Drawdown (Portfolio)} &= -24.7214\%,\quad \text{Max Drawdown (Benchmark)} = -21.9586\%\\
           \text{Avg Turnover (monthly)} &= 1.0303\\
           \text{PSR on Active } (\mathrm{SR}^*>0) &= 1.0000,\quad \text{DSR on Active } (\mathrm{SR}^*>0) = 1.0000
           \end{aligned}
           \]
-          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
-            A PSR/DSR reported as 1.0000 typically means “numerically extremely close to 1” for the sample and threshold used—this can happen with strong active returns,
-            but it should also trigger suspicion: confirm you did not implicitly optimize hyperparameters on the same evaluation slice.
+          <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
+            Seeing a probability ratio reported as exactly one typically just means the value sits extremely close to one for that specific sample. Strong active returns certainly cause this. However seeing a perfect score should always trigger some immediate suspicion. You must carefully confirm that you did not implicitly optimize any hyperparameters on your evaluation data slice.
           </p>
         </div>
 
-        <h2>8. How This Surpassed the Baseline (in Math, Not Marketing)</h2>
+        <h2>8. Mathematical Improvements Over the Baseline</h2>
 
-        <h3>8.1 We removed the ratio objective without losing the intent</h3>
+        <h3>8.1 Removing the Ratio Objective</h3>
 
         <p>
-          The baseline idea (“maximize IR”) is a ratio of random variables estimated with error.
-          Our replacement objective is a concave quadratic utility in \(w\) with explicit robustness:
-          it still rewards expected active return but penalizes active risk with additional curvature from an adversary.
-          This makes the monthly optimization stable under estimation error—precisely where naive IR maximization breaks.
+          The baseline concept involves maximizing a ratio of random variables that we can only ever estimate with significant error. My replacement objective utilizes a concave quadratic utility in \(w\) featuring explicit robustness guarantees. The new setup still generously rewards expected active returns while penalizing active risk. The adversary adds critical extra curvature to that penalty. This elegant trick keeps the monthly optimization incredibly stable under heavy estimation error. That is the exact spot where naive ratio maximization usually breaks down.
         </p>
 
-        <h3>8.2 We enforced existence of a solution at each rebalance</h3>
+        <h3>8.2 Enforcing the Existence of a Solution</h3>
 
         <div class="proof">
-          <div class="proof-label">Proposition 2 (Existence and stability)</div>
+          <div class="proof-label">Proposition 2 Existence and stability</div>
           <p style="margin:0;">
-            With \(\tilde{\Sigma}_t \succeq 0\), \(\gamma+\eta^{-1}>0\), and convex compact \(\mathcal{W}\), the reduced objective in Equation 3 is concave in \(w\),
-            hence the maximizer exists. The original two-player formulation has a saddle point under convex–concave conditions, interpreted as a Nash equilibrium.
+            Given our specific parameter constraints and a convex compact set \(\mathcal{W}\) the reduced objective remains strictly concave in \(w\). This mathematically guarantees that a clear maximizing solution exists. The original two player formulation possesses a clear saddle point under these conditions. We interpret this wonderful property as a true Nash equilibrium.
           </p>
         </div>
 
-        <h3>8.3 We quantified uncertainty instead of pretending one backtest number is “truth”</h3>
+        <h3>8.3 Quantifying Uncertainty Honestly</h3>
 
         <p>
-          The stationary-bootstrap IR band (\([-0.5191,\,1.9841]\)) is wide on purpose: it reflects the reality that short-ish samples and dependent returns
-          produce large uncertainty. That is not a bug; it is the strategy’s honest error bar.
+          The calculated stationary bootstrap band looks remarkably wide on purpose. It honestly reflects the harsh reality that relatively short samples combined with dependent returns naturally produce massive uncertainty. A wide band is certainly not a bug in the code. It serves as the deeply honest error bar for the entire strategy.
         </p>
 
-        <h2>9. Practical Limitations (the part that saves you money)</h2>
+        <h2>9. Practical Limitations</h2>
 
         <ul>
-          <li><strong>Universe bias:</strong> if the asset list is fixed ex post, survivorship effects can creep in. Prefer time-consistent membership rules.</li>
-          <li><strong>Transaction costs:</strong> basis-point costs are placeholders; real costs include spreads, impact, and liquidity constraints.</li>
-          <li><strong>Hyperparameter search:</strong> PSR/DSR should use an effective number of trials reflecting how many variants you tried.</li>
-          <li><strong>Model risk:</strong> EWMA assumes a particular decay structure; consider stress-testing spans and robustness \(\eta\).</li>
+          <li>Universe bias happens when you fix the asset list after the fact. Survivorship effects easily creep into the results. You should always prefer time consistent membership rules to avoid this.</li>
+          <li>The basis point transaction costs serve merely as simplified placeholders. Real world costs invariably include bid ask spreads alongside market impact and strict liquidity constraints.</li>
+          <li>Any hyperparameter search significantly inflates backtest metrics. You absolutely must use an effective number of trials in your diagnostics that honestly reflects how many variants you tested.</li>
+          <li>Model risk remains a constant threat. The moving average inherently assumes one very specific decay structure. I strongly recommend stress testing different span lengths and tweaking the robustness parameter.</li>
         </ul>
 
         <p>
-          Net: we didn’t “discover alpha” via cleverness. We replaced a fragile objective with a Nash-equilibrium robust formulation, controlled estimation error with shrinkage,
-          and demanded that validation attack the strategy as an adversary would. That is the whole vibe: make the model earn the right to exist.
+          The net result shows we did not just artificially discover alpha through backtest cleverness. I systematically replaced a highly fragile objective with a robust formulation grounded in game theory. I carefully controlled estimation error using covariance shrinkage. I demanded that our validation framework attack the strategy exactly like a real adversary would. That encompasses the entire philosophy of this project. You have to make the model violently earn its right to exist.
         </p>
 
         <h2>References</h2>
         <div class="refs">
           <ol>
             <li>
-              Bailey, D. H., & López de Prado, M. (2014). <em>The Deflated Sharpe Ratio: Correcting for Selection Bias, Backtest Overfitting, and Non-Normality</em>.
-              PDF: <a href="https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf" target="_blank" rel="noreferrer">davidhbailey.com</a>
+              Bailey D. H. and López de Prado M. 2014. <em>The Deflated Sharpe Ratio Correcting for Selection Bias Backtest Overfitting and Non Normality</em>.
+              PDF <a href="https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf" target="_blank" rel="noreferrer">davidhbailey.com</a>
             </li>
             <li>
-              Ledoit, O., & Wolf, M. (2003/2004). <em>Honey, I Shrunk the Sample Covariance Matrix</em>.
-              PDF: <a href="https://www.ledoit.net/honey.pdf" target="_blank" rel="noreferrer">ledoit.net</a>
+              Ledoit O. and Wolf M. 2003 2004. <em>Honey I Shrunk the Sample Covariance Matrix</em>.
+              PDF <a href="https://www.ledoit.net/honey.pdf" target="_blank" rel="noreferrer">ledoit.net</a>
             </li>
             <li>
-              Ledoit, O. (2020). <em>A Review and Guide to Covariance Matrix Estimation</em>.
-              PDF: <a href="https://www.ledoit.net/Review_Paper_2020_JFEc.pdf" target="_blank" rel="noreferrer">ledoit.net</a>
+              Ledoit O. 2020. <em>A Review and Guide to Covariance Matrix Estimation</em>.
+              PDF <a href="https://www.ledoit.net/Review_Paper_2020_JFEc.pdf" target="_blank" rel="noreferrer">ledoit.net</a>
             </li>
             <li>
-              Politis, D. N., & Romano, J. P. (1994). <em>The Stationary Bootstrap</em>.
-              PDF copy: <a href="https://www.ssc.wisc.edu/~bhansen/718/Politis%20Romano.pdf" target="_blank" rel="noreferrer">ssc.wisc.edu</a>
+              Politis D. N. and Romano J. P. 1994. <em>The Stationary Bootstrap</em>.
+              PDF copy <a href="https://www.ssc.wisc.edu/~bhansen/718/Politis%20Romano.pdf" target="_blank" rel="noreferrer">ssc.wisc.edu</a>
             </li>
             <li>
-              Pandas Documentation: <code>DataFrame.ewm</code> (EWMA parameterization, span/com/alpha).
+              Pandas Documentation <code>DataFrame.ewm</code> EWMA parameterization span com alpha.
               <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.ewm.html" target="_blank" rel="noreferrer">pandas.pydata.org</a>
             </li>
             <li>
-              Lazard Asset Management (2019). <em>It’s Time to Talk About Tracking Error</em> (active risk as standard deviation of relative returns).
-              PDF: <a href="https://www.lazardassetmanagement.com/docs/89302/LazardLetter_ItsTimeToTalkAboutTrackingError_2019-08_en.pdf" target="_blank" rel="noreferrer">lazardassetmanagement.com</a>
+              Lazard Asset Management 2019. <em>Its Time to Talk About Tracking Error</em> active risk as standard deviation of relative returns.
+              PDF <a href="https://www.lazardassetmanagement.com/docs/89302/LazardLetter_ItsTimeToTalkAboutTrackingError_2019-08_en.pdf" target="_blank" rel="noreferrer">lazardassetmanagement.com</a>
             </li>
             <li>
-              Investopedia: <em>Information Ratio (IR): Definition, Formula, vs. Sharpe Ratio</em>.
+              Investopedia <em>Information Ratio IR Definition Formula vs Sharpe Ratio</em>.
               <a href="https://www.investopedia.com/terms/i/informationratio.asp" target="_blank" rel="noreferrer">investopedia.com</a>
             </li>
             <li>
-              Ferreira, M. A. M., et al. (2012). <em>Minimax theorem and Nash equilibrium</em> (overview connecting minimax and Nash).
-              PDF: <a href="https://www.um.edu.mt/library/oar/bitstream/123456789/68887/1/Minimax_theorem_and_nash_equilibrium.pdf" target="_blank" rel="noreferrer">um.edu.mt</a>
+              Ferreira M. A. M. et al. 2012. <em>Minimax theorem and Nash equilibrium</em> overview connecting minimax and Nash.
+              PDF <a href="https://www.um.edu.mt/library/oar/bitstream/123456789/68887/1/Minimax_theorem_and_nash_equilibrium.pdf" target="_blank" rel="noreferrer">um.edu.mt</a>
             </li>
           </ol>
         </div>
@@ -752,7 +753,7 @@
 
       <section class="glass" aria-label="Footer">
         <footer>
-          © <span id="yr"></span> Anıl Kaya — Technical note on Nash-equilibrium robust active-risk optimization.
+          © <span id="yr"></span> Anıl Kaya Technical note on Nash Equilibrium robust active risk optimization
         </footer>
       </section>
 
@@ -810,23 +811,16 @@
       };
       document.addEventListener("mousemove", updateSpotlight, { passive: true });
 
-      // Abstract Expand/Collapse logic
-      const abstractText = document.getElementById("abstractText");
+      // Ultra-smooth Abstract Expand/Collapse logic
+      const abstractContainer = document.getElementById("abstractContainer");
       const expandBtn = document.getElementById("expandBtn");
-      if(expandBtn && abstractText) {
+      
+      if(expandBtn && abstractContainer) {
         expandBtn.addEventListener("click", () => {
-          const isExpanded = expandBtn.getAttribute("aria-expanded") === "true";
-          if(isExpanded) {
-            // Collapse it
-            abstractText.classList.add("limit-lines");
-            expandBtn.setAttribute("aria-expanded", "false");
-            expandBtn.querySelector(".btn-text").textContent = "Read Full Abstract";
-          } else {
-            // Expand it
-            abstractText.classList.remove("limit-lines");
-            expandBtn.setAttribute("aria-expanded", "true");
-            expandBtn.querySelector(".btn-text").textContent = "Show Less";
-          }
+          abstractContainer.classList.toggle("expanded");
+          const isExpanded = abstractContainer.classList.contains("expanded");
+          expandBtn.setAttribute("aria-expanded", isExpanded);
+          expandBtn.querySelector(".btn-text").textContent = isExpanded ? "Show Less" : "Read Full Abstract";
         });
       }
 
