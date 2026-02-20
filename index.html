@@ -402,7 +402,7 @@ body.modal-open #copyright { opacity: 0; }
   <div id="modalBody">
       <div class="article-wrapper">
           <div class="article-content" id="articleContentArea">
-              <!-- Content injected here -->
+              <!-- Content injected here natively -->
           </div>
       </div>
   </div>
@@ -448,18 +448,32 @@ const FocusTrap = {
 };
 
 /* ==========================================================================
-   ARTICLE CONFIGURATION 
+   ARTICLE CONFIGURATION - EMBEDDED STANDARD TEMPLATE
    ========================================================================== */
 const ARTICLES = [
-  { id:"options-pricing", file:"articles/options.html", category:"Financial Econometrics", title:"Options Pricing", date:"JAN 2026", textureKey:"moon", enabled:true },
-  { id:"bvar", file:"articles/bvar.html", category:"Core Theory", title:"Bayesian Vector Autoregression", date:"DEC 2025", textureKey:"earth", enabled:true },
-  { id:"stoch-vol", file:"articles/forecasting.html", category:"Time Series", title:"Why ML is almost useless", date:"JAN 2026", textureKey:"mars", enabled:true },
-  { id:"game-theory-cb", file:"articles/game.html", category:"Monetary Economics", title:"Central Bank Credibility", date:"JAN 2026", textureKey:"jupiter", enabled:true },
-  { id:"sign-rest", file:"articles/ERPT.html", category:"Macroeconometrics", title:"Exchange Rate Pass Through", date:"JAN 2026", textureKey:"venus", enabled:true },
-  { id:"monte-carlo", file:"articles/monte-carlo.html", category:"Computational Methods", title:"Monte Carlo Simulation", date:"JAN 2026", textureKey:"mc", enabled:true },
-  { id:"erpt-defense", file:"articles/price.html", category:"International Finance", title:"Currency Defense Game", date:"FEB 2026", textureKey:"erpt", enabled:true },
-  { id:"Nash-Minimax Drift", file:"articles/nash.html", category:"Domestic Finance", title:"Nash Strategy of Portfolio Managing", date:"FEB 2026", textureKey:"NSH", enabled:true }
-].filter(x=>x.enabled);
+  { 
+    id: "Nash-Minimax Drift", 
+    category: "Domestic Finance", 
+    title: "Nash Strategy of Portfolio Managing", 
+    date: "FEB 2026", 
+    textureKey: "nash", 
+    content: `
+      <p>The Nash Strategy in portfolio management redefines risk not as a variance to be minimized, but as a multi-agent equilibrium problem where the market acts as the ultimate adversary. This dynamic perspective forces a rigorous re-evaluation of classical drift assumptions.</p>
+      
+      <h2>The Minimax Paradigm</h2>
+      <p>By applying a minimax drift calculation, we ensure that the portfolio's worst-case scenario is mathematically bounded. This approach diverges from traditional Markowitz frameworks by assuming strictly non-cooperative market conditions.</p>
+      
+      <blockquote>"In a game against the market, the only rational move is to anticipate the market's optimal move against you. Risk is the cost of assumption."</blockquote>
+      
+      <h3>Mathematical Formulation</h3>
+      <p>The equilibrium state is defined where the portfolio's expected return $E[R_p]$ is maximized given the market's minimization of that same return through adversarial volatility:</p>
+      
+      <div class="katex-display">\\max_{w} \\min_{\\Sigma} w^T \\mu - \\frac{\\gamma}{2} w^T \\Sigma w</div>
+      
+      <p>This ensures robust performance even under extreme structural breaks, preventing catastrophic drawdown cascades by acknowledging market antagonism computationally.</p>
+    `
+  }
+];
 
 const $ = (id)=>document.getElementById(id);
 function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
@@ -500,9 +514,8 @@ modal.addEventListener("click", (e)=>{
 window.addEventListener("keydown", (e)=>{ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
 $("closeBtn").addEventListener("click", closeModal);
 
-function renderModal(a, content, isLoading){
+function renderModal(a, content){
   const safeContent = sanitizeHTML(content);
-  
   const headerHtml = `
      <header class="article-header">
         <div class="meta"><span class="pill">${a.category}</span><span>•</span><span>${a.date}</span></div>
@@ -512,48 +525,14 @@ function renderModal(a, content, isLoading){
   contentArea.innerHTML = headerHtml + safeContent;
 }
 
-// Generates beautiful fallback content if the HTML file isn't available
-function generateMockContent(a) {
-    return `
-      <p style="font-style: italic; color: var(--gold); border-left: 2px solid var(--gold); padding-left: 1rem;">
-        Note: Displaying simulated preview. The original source file (<code>${a.file}</code>) is unavailable in this environment.
-      </p>
-      <p>This manuscript explores the foundational concepts surrounding <strong>${a.title}</strong>, offering critical insights into its underlying methodologies and empirical applications within the field of ${a.category}.</p>
-      <h2>Theoretical Framework</h2>
-      <p>The primary hypothesis centers around optimizing the variables that influence systemic outcomes. By establishing a rigorous standard of measurement, we can isolate the core dynamics.</p>
-      <blockquote>"In data we trust; all others must bring proof. A model is only as robust as the assumptions it dares to challenge."</blockquote>
-      <h3>Mathematical Definition</h3>
-      <p>The dynamic relationship can be elegantly captured using the following stochastic framework:</p>
-      <div class="katex-display">dS_t = \\mu S_t dt + \\sigma S_t dW_t</div>
-      <p>Where $S_t$ represents the asset path, $\\mu$ is the drift coefficient, and $dW_t$ is the standard Brownian motion increment. This serves as the bedrock for further analytical derivations.</p>
-      <h2>Empirical Analysis</h2>
-      <p>Our simulation indicates a robust convergence under high-volatility conditions, confirming the initial theoretical postulates. Further research will involve integrating a Bayesian updating mechanism to refine the predictive intervals.</p>
-    `;
-}
-
-async function openArticle(a){
+function openArticle(a){
   modalJustOpenedAt = performance.now();
   modal.classList.add("open");
   document.body.classList.add("modal-open");
   FocusTrap.activate(modal);
 
-  renderModal(a, "<p style='text-align:center; margin-top: 4rem; font-style:italic;'>Loading manuscript...</p>", true);
-  
-  try{
-    const targetUrl = new URL(a.file, document.baseURI).href;
-    if(new URL(targetUrl).origin !== window.location.origin) throw new Error("Cross origin fetch blocked");
-
-    const res = await fetch(targetUrl);
-    if(!res.ok) throw new Error("HTTP "+res.status);
-    const txt = await res.text();
-    const doc = new DOMParser().parseFromString(txt, "text/html");
-    const c = doc.querySelector(".content") || doc.body;
-    renderModal(a, c.innerHTML, false);
-    
-  } catch(e){
-    // Elegant fallback if file is missing (ensures a flawless experience locally/in previews)
-    renderModal(a, generateMockContent(a), false);
-  }
+  // Directly render the standard embedded template text. No fetching required.
+  renderModal(a, a.content);
 
   // Render LaTeX math blocks
   if(window.renderMathInElement) {
@@ -588,7 +567,6 @@ function fbm2(u,v,s){
 }
 function mix(a,b,t){ return a + (b-a)*t; }
 function clamp01(x){ return clamp(x,0,1); }
-function rgb(r,g,b){ return [r,g,b]; }
 function to255(x){ return Math.round(clamp01(x)*255); }
 
 function makeCanvasTexture(drawFn, size){
@@ -599,121 +577,18 @@ function makeCanvasTexture(drawFn, size){
   return tex;
 }
 
-function drawEarth(g, size){
-  const img = g.createImageData(size,size); const d = img.data;
-  const deep = rgb(0.04,0.13,0.32), shallow = rgb(0.07,0.22,0.46), green = rgb(0.10,0.33,0.18), brown = rgb(0.32,0.28,0.14), sand  = rgb(0.52,0.46,0.25);
-  for(let y=0;y<size;y++){
-    const v = y/(size-1), lat = Math.abs(v-0.5)*2;
-    for(let x=0;x<size;x++){
-      const u = x/(size-1);
-      const n1 = fbm2(u*6.0, v*6.0, 1.3), n2 = fbm2(u*14.0, v*14.0, 7.7);
-      const continent = n1 + 0.35*n2 - 0.52 + 0.10*Math.sin((v-0.5)*Math.PI*2);
-      const ice = smoothstep(0.72, 0.98, lat), land = smoothstep(-0.04, 0.05, continent);
-      const seaVar = fbm2(u*18.0+3.0, v*18.0+9.0, 4.2);
-      let oc = [mix(deep[0], shallow[0], seaVar), mix(deep[1], shallow[1], seaVar), mix(deep[2], shallow[2], seaVar)];
-      const elev = fbm2(u*10.0+20.0, v*10.0+10.0, 2.6), dryness = fbm2(u*8.0+2.0, v*8.0+8.0, 9.1);
-      let lc = [mix(green[0], brown[0], elev), mix(green[1], brown[1], elev), mix(green[2], brown[2], elev)];
-      const des = smoothstep(0.58, 0.78, dryness) * (1.0 - ice);
-      lc = [mix(lc[0], sand[0], des), mix(lc[1], sand[1], des), mix(lc[2], sand[2], des)];
-      let c = [mix(oc[0], lc[0], land), mix(oc[1], lc[1], land), mix(oc[2], lc[2], land)];
-      const cloudN = fbm2(u*26.0+31.0, v*26.0+17.0, 1.0), cloud = smoothstep(0.67, 0.82, cloudN) * (0.65 + 0.35*(1.0-land));
-      c = [mix(c[0], 0.92, cloud*0.45), mix(c[1], 0.92, cloud*0.45), mix(c[2], 0.95, cloud*0.45)];
-      c = [mix(c[0], 0.94, ice*0.85), mix(c[1], 0.94, ice*0.85), mix(c[2], 0.98, ice*0.85)];
-      const i = (y*size + x)*4; d[i+0] = to255(c[0]); d[i+1] = to255(c[1]); d[i+2] = to255(c[2]); d[i+3] = 255;
-    }
-  }
-  g.putImageData(img,0,0);
-}
-
-function drawMoon(g, size){
+// Custom Texture for the Nash Article
+function drawNash(g, size){
   const img = g.createImageData(size,size); const d = img.data;
   for(let y=0;y<size;y++){
     const v = y/(size-1);
     for(let x=0;x<size;x++){
       const u = x/(size-1);
-      const base = 0.55 + 0.18*(fbm2(u*8.0, v*8.0, 3.1)-0.5);
-      const crater = smoothstep(0.55, 0.86, fbm2(u*22.0+4.0, v*22.0+9.0, 8.8));
-      const ray = smoothstep(0.70, 0.92, fbm2(u*30.0+17.0, v*30.0+3.0, 1.7));
-      let c = clamp01(base - crater*0.18 + ray*0.10);
-      const i = (y*size + x)*4; d[i+0] = to255(c*0.98); d[i+1] = to255(c*0.99); d[i+2] = to255(c*1.02); d[i+3] = 255;
-    }
-  }
-  g.putImageData(img,0,0);
-}
-
-function drawMars(g, size){
-  const img = g.createImageData(size,size); const d = img.data; const baseR = 0.62, baseG = 0.24, baseB = 0.10;
-  for(let y=0;y<size;y++){
-    const v = y/(size-1);
-    for(let x=0;x<size;x++){
-      const u = x/(size-1);
-      const n = fbm2(u*10.0, v*10.0, 5.5), ridges = fbm2(u*20.0+3.0, v*20.0+11.0, 2.2);
-      const dust = smoothstep(0.45, 0.78, n), dark = smoothstep(0.58, 0.86, ridges);
-      let r = baseR + 0.18*dust - 0.16*dark, gg = baseG + 0.06*dust - 0.08*dark, b = baseB + 0.02*dust - 0.04*dark;
-      const lat = Math.abs(v-0.5)*2, ice = smoothstep(0.82, 0.98, lat);
-      r = mix(r, 0.92, ice*0.45); gg = mix(gg, 0.92, ice*0.45); b = mix(b, 0.96, ice*0.45);
-      const i = (y*size + x)*4; d[i+0] = to255(r); d[i+1] = to255(gg); d[i+2] = to255(b); d[i+3] = 255;
-    }
-  }
-  g.putImageData(img,0,0);
-}
-
-function drawVenus(g, size){
-  const img = g.createImageData(size,size); const d = img.data;
-  for(let y=0;y<size;y++){
-    const v = y/(size-1);
-    for(let x=0;x<size;x++){
-      const u = x/(size-1);
-      const swirl = 0.5 + 0.5*Math.sin((u*10.0 + v*2.0)*Math.PI*2);
-      const n = fbm2(u*14.0+swirl*3.0, v*14.0, 6.6), band = smoothstep(0.35, 0.75, n);
-      let r = mix(0.82, 0.98, band), gg = mix(0.64, 0.86, band), b = mix(0.36, 0.62, band);
-      const haze = smoothstep(0.60, 0.92, fbm2(u*26.0+7.0, v*26.0+19.0, 1.2));
-      r = mix(r, 1.0, haze*0.18); gg = mix(gg, 1.0, haze*0.18); b = mix(b, 1.0, haze*0.18);
-      const i = (y*size + x)*4; d[i+0] = to255(r); d[i+1] = to255(gg); d[i+2] = to255(b); d[i+3] = 255;
-    }
-  }
-  g.putImageData(img,0,0);
-}
-
-function drawMonteCarlo(g, size){
-  const img = g.createImageData(size,size); const d = img.data;
-  for(let y=0;y<size;y++){
-    const v = y/(size-1);
-    for(let x=0;x<size;x++){
-      const u = x/(size-1);
-      const n = fbm2(u*16.0, v*16.0, 10.1);
-      const grid = (Math.abs(fract(u*24.0)-0.5)<0.01 || Math.abs(fract(v*24.0)-0.5)<0.01) ? 1.0 : 0.0;
-      const speck = smoothstep(0.88, 0.98, fbm2(u*52.0+3.0, v*52.0+9.0, 21.7));
-      let r = 0.08 + 0.12*n, gg = 0.10 + 0.14*n, b = 0.16 + 0.22*n;
-      r = mix(r, 0.40, grid*0.10); gg = mix(gg, 0.55, grid*0.10); b = mix(b, 0.95, grid*0.10);
-      r = mix(r, 0.95, speck*0.55); gg = mix(gg, 0.90, speck*0.55); b = mix(b, 0.98, speck*0.55);
-      const i = (y*size + x)*4; d[i+0] = to255(r); d[i+1] = to255(gg); d[i+2] = to255(b); d[i+3] = 255;
-    }
-  }
-  g.putImageData(img,0,0);
-}
-
-function drawERPT(g, size){
-  const img = g.createImageData(size,size); const d = img.data;
-  const cShield = [0.1, 0.6, 0.6]; 
-  const cDefense = [0.2, 0.1, 0.4]; 
-  for(let y=0;y<size;y++){
-    const v = y/(size-1);
-    for(let x=0;x<size;x++){
-      const u = x/(size-1);
-      const hex = fbm2(u*30.0, v*30.0, 4.4);
-      const grid = smoothstep(0.4, 0.6, Math.abs(Math.sin(u*40.0)*Math.sin(v*40.0)));
-      
-      const n = fbm2(u*8.0, v*8.0, 2.2);
-      let r = mix(cDefense[0], cShield[0], n);
-      let gg = mix(cDefense[1], cShield[1], n);
-      let b = mix(cDefense[2], cShield[2], n);
-      
-      const crack = smoothstep(0.45, 0.50, fbm2(u*50.0, v*50.0, 9.9));
-      r += 0.2 * grid; gg += 0.2 * grid; b += 0.3 * grid;
-      
-      if(crack > 0.48 && crack < 0.52) { r=0.9; gg=0.8; b=0.2; } 
-      
+      const n = fbm2(u*24.0, v*24.0, 3.3);
+      const grid = smoothstep(0.48, 0.52, Math.abs(Math.sin(u*60.0)*Math.sin(v*60.0)));
+      let r = 0.05 + 0.1*n, gg = 0.08 + 0.15*n, b = 0.2 + 0.3*n;
+      // Gold grid overlays
+      r = mix(r, 0.83, grid*0.4); gg = mix(gg, 0.68, grid*0.4); b = mix(b, 0.21, grid*0.4);
       const i = (y*size + x)*4; d[i+0] = to255(r); d[i+1] = to255(gg); d[i+2] = to255(b); d[i+3] = 255;
     }
   }
@@ -723,12 +598,7 @@ function drawERPT(g, size){
 function buildBaseTextures(){
   const SZ = 512;
   return { 
-      earth: makeCanvasTexture(drawEarth, SZ), 
-      moon: makeCanvasTexture(drawMoon, SZ), 
-      mars: makeCanvasTexture(drawMars, SZ), 
-      venus: makeCanvasTexture(drawVenus, SZ), 
-      mc: makeCanvasTexture(drawMonteCarlo, SZ), 
-      erpt: makeCanvasTexture(drawERPT, SZ) 
+      nash: makeCanvasTexture(drawNash, SZ)
   };
 }
 
@@ -814,7 +684,7 @@ try{
 
   const baseTextures = buildBaseTextures();
   const planetMaterial = (art) => {
-    let map = baseTextures.earth; if(art.textureKey==="moon") map=baseTextures.moon; else if(art.textureKey==="mars") map=baseTextures.mars; else if(art.textureKey==="venus") map=baseTextures.venus; else if(art.textureKey==="mc") map=baseTextures.mc; else if(art.textureKey==="erpt") map=baseTextures.erpt;
+    let map = baseTextures.nash; 
     return new THREE.MeshStandardMaterial({ map, roughness:0.75, metalness:0.15 });
   };
   const atmosphereMaterial = (color, opacity) => new THREE.ShaderMaterial({
@@ -874,7 +744,8 @@ try{
     for (let i=0;i<n;i++){
       const art = ARTICLES[i], radius = planetBaseRadius * finalScale;
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 64), planetMaterial(art)); mesh.userData.article = art; mesh.userData.radius = radius;
-      let atColor = "#90b0ff"; if(art.textureKey==="earth") atColor = "#0066ff"; else if(art.textureKey==="mars") atColor = "#ff4400"; else if(art.textureKey==="venus") atColor = "#ffd080"; else if(art.textureKey==="mc") atColor = "#a7b7ff"; else if(art.textureKey==="erpt") atColor = "#00e5ff"; else atColor = "#cfd3ff";
+      
+      let atColor = "#d4af37"; // Dedicated color for Nash theme
       const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 64, 64), atmosphereMaterial(atColor, 0.45)); atmo.userData.article = art;
       const label = labelSprite(art.title); label.scale.multiplyScalar(finalScale * labelScaleMult); label.userData.article = art;
       const baseAngle = (i / n) * Math.PI*2 + Math.PI/5;
@@ -941,11 +812,9 @@ try{
     if (!isHoveringPlanet){ starAnim.time += dt; starAnim.rotY += dt * 0.05; starAnim.rotZ = Math.cos(starAnim.time*0.04)*0.06; }
     stars.material.uniforms.uTime.value = starAnim.time; stars.material.uniforms.uDpr.value = DPR(); 
     
-    // Drastically Reduced Star Parallax Response
-    const targetGalY = starAnim.rotY + nx * 0.08;
-    const targetGalX = -0.34 + ny * 0.08;
-    galaxy.rotation.y = lerp(galaxy.rotation.y, targetGalY, 0.15); 
-    galaxy.rotation.x = lerp(galaxy.rotation.x, targetGalX, 0.15);
+    // Stars now strictly flow naturally (completely unlinked from cursor tracking)
+    galaxy.rotation.y = starAnim.rotY; 
+    galaxy.rotation.x = -0.34;
     galaxy.rotation.z = starAnim.rotZ;
 
     if (ringMeshes && ringMeshes.length){ ringMeshes.forEach(m=>{ if (m.material && m.material.uniforms) m.material.uniforms.uTime.value = t; }); ringGroup.rotation.y = Math.sin(t*0.05)*0.06; }
