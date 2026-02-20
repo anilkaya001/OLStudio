@@ -1,1 +1,850 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#050505" />
 
+  <title>Nash-Equilibrium Active-Risk Optimization with Robust Validation | Technical Note</title>
+  <meta name="description" content="A game-theoretic, Nash-equilibrium portfolio optimizer for active management: EWMA moments, covariance shrinkage, robust drift-adversary minimax objective, and leakage-resistant walk-forward validation with PSR/DSR and stationary-bootstrap uncertainty." />
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --font-main: "Latin Modern Roman", serif;
+      --font-ui: "Latin Modern Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --nav-h: 64px;
+      
+      /* Dark Theme Variables */
+      --bg: #050505;
+      --border: rgba(255,255,255,0.10);
+      --silver: #e8e8ea;
+      --silver-dim: rgba(232,232,234,0.72);
+      --gold: #D4AF37;
+      --gold-soft: #F7E7CE;
+      --glass-bg: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(212,175,55,0.02) 100%);
+      
+      --maxw: 1080px;
+      --mouse-x: 50%;
+      --mouse-y: 50%;
+    }
+
+    /* Light Theme Variables */
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f4f4f6;
+      --border: rgba(0,0,0,0.12);
+      --silver: #1a1a1a;
+      --silver-dim: rgba(26,26,26,0.78);
+      --gold: #b8860b;
+      --gold-soft: #856404;
+      --glass-bg: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%);
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--silver);
+      font-family: var(--font-main);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    a { color: var(--gold-soft); text-decoration: none; }
+    a:hover { opacity: 0.92; text-decoration: underline; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: rgba(128,128,128,0.15);
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.92em;
+    }
+
+    .ambient {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.12), rgba(0,0,0,0) 60%),
+        radial-gradient(900px 520px at 82% 70%, rgba(232,232,234,0.08), rgba(0,0,0,0) 58%),
+        linear-gradient(135deg, rgba(10,10,10,0.88), rgba(18,18,18,0.58));
+      z-index: 0;
+      transition: all 0.5s ease;
+    }
+
+    [data-theme="light"] .ambient {
+      background:
+        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.15), rgba(255,255,255,0) 60%),
+        radial-gradient(900px 520px at 82% 70%, rgba(0,0,0,0.03), rgba(255,255,255,0) 58%),
+        linear-gradient(135deg, rgba(240,240,245,0.88), rgba(220,220,230,0.58));
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: calc(var(--nav-h) + var(--safe-top));
+      padding-top: var(--safe-top);
+      padding-left: clamp(14px, 4vw, 44px);
+      padding-right: clamp(14px, 4vw, 44px);
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.11), rgba(0,0,0,0) 60%),
+        linear-gradient(135deg, rgba(10,10,10,0.82), rgba(18,18,18,0.60));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    [data-theme="light"] nav {
+      background:
+        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.08), rgba(255,255,255,0) 60%),
+        linear-gradient(135deg, rgba(250,250,255,0.82), rgba(240,240,245,0.60));
+    }
+
+    #brand {
+      appearance: none; border: none; background: transparent;
+      font-family: var(--font-ui);
+      font-size: 0.92rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: color-mix(in oklab, var(--gold) 70%, var(--silver));
+      user-select: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    #actions { display: flex; align-items: center; gap: 10px; }
+    
+    .btn {
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(212,175,55,0.25);
+      background: linear-gradient(135deg, rgba(18,18,18,0.58), rgba(18,18,18,0.34));
+      color: var(--silver);
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: all 0.22s ease;
+      min-height: 38px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn:hover {
+      background: rgba(212,175,55,0.14);
+      border-color: rgba(212,175,55,0.52);
+    }
+    
+    [data-theme="light"] .btn {
+      background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
+      border-color: rgba(0,0,0,0.1);
+      color: #333;
+    }
+    [data-theme="light"] .btn:hover {
+      background: rgba(212,175,55,0.1);
+      border-color: rgba(212,175,55,0.4);
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      padding-top: calc(var(--nav-h) + var(--safe-top) + 26px);
+      padding-bottom: calc(40px + var(--safe-bottom));
+      padding-left: clamp(16px, 5vw, 60px);
+      padding-right: clamp(16px, 5vw, 60px);
+    }
+
+    .wrap {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .glass {
+      background:
+        radial-gradient(circle at var(--mouse-x) var(--mouse-y),
+          rgba(255,255,255,0.03) 0%,
+          rgba(255,255,255,0.012) 48%,
+          rgba(0,0,0,0.0) 100%),
+        var(--glass-bg);
+      border: 1px solid var(--border);
+      border-top: 1px solid color-mix(in oklab, var(--border) 150%, white);
+      border-left: 1px solid color-mix(in oklab, var(--border) 120%, white);
+      border-radius: 14px;
+      padding: 26px 28px;
+      box-shadow: 0 10px 34px rgba(0,0,0,0.15);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+    .glass::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: radial-gradient(650px circle at var(--mouse-x) var(--mouse-y), rgba(212,175,55,0.08), transparent 42%);
+      opacity: 0;
+      transition: opacity 0.26s ease;
+      pointer-events: none;
+    }
+    .glass:hover::after { opacity: 1; }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(1.95rem, 4.0vw, 2.95rem);
+      line-height: 1.08;
+      color: color-mix(in oklab, var(--gold-soft) 66%, var(--silver));
+      letter-spacing: 0.2px;
+    }
+
+    /* Condensed Abstract Styling */
+    .submeta {
+      margin-top: 14px;
+      font-family: var(--font-ui);
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: color-mix(in oklab, var(--silver) 70%, transparent);
+      max-width: 90ch;
+      transition: all 0.3s ease;
+    }
+    
+    .limit-lines {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .expand-btn {
+      background: rgba(212,175,55,0.08);
+      border: 1px solid rgba(212,175,55,0.25);
+      border-radius: 6px;
+      color: var(--gold);
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 6px 12px;
+      margin-top: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .expand-btn:hover {
+      background: rgba(212,175,55,0.15);
+      border-color: rgba(212,175,55,0.5);
+    }
+    .expand-btn svg {
+      width: 14px; height: 14px;
+      transition: transform 0.3s ease;
+    }
+    .expand-btn[aria-expanded="true"] svg {
+      transform: rotate(180deg);
+    }
+
+    .article {
+      font-size: 1.08rem;
+      line-height: 1.85;
+      color: color-mix(in oklab, var(--silver) 88%, var(--silver-dim));
+      text-align: justify;
+      text-justify: inter-word;
+    }
+    .article h2 {
+      margin: 2.2rem 0 0.85rem 0;
+      font-family: var(--font-ui);
+      font-size: 0.88rem;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: color-mix(in oklab, var(--gold) 62%, var(--silver));
+      border-left: 3px solid var(--gold);
+      padding-left: 12px;
+    }
+    .article h3 {
+      margin: 1.6rem 0 0.7rem 0;
+      font-family: var(--font-main);
+      font-size: 1.22rem;
+      font-style: italic;
+      color: color-mix(in oklab, var(--gold-soft) 55%, var(--silver));
+    }
+    .article p { margin: 0 0 1.25rem 0; }
+    .article ul, .article ol { margin: 0 0 1.25rem 0; padding-left: 22px; }
+    .article li { margin: 0.5rem 0; }
+
+    .eq {
+      margin: 1.4rem 0;
+      padding: 18px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(128,128,128,0.15);
+      background: rgba(0,0,0,0.22);
+      overflow-x: auto;
+      color: var(--silver);
+      font-size: 1.05rem;
+    }
+    [data-theme="light"] .eq { background: rgba(0,0,0,0.03); }
+    
+    .eq-title {
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .proof {
+      margin: 1.5rem 0;
+      padding: 20px 20px;
+      border-radius: 12px;
+      border-left: 4px solid var(--gold);
+      background: rgba(212,175,55,0.04);
+      position: relative;
+    }
+    [data-theme="light"] .proof { background: rgba(212,175,55,0.08); }
+    
+    .proof-label {
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .policy-box {
+      margin: 1.5rem 0;
+      padding: 18px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(122,166,255,0.25);
+      background: linear-gradient(135deg, rgba(10,20,40,0.5), rgba(5,10,20,0.7));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    [data-theme="light"] .policy-box {
+      background: linear-gradient(135deg, rgba(240,245,255,0.8), rgba(230,238,255,0.9));
+      border-color: rgba(0,80,255,0.15);
+    }
+
+    .policy-box h4 {
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #7aa6ff;
+      margin: 0 0 10px 0;
+    }
+    [data-theme="light"] .policy-box h4 { color: #0056b3; }
+    
+    .policy-box ul {
+      margin: 0; padding-left: 18px;
+      color: rgba(179,209,255,0.88);
+      font-size: 0.98rem;
+      line-height: 1.65;
+    }
+    [data-theme="light"] .policy-box ul { color: #333; }
+
+    .refs {
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      line-height: 1.7;
+      color: color-mix(in oklab, var(--silver) 68%, transparent);
+    }
+    .refs ol { margin: 0; padding-left: 20px; }
+    .refs li { margin: 0.65rem 0; }
+
+    footer {
+      margin-top: 8px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      color: color-mix(in oklab, var(--silver) 58%, transparent);
+      text-align: center;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn, .glass::after, body, nav, .glass, .expand-btn, .expand-btn svg, .ambient { transition: none !important; }
+    }
+
+    @media (max-width: 760px) {
+      .glass { padding: 20px 18px; }
+      .article { font-size: 1.02rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+
+  <nav aria-label="Primary">
+    <button id="brand" type="button" aria-label="Back to index">Anıl Kaya</button>
+    <div id="actions">
+      <a class="btn" href="#">Home</a>
+      <button class="btn" id="theme" type="button" aria-pressed="false" aria-label="Toggle theme">Light</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="wrap">
+
+      <section class="glass" aria-label="Header">
+        <header>
+          <h1>Nash-Equilibrium Portfolio Optimization</h1>
+          
+          <div class="abstract-container">
+            <p class="submeta limit-lines" id="abstractText">
+              <strong>note:</strong> NOT ANY FINANCIAL ADVICE. We build a monthly-rebalanced active equity strategy (BIST names vs. a benchmark) that is deliberately engineered to be hard to fool.
+              The baseline idea is to maximize the Information Ratio, but solemnly it is ratio-based, non-convex, and often encourages corner solutions driven by estimation noise.
+              We replaced it with a <em>two-player zero-sum game</em> between an investor choosing weights and an adversary perturbing expected returns (“drift uncertainty”).
+              The saddle point of this convex–concave game exists under standard conditions and is a Nash equilibrium as it reduces to a stable constrained quadratic program each month.
+              Moment estimates are EWMA-weighted to emphasize recent regimes, covariance is shrinkage-regularized to reduce optimizer blow-ups, and validation uses walk-forward evaluation with an embargo day, turnover costs, and selection-bias-aware diagnostics (PSR/DSR) plus stationary-bootstrap uncertainty bands.
+            </p>
+            <button class="expand-btn" id="expandBtn" aria-expanded="false" aria-controls="abstractText">
+              <span class="btn-text">Read Full Abstract</span>
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+          </div>
+        </header>
+      </section>
+
+      <section class="glass article" aria-label="Article content">
+
+        <h2>1. Problem Setup: Active Management Without Thinking</h2>
+
+        <p>
+          Let \(P_{t,i}\) be the adjusted price of asset \(i\) at trading day \(t\), and \(B_t\) the benchmark price level.
+          Define simple returns \(r_{t,i} = P_{t,i}/P_{t-1,i}-1\) and \(b_t = B_t/B_{t-1}-1\).
+          We focus on <em>active returns</em>:
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Definition 1: Active returns</div>
+          \[
+            A_{t,i} \equiv r_{t,i} - b_t,\qquad
+            a_t(w) \equiv \sum_{i=1}^{N} w_i\,A_{t,i}.
+          \]
+          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
+            Here \(w\in\mathbb{R}^N\) are portfolio weights, \(a_t(w)\) is portfolio active return at time \(t\), and the benchmark has active return \(0\) by definition.
+          </p>
+        </div>
+
+        <p>
+          “Information Ratio” (IR) is the benchmark-relative analogue of Sharpe: expected active return divided by tracking error, where tracking error is the standard deviation of active returns. This is standard in active risk management and performance evaluation.
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Definition 2: Tracking error and Information Ratio</div>
+          \[
+            \mathrm{TE}(w) = \sqrt{\mathrm{Var}\big(a_t(w)\big)},\qquad
+            \mathrm{IR}(w) = \frac{\mathbb{E}[a_t(w)]}{\mathrm{TE}(w)}.
+          \]
+          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
+            In practice, TE is computed as the standard deviation of \((r_p - r_b)\) over a window; this “active risk” definition is widely used.
+          </p>
+        </div>
+
+        <h2>2. Why Naïvely Maximizing IR Is a Trap</h2>
+
+        <p>
+          Directly maximizing a ratio \(\mathrm{IR}(w)=\mu(w)/\sigma(w)\) is not a convex program and is notoriously sensitive to estimation noise.
+          If \(\hat{\sigma}(w)\) becomes small due to sampling artifacts, the ratio can spike, pulling the optimizer toward unstable allocations.
+          Worse, the optimizer can “discover” spurious IR by overfitting the lookback window (classic backtest pathology).
+        </p>
+
+        <div class="proof">
+          <div class="proof-label">Observation (Fragility of ratio objectives)</div>
+          <p style="margin:0;">
+            A ratio objective can be destabilized by either numerator noise (mean estimation error) or denominator noise (tracking error estimation error).
+            In finite samples, the denominator can be especially treacherous because it is a function of covariance estimates—exactly the object that portfolio optimization amplifies.
+          </p>
+        </div>
+
+        <p>
+          So the goal is not “maximize a pretty statistic.” The goal is: choose a portfolio rule that is mathematically well-posed, robust to estimation error, and validated in a way that resists leakage.
+        </p>
+
+        <h2>3. The Core Modelling Move: A Nash-Equilibrium Drift-Adversary Game</h2>
+
+        <p>
+          We model expected active returns as uncertain. At each rebalance time \(t\), we have estimates \(\hat{\mu}_t\in\mathbb{R}^N\) and \(\hat{\Sigma}_t\in\mathbb{R}^{N\times N}\) from a trailing window.
+          But instead of trusting \(\hat{\mu}_t\), we allow an adversary to perturb it by \(\delta\), penalized by a quadratic form that scales with covariance. This yields a two-player zero-sum game:
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Equation 1: Minimax (zero-sum) formulation</div>
+          \[
+          \max_{w\in\mathcal{W}}\,\min_{\delta\in\mathbb{R}^N}\;
+          (\hat{\mu}_t+\delta)^\top w
+          -\frac{\gamma}{2}\,w^\top \hat{\Sigma}_t w
+          +\frac{\eta}{2}\,\delta^\top \hat{\Sigma}_t^{-1}\delta
+          -\tau\|w\|_2^2.
+          \]
+          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
+            \(\gamma\) is risk aversion (active-risk penalty), \(\eta\) is robustness strength (smaller \(\eta\Rightarrow\) stronger adversary), and \(\tau\) is L2 regularization to avoid concentration.
+          </p>
+        </div>
+
+        <div class="proof">
+          <div class="proof-label">Proposition 1 (Saddle point is Nash equilibrium)</div>
+          <p style="margin:0;">
+            Under standard convex–concave conditions (concave in \(w\), convex in \(\delta\), convex feasible set \(\mathcal{W}\)), the minimax saddle point exists and coincides with the Nash equilibrium of the corresponding zero-sum game.
+            This is the mathematical reason we can say “Nash equilibrium at every rebalance.”
+          </p>
+        </div>
+
+        <h3>3.1 Closed-form adversary and reduction to a stable QP</h3>
+
+        <p>
+          The inner minimization is quadratic in \(\delta\), so the adversary’s best response is explicit. Differentiate with respect to \(\delta\) and set to zero:
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Equation 2: Adversary best response</div>
+          \[
+            \nabla_\delta\Big(\delta^\top w + \frac{\eta}{2}\delta^\top\hat{\Sigma}_t^{-1}\delta\Big)=0
+            \;\;\Rightarrow\;\;
+            \delta^\star(w) = -\frac{1}{\eta}\hat{\Sigma}_t w.
+          \]
+        </div>
+
+        <p>
+          Plugging \(\delta^\star(w)\) back into the objective collapses the game to a single concave maximization:
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Equation 3: Reduced Nash objective (single-level)</div>
+          \[
+          w_t^\star=\arg\max_{w\in\mathcal{W}}\;
+          \hat{\mu}_t^\top w
+          -\frac{1}{2}\Big(\gamma+\eta^{-1}\Big)\,w^\top\hat{\Sigma}_t w
+          -\tau\|w\|_2^2.
+          \]
+          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
+            The robustness term \(\eta^{-1}\) effectively adds extra curvature to the risk penalty, making the optimizer more conservative when covariance is large.
+          </p>
+        </div>
+
+        <h2>4. Estimation: EWMA Moments + Shrinkage Covariance</h2>
+
+        <h3>4.1 EWMA to adapt to regime changes</h3>
+
+        <p>
+          We use an exponentially weighted scheme so recent active returns matter more than stale history.
+          With span \(s\), the decay parameter satisfies \(\alpha = 2/(s+1)\) (the standard “span” convention in many implementations).
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Equation 4: EWMA mean and covariance</div>
+          \[
+            \omega_k = \frac{(1-\alpha)^k}{\sum_{j=0}^{T-1}(1-\alpha)^j},\quad
+            \hat{\mu}_t = \sum_{k=0}^{T-1}\omega_k\,A_{t-k},\quad
+            \hat{\Sigma}_t = \sum_{k=0}^{T-1}\omega_k\,(A_{t-k}-\hat{\mu}_t)(A_{t-k}-\hat{\mu}_t)^\top.
+          \]
+        </div>
+
+        <h3>4.2 Shrinkage to stop covariance from detonating the optimizer</h3>
+
+        <p>
+          Sample covariance is a chaos generator in portfolio optimization: small estimation errors can produce huge weight swings.
+          Shrinkage is a standard remedy: blend a noisy covariance estimate with a structured target (often diagonal or constant-correlation).
+          We use a conservative diagonal shrinkage:
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Equation 5: Diagonal shrinkage</div>
+          \[
+            \tilde{\Sigma}_t = (1-s)\hat{\Sigma}_t + s\,\mathrm{diag}(\hat{\Sigma}_t),
+            \qquad s\in[0,1].
+          \]
+          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
+            Intuition: shrinkage reduces estimation error where it hurts most (the optimizer’s quadratic form), while preserving enough structure to avoid pretending assets are independent.
+          </p>
+        </div>
+
+        <h2>5. Constraints and Execution: Risk Limits That Make the Strategy Real</h2>
+
+        <p>
+          The feasible set \(\mathcal{W}\) enforces full investment and a per-asset cap:
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Equation 6: Feasible set</div>
+          \[
+            \mathcal{W}=\Big\{w\in\mathbb{R}^N:\;\sum_{i=1}^N w_i = 1,\;\;0\le w_i\le c\Big\}.
+          \]
+        </div>
+
+        <p>
+          We also charge a simple proportional transaction cost based on turnover:
+          \(\mathrm{TO}_t=\|w_t-w_{t-1}\|_1\), cost \(=\kappa\cdot\mathrm{TO}_t\), applied at rebalance.
+          This prevents “paper alpha” driven by frequent reallocation.
+        </p>
+
+        <div class="policy-box">
+          <h4>Execution & Risk Controls Used</h4>
+          <ul>
+            <li><strong>Monthly rebalancing</strong> using last trading day of each month (true trading calendar dates).</li>
+            <li><strong>Per-asset weight cap</strong> \(c=15\%\) to limit concentration and reduce estimation-driven cornering.</li>
+            <li><strong>Turnover costs</strong> in basis points per unit turnover to punish churning.</li>
+            <li><strong>Coverage filter</strong> (drop assets with too many missing returns in the training window).</li>
+          </ul>
+        </div>
+
+        <h2>6. Validation: “Unbiased” Means Fighting Leakage, Not Claiming Purity</h2>
+
+        <p>
+          Perfectly unbiased validation is not a thing in finance, but you can aggressively remove the major, known sources of bias:
+          look-ahead, leakage at split boundaries, and performance inflation from multiple-testing.
+        </p>
+
+        <div class="policy-box">
+          <h4>Leakage-Resistant Validation Used</h4>
+          <ul>
+            <li><strong>Walk-forward OOS:</strong> train on a trailing window; apply weights only to future days.</li>
+            <li><strong>Embargo day:</strong> exclude the day immediately preceding rebalance from training to reduce boundary leakage.</li>
+            <li><strong>Selection-bias-aware significance:</strong> PSR/DSR for Sharpe-like performance under skew/kurtosis and multiple testing.</li>
+            <li><strong>Dependent-data uncertainty:</strong> stationary bootstrap confidence interval for the annualized Information Ratio.</li>
+          </ul>
+        </div>
+
+        <h3>6.1 PSR/DSR: correcting performance claims for “researcher degrees of freedom”</h3>
+
+        <p>
+          The Probabilistic Sharpe Ratio (PSR) estimates \(P(\mathrm{SR} > \mathrm{SR}^*)\) accounting for non-normality (skewness/kurtosis) and finite sample length.
+          The Deflated Sharpe Ratio (DSR) further adjusts the threshold for multiple testing / selection bias: the more strategies you tried, the more likely your “best” is just noise.
+          In our run, we computed PSR/DSR on <em>active returns</em> (so the statistic aligns with IR-like evaluation).
+        </p>
+
+        <h3>6.2 Stationary bootstrap for IR uncertainty</h3>
+
+        <p>
+          Returns are weakly dependent, so IID bootstrap confidence intervals are optimistic.
+          Stationary bootstrap resamples blocks of random length (geometric) to preserve short-range dependence while still producing a stationary pseudo-series.
+          We used it to form a rough 95% uncertainty interval for annualized IR.
+        </p>
+
+        <h2>7. Empirical Output From the Run (2023–Present)</h2>
+
+        <p>
+          Below are the audit metrics reported by the backtest execution (walk-forward OOS, transaction cost model enabled).
+          Treat them as <em>an output of a specific run</em>, not a universal law: uncertainty is the point.
+        </p>
+
+        <div class="eq">
+          <div class="eq-title">Backtest audit metrics (OOS)</div>
+          \[
+          \begin{aligned}
+          \text{CAGR (Portfolio)} &= 63.3654\%,\quad \text{CAGR (Benchmark)} = 49.4504\%\\
+          \sigma_{\text{ann}}(\text{Portfolio}) &= 30.4660\%,\quad \sigma_{\text{ann}}(\text{Benchmark}) = 27.9692\%\\
+          \text{Sharpe (Portfolio)} &= 1.7650,\quad \text{Sharpe (Benchmark)} = 1.5773\\
+          \text{Tracking Error (Ann.)} &= 13.7237\%,\quad \text{Information Ratio (Ann.)} = 0.7036\\
+          \text{IR 95\% CI (stationary bootstrap)} &= [-0.5191,\; 1.9841]\\
+          \text{Max Drawdown (Portfolio)} &= -24.7214\%,\quad \text{Max Drawdown (Benchmark)} = -21.9586\%\\
+          \text{Avg Turnover (monthly)} &= 1.0303\\
+          \text{PSR on Active } (\mathrm{SR}^*>0) &= 1.0000,\quad \text{DSR on Active } (\mathrm{SR}^*>0) = 1.0000
+          \end{aligned}
+          \]
+          <p style="margin:10px 0 0 0; font-size:0.92rem; opacity:0.8;">
+            A PSR/DSR reported as 1.0000 typically means “numerically extremely close to 1” for the sample and threshold used—this can happen with strong active returns,
+            but it should also trigger suspicion: confirm you did not implicitly optimize hyperparameters on the same evaluation slice.
+          </p>
+        </div>
+
+        <h2>8. How This Surpassed the Baseline (in Math, Not Marketing)</h2>
+
+        <h3>8.1 We removed the ratio objective without losing the intent</h3>
+
+        <p>
+          The baseline idea (“maximize IR”) is a ratio of random variables estimated with error.
+          Our replacement objective is a concave quadratic utility in \(w\) with explicit robustness:
+          it still rewards expected active return but penalizes active risk with additional curvature from an adversary.
+          This makes the monthly optimization stable under estimation error—precisely where naive IR maximization breaks.
+        </p>
+
+        <h3>8.2 We enforced existence of a solution at each rebalance</h3>
+
+        <div class="proof">
+          <div class="proof-label">Proposition 2 (Existence and stability)</div>
+          <p style="margin:0;">
+            With \(\tilde{\Sigma}_t \succeq 0\), \(\gamma+\eta^{-1}>0\), and convex compact \(\mathcal{W}\), the reduced objective in Equation 3 is concave in \(w\),
+            hence the maximizer exists. The original two-player formulation has a saddle point under convex–concave conditions, interpreted as a Nash equilibrium.
+          </p>
+        </div>
+
+        <h3>8.3 We quantified uncertainty instead of pretending one backtest number is “truth”</h3>
+
+        <p>
+          The stationary-bootstrap IR band (\([-0.5191,\,1.9841]\)) is wide on purpose: it reflects the reality that short-ish samples and dependent returns
+          produce large uncertainty. That is not a bug; it is the strategy’s honest error bar.
+        </p>
+
+        <h2>9. Practical Limitations (the part that saves you money)</h2>
+
+        <ul>
+          <li><strong>Universe bias:</strong> if the asset list is fixed ex post, survivorship effects can creep in. Prefer time-consistent membership rules.</li>
+          <li><strong>Transaction costs:</strong> basis-point costs are placeholders; real costs include spreads, impact, and liquidity constraints.</li>
+          <li><strong>Hyperparameter search:</strong> PSR/DSR should use an effective number of trials reflecting how many variants you tried.</li>
+          <li><strong>Model risk:</strong> EWMA assumes a particular decay structure; consider stress-testing spans and robustness \(\eta\).</li>
+        </ul>
+
+        <p>
+          Net: we didn’t “discover alpha” via cleverness. We replaced a fragile objective with a Nash-equilibrium robust formulation, controlled estimation error with shrinkage,
+          and demanded that validation attack the strategy as an adversary would. That is the whole vibe: make the model earn the right to exist.
+        </p>
+
+        <h2>References</h2>
+        <div class="refs">
+          <ol>
+            <li>
+              Bailey, D. H., & López de Prado, M. (2014). <em>The Deflated Sharpe Ratio: Correcting for Selection Bias, Backtest Overfitting, and Non-Normality</em>.
+              PDF: <a href="https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf" target="_blank" rel="noreferrer">davidhbailey.com</a>
+            </li>
+            <li>
+              Ledoit, O., & Wolf, M. (2003/2004). <em>Honey, I Shrunk the Sample Covariance Matrix</em>.
+              PDF: <a href="https://www.ledoit.net/honey.pdf" target="_blank" rel="noreferrer">ledoit.net</a>
+            </li>
+            <li>
+              Ledoit, O. (2020). <em>A Review and Guide to Covariance Matrix Estimation</em>.
+              PDF: <a href="https://www.ledoit.net/Review_Paper_2020_JFEc.pdf" target="_blank" rel="noreferrer">ledoit.net</a>
+            </li>
+            <li>
+              Politis, D. N., & Romano, J. P. (1994). <em>The Stationary Bootstrap</em>.
+              PDF copy: <a href="https://www.ssc.wisc.edu/~bhansen/718/Politis%20Romano.pdf" target="_blank" rel="noreferrer">ssc.wisc.edu</a>
+            </li>
+            <li>
+              Pandas Documentation: <code>DataFrame.ewm</code> (EWMA parameterization, span/com/alpha).
+              <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.ewm.html" target="_blank" rel="noreferrer">pandas.pydata.org</a>
+            </li>
+            <li>
+              Lazard Asset Management (2019). <em>It’s Time to Talk About Tracking Error</em> (active risk as standard deviation of relative returns).
+              PDF: <a href="https://www.lazardassetmanagement.com/docs/89302/LazardLetter_ItsTimeToTalkAboutTrackingError_2019-08_en.pdf" target="_blank" rel="noreferrer">lazardassetmanagement.com</a>
+            </li>
+            <li>
+              Investopedia: <em>Information Ratio (IR): Definition, Formula, vs. Sharpe Ratio</em>.
+              <a href="https://www.investopedia.com/terms/i/informationratio.asp" target="_blank" rel="noreferrer">investopedia.com</a>
+            </li>
+            <li>
+              Ferreira, M. A. M., et al. (2012). <em>Minimax theorem and Nash equilibrium</em> (overview connecting minimax and Nash).
+              PDF: <a href="https://www.um.edu.mt/library/oar/bitstream/123456789/68887/1/Minimax_theorem_and_nash_equilibrium.pdf" target="_blank" rel="noreferrer">um.edu.mt</a>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="glass" aria-label="Footer">
+        <footer>
+          © <span id="yr"></span> Anıl Kaya — Technical note on Nash-equilibrium robust active-risk optimization.
+        </footer>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      "use strict";
+
+      const brand = document.getElementById("brand");
+      if(brand) {
+          brand.addEventListener("click", () => { window.location.href = "#"; });
+      }
+
+      const LSKEY = "theme";
+      const root = document.documentElement;
+      const themeBtn = document.getElementById("theme");
+
+      function applyTheme(theme, persist){
+        root.setAttribute("data-theme", theme);
+        if(persist) localStorage.setItem(LSKEY, theme);
+        const isLight = (theme === "light");
+        if(themeBtn) {
+            themeBtn.setAttribute("aria-pressed", String(isLight));
+            themeBtn.textContent = isLight ? "Dark" : "Light";
+        }
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if(meta) meta.setAttribute("content", isLight ? "#f4f4f6" : "#050505");
+      }
+
+      function getInitialTheme(){
+        const saved = localStorage.getItem(LSKEY);
+        if(saved === "light" || saved === "dark") return saved;
+        return "dark"; // Defaulting to dark
+      }
+
+      applyTheme(getInitialTheme(), false);
+      if(themeBtn) {
+          themeBtn.addEventListener("click", () => {
+            const now = (root.getAttribute("data-theme") === "light") ? "dark" : "light";
+            applyTheme(now, true);
+          });
+      }
+
+      const updateSpotlight = (e) => {
+        const cards = document.querySelectorAll(".glass");
+        cards.forEach(card => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty("--mouse-x", x + "px");
+          card.style.setProperty("--mouse-y", y + "px");
+        });
+      };
+      document.addEventListener("mousemove", updateSpotlight, { passive: true });
+
+      // Abstract Expand/Collapse logic
+      const abstractText = document.getElementById("abstractText");
+      const expandBtn = document.getElementById("expandBtn");
+      if(expandBtn && abstractText) {
+        expandBtn.addEventListener("click", () => {
+          const isExpanded = expandBtn.getAttribute("aria-expanded") === "true";
+          if(isExpanded) {
+            // Collapse it
+            abstractText.classList.add("limit-lines");
+            expandBtn.setAttribute("aria-expanded", "false");
+            expandBtn.querySelector(".btn-text").textContent = "Read Full Abstract";
+          } else {
+            // Expand it
+            abstractText.classList.remove("limit-lines");
+            expandBtn.setAttribute("aria-expanded", "true");
+            expandBtn.querySelector(".btn-text").textContent = "Show Less";
+          }
+        });
+      }
+
+      function renderMath(){
+        if(!window.renderMathInElement) return;
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ]
+        });
+      }
+      window.addEventListener("load", () => { setTimeout(renderMath, 50); });
+
+      const yrSpan = document.getElementById("yr");
+      if(yrSpan) yrSpan.textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>
