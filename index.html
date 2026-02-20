@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark" prefix="og: http://ogp.me/ns#">
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
@@ -15,11 +15,11 @@
     object-src 'none';
 ">
 
-<title>Anıl Kaya | Research & Articles</title>
-<meta name="description" content="Academic articles and research by Anıl Kaya.">
+<title>Anıl Kaya | Research and Articles</title>
+<meta name="description" content="Academic articles and research by Anıl Kaya">
 <link rel="canonical" href="https://anilkaya.com/">
 
-<!-- Fonts & Math -->
+<!-- Fonts and Math (Strictly Latin Modern) -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" crossorigin="anonymous"/>
@@ -32,245 +32,321 @@
 
 <style>
 :root{
-    color-scheme:dark;
-    --font-main:"Latin Modern Roman", serif;
-    --font-ui:"Latin Modern Sans", sans-serif;
-    --safe-top:env(safe-area-inset-top,0px);
-    --safe-bottom:env(safe-area-inset-bottom,0px);
-    --nav-h:64px;
+    /* Strict Dark Theme Configuration */
+    color-scheme: dark;
+    --font-main: "Latin Modern Roman", serif;
+    --font-ui: "Latin Modern Sans", sans-serif;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --nav-h: 72px;
     
-    /* Dark Theme */
-    --bg:#050505;
-    --border:rgba(255,255,255,0.10);
-    --silver:#e8e8ea;
-    --silver-dim:rgba(232,232,234,0.72);
-    --gold:#D4AF37;
-    --gold-soft:#F7E7CE;
-    --paper-bg: rgba(12, 12, 14, 0.85);
-    --paper-border: rgba(255, 255, 255, 0.08);
-    --paper-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05) inset;
+    --bg: #050505;
+    --border: rgba(255, 255, 255, 0.08);
+    --silver: #e8e8ea;
+    --silver-dim: rgba(232, 232, 234, 0.65);
+    --gold: #D4AF37;
+    --gold-soft: #F7E7CE;
+    
+    --paper-bg: rgba(10, 10, 12, 0.88);
+    --paper-border: rgba(255, 255, 255, 0.06);
+    --paper-shadow: 0 30px 80px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04) inset;
 }
 
-[data-theme="light"] {
-    color-scheme: light;
-    --bg:#fbfbfc;
-    --border:rgba(0,0,0,0.12);
-    --silver:#1b1b1c;
-    --silver-dim:rgba(27,27,28,0.75);
-    --gold:#B88A00;
-    --gold-soft:#7A5A00;
-    --paper-bg: rgba(253, 253, 255, 0.95);
-    --paper-border: rgba(0, 0, 0, 0.1);
-    --paper-shadow: 0 20px 60px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.8) inset;
+html, body { height: 100%; }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--silver);
+    font-family: var(--font-main);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased; 
+    -moz-osx-font-smoothing: grayscale;
 }
 
-html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--silver);font-family:var(--font-main);overflow-x:hidden;-webkit-font-smoothing:antialiased; transition: background-color 0.4s ease, color 0.4s ease;}
-*{box-sizing:border-box}
-a{color:var(--gold-soft);text-decoration:none}
-a:hover{opacity:0.9}
-:focus-visible{outline:2px solid color-mix(in oklab,var(--gold) 65%,#fff);outline-offset:3px;border-radius:14px}
+* { box-sizing: border-box; }
+a { color: var(--gold-soft); text-decoration: none; }
+a:hover { opacity: 0.9; }
+:focus-visible { outline: 2px solid color-mix(in oklab, var(--gold) 65%, #fff); outline-offset: 3px; border-radius: 14px; }
 
-/* Navigation */
-#nav{position:fixed;top:0;left:0;right:0;height:calc(var(--nav-h) + var(--safe-top));padding-top:var(--safe-top);padding-left:clamp(14px,4vw,44px);padding-right:clamp(14px,4vw,44px);display:flex;align-items:center;justify-content:space-between;z-index:1000;border-bottom:1px solid var(--border);background:radial-gradient(1200px 600px at 20% 30%,rgba(212,175,55,0.08),rgba(0,0,0,0.0) 60%),linear-gradient(135deg,color-mix(in oklab, var(--bg) 90%, transparent),color-mix(in oklab, var(--bg) 70%, transparent));backdrop-filter:blur(18px); transition: border-color 0.4s ease, background 0.4s ease;}
-#brand{appearance:none; border:none; background:transparent; font-family:var(--font-ui);font-size:0.92rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:color-mix(in oklab,var(--gold) 70%,var(--silver));user-select:none;white-space:nowrap;cursor:pointer;-webkit-user-select:none; padding:0; transition: color 0.4s ease;}
-#actions{display:flex;align-items:center;gap:10px}
-.btn{font-family:var(--font-ui);font-size:0.75rem;letter-spacing:1.0px;text-transform:uppercase;padding:8px 14px;border-radius:12px;border:1px solid var(--border);background:color-mix(in oklab, var(--bg) 60%, transparent);color:var(--silver);cursor:pointer;backdrop-filter:blur(14px);transition:all 0.3s ease;-webkit-user-select:none;user-select:none;touch-action:manipulation;min-height: 38px; display: flex; align-items: center;}
-.btn:hover{background:color-mix(in oklab, var(--gold) 15%, transparent);border-color:color-mix(in oklab, var(--gold) 50%, transparent); color: var(--gold);}
+/* Symmetrical, Ultra-Modern Navigation */
+#nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: calc(var(--nav-h) + var(--safe-top));
+    padding-top: var(--safe-top);
+    padding-left: clamp(24px, 6vw, 64px);
+    padding-right: clamp(24px, 6vw, 64px);
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border);
+    background: radial-gradient(1200px 600px at 50% 0%, rgba(212,175,55,0.04), rgba(0,0,0,0.0) 80%),
+                linear-gradient(180deg, color-mix(in oklab, var(--bg) 92%, transparent), color-mix(in oklab, var(--bg) 60%, transparent));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+
+#brand {
+    appearance: none; border: none; background: transparent; 
+    font-family: var(--font-ui); font-size: 0.95rem; font-weight: 900; 
+    letter-spacing: 2.5px; text-transform: uppercase; 
+    color: color-mix(in oklab, var(--gold) 80%, var(--silver));
+    user-select: none; white-space: nowrap; cursor: pointer; padding: 0; 
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), text-shadow 0.3s ease;
+}
+#brand:hover { 
+    transform: translateY(-1px); 
+    text-shadow: 0 4px 15px rgba(212,175,55,0.2); 
+}
+
+#actions { display: flex; align-items: center; gap: 16px; }
+
+.btn {
+    font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; 
+    letter-spacing: 1.2px; text-transform: uppercase; 
+    padding: 10px 24px; border-radius: 30px; border: 1px solid var(--border); 
+    background: color-mix(in oklab, var(--bg) 40%, transparent); 
+    color: var(--silver); cursor: pointer; backdrop-filter: blur(14px); 
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    -webkit-user-select: none; user-select: none; touch-action: manipulation; 
+    min-height: 40px; display: flex; align-items: center; justify-content: center; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.btn:hover {
+    background: var(--gold); border-color: var(--gold); color: #000; 
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 20px color-mix(in oklab, var(--gold) 25%, transparent);
+}
+
+/* Symmetrical Copyright Footer */
+#copyright {
+    position: fixed;
+    bottom: clamp(16px, 4vw, 28px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-ui);
+    font-size: 0.70rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--silver) 35%, transparent);
+    z-index: 500;
+    pointer-events: none;
+    user-select: none;
+    text-align: center;
+    white-space: nowrap;
+}
 
 @media (max-width: 900px) {
-  #actions { gap: 6px; flex-wrap: wrap; justify-content: center; }
-  .btn { padding: 6px 10px; font-size: 0.65rem; min-height: 32px; }
+  #actions { gap: 10px; }
+  .btn { padding: 8px 16px; font-size: 0.7rem; min-height: 36px; }
 }
 
-#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;touch-action:none;user-select:none;}
-#eqLayer{position:fixed;inset:0;z-index:700;pointer-events:none;overflow:hidden}
-.eq{position:absolute;will-change:transform,opacity,filter;opacity:0.0;transform:translate3d(0,0,0);filter:drop-shadow(0 0 14px rgba(212,175,55,0.24));color:rgba(232,232,234,0.92);mix-blend-mode:screen}
-.eq .katex{font-size:clamp(18px,2.1vw,28px)}
-#depthName{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:650;pointer-events:none;font-family:var(--font-main);font-weight:300;letter-spacing:0.08em;
-font-size:clamp(1.5rem,5.5vw,6.5rem); color:rgba(212,175,55,0.24);text-shadow:0 0 55px rgba(212,175,55,0.18);filter:blur(0.2px);opacity:0.95;white-space:normal;text-align:center;width:90%;max-width:800px;line-height:1.1; transition: color 0.4s ease, text-shadow 0.4s ease;}
-#depthName::after{content:"";position:absolute;inset:-30px -80px;background:radial-gradient(closest-side,rgba(232,232,234,0.10),rgba(0,0,0,0.0) 70%);z-index:-1;filter:blur(10px);opacity:0.55}
-#orbitHint{position:fixed;inset:0;z-index:600;pointer-events:none;opacity:0.55;background:radial-gradient(circle at 50% 50%,rgba(212,175,55,0.10) 0%,rgba(212,175,55,0.06) 20%,rgba(232,232,234,0.04) 34%,rgba(0,0,0,0.0) 60%),conic-gradient(from 220deg at 50% 50%,rgba(212,175,55,0.12),rgba(122,166,255,0.06),rgba(232,232,234,0.08),rgba(212,175,55,0.12));mask:radial-gradient(circle at 50% 50%,rgba(0,0,0,0) 0 26%,rgba(0,0,0,1) 34% 42%,rgba(0,0,0,0) 60%);filter:blur(0.6px)}
+#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; touch-action: none; user-select: none; }
+
+#depthName {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); 
+    z-index: 650; pointer-events: none; 
+    font-family: var(--font-main); font-weight: 300; letter-spacing: 0.06em;
+    font-size: clamp(1.8rem, 6vw, 7rem); color: rgba(212,175,55,0.20); 
+    text-shadow: 0 0 60px rgba(212,175,55,0.15); filter: blur(0.2px); 
+    opacity: 0.95; white-space: nowrap; text-align: center; width: 100%; line-height: 1; 
+}
+#depthName::after {
+    content: ""; position: absolute; inset: -30px -80px; 
+    background: radial-gradient(closest-side, rgba(232,232,234,0.08), rgba(0,0,0,0.0) 70%); 
+    z-index: -1; filter: blur(12px); opacity: 0.50;
+}
+#orbitHint {
+    position: fixed; inset: 0; z-index: 600; pointer-events: none; opacity: 0.55; 
+    background: radial-gradient(circle at 50% 50%, rgba(212,175,55,0.08) 0%, rgba(212,175,55,0.04) 20%, rgba(232,232,234,0.02) 34%, rgba(0,0,0,0.0) 60%),
+                conic-gradient(from 220deg at 50% 50%, rgba(212,175,55,0.10), rgba(122,166,255,0.04), rgba(232,232,234,0.06), rgba(212,175,55,0.10));
+    mask: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0 26%, rgba(0,0,0,1) 34% 42%, rgba(0,0,0,0) 60%); 
+    filter: blur(0.6px);
+}
 
 /* ==========================================================================
-   BEAUTIFUL READER MODAL
+   SEAMLESS READER MODAL
    ========================================================================== */
-#modal{position:fixed;inset:0;z-index:2000;display:none;background:rgba(0,0,0,0.4);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);touch-action:manipulation;opacity:0;transition:opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);}
-#modal.open{display:block;opacity:1;}
+#modal { position: fixed; inset: 0; z-index: 2000; display: none; background: rgba(0,0,0,0.5); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); touch-action: manipulation; opacity: 0; transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+#modal.open { display: block; opacity: 1; }
 
-#modalBody{
+#modalBody {
     position: absolute; inset: 0;
-    overflow-y:auto;overflow-x:hidden;
-    padding: clamp(40px, 8vw, 100px) 20px; 
-    -webkit-user-select:text;user-select:text;touch-action:pan-y;
+    overflow-y: auto; overflow-x: hidden;
+    padding: clamp(60px, 10vw, 120px) 20px; 
+    -webkit-user-select: text; user-select: text; touch-action: pan-y;
     scroll-behavior: smooth;
     display: flex; justify-content: center; align-items: flex-start;
 }
 
-/* Custom Elegant Scrollbar */
-#modalBody::-webkit-scrollbar{width:6px;background:transparent}
-#modalBody::-webkit-scrollbar-track{background:transparent;}
-#modalBody::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
-#modalBody::-webkit-scrollbar-thumb:hover{background:var(--gold);}
+/* Elegant Scrollbar */
+#modalBody::-webkit-scrollbar { width: 8px; background: transparent; }
+#modalBody::-webkit-scrollbar-track { background: transparent; }
+#modalBody::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+#modalBody::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
 /* Floating Close Button */
 #closeBtn {
-    position: fixed; top: clamp(15px, 3vw, 30px); right: clamp(15px, 3vw, 40px);
-    width: 44px; height: 44px; border-radius: 50%;
+    position: fixed; top: clamp(20px, 4vw, 36px); right: clamp(20px, 4vw, 48px);
+    width: 48px; height: 48px; border-radius: 50%;
     background: var(--paper-bg); border: 1px solid var(--paper-border);
     color: var(--silver); cursor: pointer;
     display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 2010; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 2010; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
 }
 #closeBtn:hover {
-    transform: scale(1.1) rotate(90deg);
-    background: var(--gold); color: #fff; border-color: var(--gold);
-    box-shadow: 0 8px 20px rgba(212,175,55,0.3);
+    transform: scale(1.15) rotate(90deg);
+    background: var(--gold); color: #000; border-color: var(--gold);
+    box-shadow: 0 12px 30px color-mix(in oklab, var(--gold) 40%, transparent);
 }
-#closeBtn svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#closeBtn svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
 /* The "Paper" */
 .article-wrapper {
     background: var(--paper-bg);
     border: 1px solid var(--paper-border);
     box-shadow: var(--paper-shadow);
-    border-radius: 12px;
+    border-radius: 16px;
     width: 100%;
-    max-width: 840px; /* Optimal Academic Reading Width */
-    padding: clamp(40px, 8vw, 80px) clamp(30px, 6vw, 80px);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    transform: translateY(30px);
+    max-width: 860px;
+    padding: clamp(50px, 8vw, 100px) clamp(30px, 7vw, 90px);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    transform: translateY(40px) scale(0.98);
     opacity: 0;
-    transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
 }
 
 #modal.open .article-wrapper {
-    animation: paperRise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: paperRise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 @keyframes paperRise {
-    0% { transform: translateY(40px) scale(0.98); opacity: 0; }
+    0% { transform: translateY(50px) scale(0.97); opacity: 0; }
     100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-/* Absolute Typography Enforcement */
-.article-header { margin-bottom: 3.5rem; text-align: center; }
+/* Absolute Typography Enforcement (Latin Modern ONLY) */
+.article-header { margin-bottom: 4rem; text-align: center; }
 
 .article-header .meta {
     font-family: var(--font-ui) !important;
     font-size: 0.85rem;
     color: var(--silver-dim);
-    letter-spacing: 2px;
+    letter-spacing: 2.5px;
     text-transform: uppercase;
     display: flex; justify-content: center; gap: 16px; align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.8rem;
 }
 .article-header .pill {
-    background: color-mix(in oklab, var(--gold) 15%, transparent);
+    background: color-mix(in oklab, var(--gold) 12%, transparent);
     color: var(--gold);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 700;
-    border: 1px solid color-mix(in oklab, var(--gold) 30%, transparent);
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-weight: 800;
+    border: 1px solid color-mix(in oklab, var(--gold) 25%, transparent);
 }
 
 .article-content { 
     font-family: var(--font-main) !important;
-    font-size: 1.18rem; /* Large, comfortable reading size */
-    line-height: 1.9;
-    color: color-mix(in oklab, var(--silver) 92%, var(--silver-dim));
+    font-size: 1.22rem;
+    line-height: 1.95;
+    color: color-mix(in oklab, var(--silver) 94%, var(--silver-dim));
     text-align: justify;
     text-justify: inter-word;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.3px;
 }
 
 .article-content h1, .article-content h2, .article-content h3, .article-content h4 {
     font-family: var(--font-main) !important;
     color: var(--silver);
-    line-height: 1.3;
-    margin: 2.5rem 0 1.2rem;
+    line-height: 1.35;
+    margin: 3rem 0 1.5rem;
     text-align: left;
     font-weight: normal;
 }
 
 .article-header h1 { 
-    font-size: clamp(2.4rem, 5vw, 3.6rem); 
+    font-size: clamp(2.6rem, 5.5vw, 4rem); 
     color: var(--gold); 
     margin: 0; 
     line-height: 1.15;
     text-align: center;
+    letter-spacing: -0.5px;
 }
 
 .article-content h2 { 
-    font-size: 2rem; 
+    font-size: 2.1rem; 
     border-bottom: 1px solid var(--border); 
-    padding-bottom: 0.5rem;
-    margin-top: 3.5rem;
+    padding-bottom: 0.8rem;
+    margin-top: 4rem;
 }
 
 .article-content h3 { 
-    font-size: 1.45rem; 
+    font-size: 1.5rem; 
     font-style: italic; 
     color: var(--gold-soft);
 }
 
-.article-content p { margin: 0 0 1.8rem; }
+.article-content p { margin: 0 0 2rem; }
 .article-content p:first-of-type::first-letter {
-    font-size: 3.5rem;
-    line-height: 0.8;
+    font-size: 3.8rem;
+    line-height: 0.85;
     float: left;
-    margin-right: 0.5rem;
-    margin-top: 0.2rem;
+    margin-right: 0.6rem;
+    margin-top: 0.25rem;
     color: var(--gold);
     font-family: var(--font-main) !important;
 }
 
-.article-content a { color: var(--gold); text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--gold) 40%, transparent); text-underline-offset: 4px; transition: all 0.2s; }
+.article-content a { 
+    color: var(--gold); text-decoration: underline; 
+    text-decoration-color: color-mix(in oklab, var(--gold) 35%, transparent); 
+    text-underline-offset: 6px; transition: all 0.3s; 
+}
 .article-content a:hover { color: var(--silver); text-decoration-color: var(--silver); }
 
-.article-content ul, .article-content ol { margin: 0 0 1.8rem; padding-left: 2rem; }
-.article-content li { margin-bottom: 0.6rem; padding-left: 0.5rem;}
+.article-content ul, .article-content ol { margin: 0 0 2rem; padding-left: 2.2rem; }
+.article-content li { margin-bottom: 0.8rem; padding-left: 0.5rem;}
 .article-content li::marker { color: var(--gold); }
 
 /* Beautiful Academic Blockquotes */
 .article-content blockquote { 
-    margin: 2.5rem 0; 
-    padding: 1.5rem 2rem 1.5rem 3rem; 
-    background: color-mix(in oklab, var(--border) 20%, transparent); 
+    margin: 3rem 0; 
+    padding: 2rem 2.5rem 2rem 3.5rem; 
+    background: color-mix(in oklab, var(--border) 15%, transparent); 
     font-style: italic; 
-    border-radius: 8px;
+    border-radius: 12px;
     position: relative;
     border: 1px solid var(--border);
-    color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim));
+    color: color-mix(in oklab, var(--silver) 85%, var(--silver-dim));
 }
 .article-content blockquote::before {
     content: "“";
     position: absolute;
-    left: 0.5rem;
-    top: 0.5rem;
+    left: 0.8rem;
+    top: 0.8rem;
     font-family: var(--font-main) !important;
-    font-size: 4rem;
+    font-size: 4.5rem;
     color: var(--gold);
     line-height: 1;
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 /* Math blocks styling */
 .article-content .katex-display {
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 1rem 0;
-    margin: 2rem 0;
-    background: color-mix(in oklab, var(--border) 10%, transparent);
-    border-radius: 8px;
+    padding: 1.5rem 0;
+    margin: 2.5rem 0;
+    background: color-mix(in oklab, var(--border) 8%, transparent);
+    border-radius: 12px;
 }
 
-#err{position:fixed;inset:0;z-index:9999;display:none;padding:96px 18px 18px;background:#050505;color:#e8e8ea;font-family:var(--font-ui);-webkit-user-select:text;user-select:text;touch-action:pan-y}
-#err h2{margin:0 0 12px;font-weight:900;letter-spacing:1px;color:#D4AF37;text-transform:uppercase}
-#err pre{margin:12px 0 0;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,0.10);background:rgba(18,18,18,0.6);overflow:auto;max-height:55vh;white-space:pre-wrap;line-height:1.5;opacity:0.9}
+#err { position: fixed; inset: 0; z-index: 9999; display: none; padding: 96px 18px 18px; background: var(--bg); color: var(--silver); font-family: var(--font-ui); -webkit-user-select: text; user-select: text; touch-action: pan-y; }
+#err h2 { margin: 0 0 12px; font-weight: 900; letter-spacing: 1px; color: var(--gold); text-transform: uppercase; }
+#err pre { margin: 12px 0 0; padding: 12px; border-radius: 14px; border: 1px solid var(--border); background: rgba(18,18,18,0.6); overflow: auto; max-height: 55vh; white-space: pre-wrap; line-height: 1.5; opacity: 0.9; }
 </style>
 </head>
 
@@ -279,14 +355,15 @@ font-size:clamp(1.5rem,5.5vw,6.5rem); color:rgba(212,175,55,0.24);text-shadow:0 
   <button id="brand" type="button" aria-label="Reset View">Anıl Kaya</button>
   <div id="actions">
     <a class="btn" href="https://www.linkedin.com/in/anillkaya" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-    <button class="btn" id="theme" type="button" aria-pressed="false" aria-label="Toggle theme">Light</button>
   </div>
 </nav>
 
 <canvas id="gl" aria-hidden="true"></canvas>
 <div id="orbitHint" aria-hidden="true"></div>
-<div id="depthName" aria-hidden="true">In Econometrics, We Trust</div>
-<div id="eqLayer" aria-hidden="true"></div>
+<div id="depthName" aria-hidden="true">In Econometrics We Trust</div>
+
+<!-- SYMMETRICAL COPYRIGHT FOOTER -->
+<div id="copyright" aria-hidden="true">© 2026 Anıl Kaya</div>
 
 <div id="modal" role="dialog" aria-modal="true" aria-label="Content reader">
   <button id="closeBtn" aria-label="Close Article">
@@ -301,7 +378,7 @@ font-size:clamp(1.5rem,5.5vw,6.5rem); color:rgba(212,175,55,0.24);text-shadow:0 
   </div>
 </div>
 
-<div id="err"><h2>Render error</h2><div>Error details:</div><pre id="errText"></pre></div>
+<div id="err"><h2>Render error</h2><div>Error details</div><pre id="errText"></pre></div>
 
 <script>
 (function(){
@@ -340,27 +417,32 @@ const FocusTrap = {
     }
 };
 
-/* =========================
-   3D & APP LOGIC
-   ========================= */
-
+/* ==========================================================================
+   ARTICLE CONFIGURATION (HOW TO ADD NEW ARTICLES AND PLANETS)
+   ========================================================================== 
+   To add a new article to the 3D universe:
+   1. Create an object in the ARTICLES array below.
+   2. 'id'           : Unique identifier.
+   3. 'file'         : Path to the HTML file containing the article content.
+   4. 'category'     : Subject categorization (appears in the UI pill).
+   5. 'title'        : Main title of the article (appears over the planet and in reader).
+   6. 'date'         : Publish date.
+   7. 'textureKey'   : Which planet shader to use. 
+                       Available: "earth", "moon", "mars", "venus", "mc", "erpt"
+                       (Any unknown key safely defaults to the "earth" visual style).
+   8. 'enabled'      : Must be true for it to render in the universe.
+========================================================================== */
 const ARTICLES = [
   { id:"options-pricing", file:"articles/options.html", category:"Financial Econometrics", title:"Options Pricing", date:"JAN 2026", textureKey:"moon", enabled:true },
   { id:"bvar", file:"articles/bvar.html", category:"Core Theory", title:"Bayesian Vector Autoregression", date:"DEC 2025", textureKey:"earth", enabled:true },
-  { id:"stoch-vol", file:"articles/forecasting.html", category:"Time Series", title:"Why ML is (almost) useless?", date:"JAN 2026", textureKey:"mars", enabled:true },
+  { id:"stoch-vol", file:"articles/forecasting.html", category:"Time Series", title:"Why ML is almost useless", date:"JAN 2026", textureKey:"mars", enabled:true },
   { id:"game-theory-cb", file:"articles/game.html", category:"Monetary Economics", title:"Central Bank Credibility", date:"JAN 2026", textureKey:"jupiter", enabled:true },
-  { id:"sign-rest", file:"articles/ERPT.html", category:"Macroeconometrics", title:"ERPT", date:"JAN 2026", textureKey:"venus", enabled:true },
+  { id:"sign-rest", file:"articles/ERPT.html", category:"Macroeconometrics", title:"Exchange Rate Pass Through", date:"JAN 2026", textureKey:"venus", enabled:true },
   { id:"monte-carlo", file:"articles/monte-carlo.html", category:"Computational Methods", title:"Monte Carlo Simulation", date:"JAN 2026", textureKey:"mc", enabled:true },
-  { id:"erpt-defense", file:"articles/price.html", category:"International Finance", title:"ERPT-Defense game", date:"FEB 2026", textureKey:"erpt", enabled:true },
-  { id:"Nash-Minimax Drift", file:"articles/nash.html", category:"Domestic Finance", title:"Nash-Strategy of Portfolio Managing", date:"FEB 2026", textureKey:"NSH", enabled:true }
+  { id:"erpt-defense", file:"articles/price.html", category:"International Finance", title:"Currency Defense Game", date:"FEB 2026", textureKey:"erpt", enabled:true },
+  { id:"Nash-Minimax Drift", file:"articles/nash.html", category:"Domestic Finance", title:"Nash Strategy of Portfolio Managing", date:"FEB 2026", textureKey:"NSH", enabled:true }
 ].filter(x=>x.enabled);
 
-const TEX = [
-  String.raw`Y_t = A_1Y_{t-1}+\cdots+A_pY_{t-p}+u_t`, String.raw`u_t\sim\mathcal{N}(0,\Sigma)`,
-  String.raw`p(\theta\mid Y)\propto p(Y\mid\theta)p(\theta)`, String.raw`E[y_t\mid\mathcal{I}_{t-1}]`,
-  String.raw`h_t=\mu+\phi(h_{t-1}-\mu)+\sigma_h\xi_t`, String.raw`\nabla\mathcal{L}(\theta)`,
-  String.raw`\Sigma = A^{-1}\Lambda A^{-1\prime}`
-];
 
 const $ = (id)=>document.getElementById(id);
 function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
@@ -370,45 +452,9 @@ function showErr(e){
   const el = $("err");
   if(el) el.style.display = "block";
 }
-const root = document.documentElement;
-const themeBtn = $("theme");
+
 const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
 const lerp = (a,b,t)=>a+(b-a)*t;
-
-const LS_KEY = "theme";
-function applyTheme(theme, persist){
-  root.setAttribute("data-theme", theme);
-  if (persist) localStorage.setItem(LS_KEY, theme);
-  
-  if(themeBtn) themeBtn.setAttribute("aria-pressed", theme === "light");
-
-  const meta = document.querySelector('meta[name="theme-color"]');
-  
-  if (theme === "light"){
-    root.style.setProperty("color-scheme", "light"); 
-    root.style.setProperty("--bg", "#fbfbfc");
-    root.style.setProperty("--silver", "#1b1b1c");
-    root.style.setProperty("--silver-dim", "rgba(27,27,28,0.75)");
-    root.style.setProperty("--gold", "#B88A00");
-    root.style.setProperty("--gold-soft", "#7A5A00");
-    themeBtn.textContent = "Dark";
-    if(meta) meta.setAttribute("content", "#fbfbfc");
-    $("depthName").style.color = "rgba(184,138,0,0.20)";
-    $("depthName").style.textShadow = "0 0 55px rgba(184,138,0,0.14)";
-  } else {
-    root.style.setProperty("color-scheme", "dark");
-    root.removeAttribute("style");
-    themeBtn.textContent = "Light";
-    if(meta) meta.setAttribute("content", "#050505");
-    $("depthName").style.color = "rgba(212,175,55,0.24)";
-    $("depthName").style.textShadow = "0 0 55px rgba(212,175,55,0.18)";
-  }
-  if (window.__RECOLOR__) window.__RECOLOR__();
-}
-function getInitialTheme(){
-  const saved = localStorage.getItem(LS_KEY);
-  return (saved === "light" || saved === "dark") ? saved : "dark";
-}
 
 const modal = $("modal");
 const contentArea = $("articleContentArea");
@@ -422,7 +468,6 @@ function closeModal(){
 }
 modal.addEventListener("click", (e)=>{ 
     if (performance.now() - modalJustOpenedAt < 250) return; 
-    // Close if clicking the backdrop (not the paper)
     if (e.target === modal || e.target.id === 'modalBody') closeModal(); 
 });
 window.addEventListener("keydown", (e)=>{ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
@@ -432,7 +477,6 @@ $("closeBtn").addEventListener("click", closeModal);
 function renderModal(a, content, isLoading){
   const safeContent = sanitizeHTML(content);
   
-  // Construct the beautiful academic header
   const headerHtml = `
      <header class="article-header">
         <div class="meta"><span class="pill">${a.category}</span><span>•</span><span>${a.date}</span></div>
@@ -448,11 +492,11 @@ async function openArticle(a){
   modal.classList.add("open");
   FocusTrap.activate(modal);
 
-  renderModal(a, "<p style='text-align:center; margin-top: 4rem; font-style:italic;'>Loading manuscript...</p>", true);
+  renderModal(a, "<p style='text-align:center; margin-top: 4rem; font-style:italic;'>Loading manuscript</p>", true);
   
   try{
     const targetUrl = new URL(a.file, document.baseURI).href;
-    if(new URL(targetUrl).origin !== window.location.origin) throw new Error("Cross-origin fetch blocked");
+    if(new URL(targetUrl).origin !== window.location.origin) throw new Error("Cross origin fetch blocked");
 
     const res = await fetch(targetUrl);
     if(!res.ok) throw new Error("HTTP "+res.status);
@@ -462,10 +506,13 @@ async function openArticle(a){
     renderModal(a, c.innerHTML, false);
     if(window.renderMathInElement) window.renderMathInElement(contentArea);
   } catch(e){
-    renderModal(a, `<p style='text-align:center; color: #ff4444; margin-top: 4rem;'>Error loading manuscript: ${e.message}</p>`, false);
+    renderModal(a, `<p style='text-align:center; color: #ff4444; margin-top: 4rem;'>Error loading manuscript ${e.message}</p>`, false);
   }
 }
 
+/* ==========================================================================
+   3D PLANET TEXTURE GENERATION
+   ========================================================================== */
 function fract(x){ return x - Math.floor(x); }
 function hash2(x,y,s){ return fract(Math.sin(x*127.1 + y*311.7 + s*74.7) * 43758.5453123); }
 function smoothstep(a,b,x){ const t = clamp((x-a)/(b-a), 0, 1); return t*t*(3-2*t); }
@@ -535,6 +582,7 @@ function drawMoon(g, size){
   }
   g.putImageData(img,0,0);
 }
+
 function drawMars(g, size){
   const img = g.createImageData(size,size); const d = img.data; const baseR = 0.62, baseG = 0.24, baseB = 0.10;
   for(let y=0;y<size;y++){
@@ -551,6 +599,7 @@ function drawMars(g, size){
   }
   g.putImageData(img,0,0);
 }
+
 function drawVenus(g, size){
   const img = g.createImageData(size,size); const d = img.data;
   for(let y=0;y<size;y++){
@@ -567,6 +616,7 @@ function drawVenus(g, size){
   }
   g.putImageData(img,0,0);
 }
+
 function drawMonteCarlo(g, size){
   const img = g.createImageData(size,size); const d = img.data;
   for(let y=0;y<size;y++){
@@ -587,8 +637,8 @@ function drawMonteCarlo(g, size){
 
 function drawERPT(g, size){
   const img = g.createImageData(size,size); const d = img.data;
-  const cShield = [0.1, 0.6, 0.6]; // Cyan/Teal base
-  const cDefense = [0.2, 0.1, 0.4]; // Deep Purple
+  const cShield = [0.1, 0.6, 0.6]; 
+  const cDefense = [0.2, 0.1, 0.4]; 
   for(let y=0;y<size;y++){
     const v = y/(size-1);
     for(let x=0;x<size;x++){
@@ -604,7 +654,7 @@ function drawERPT(g, size){
       const crack = smoothstep(0.45, 0.50, fbm2(u*50.0, v*50.0, 9.9));
       r += 0.2 * grid; gg += 0.2 * grid; b += 0.3 * grid;
       
-      if(crack > 0.48 && crack < 0.52) { r=0.9; gg=0.8; b=0.2; } // Gold cracks
+      if(crack > 0.48 && crack < 0.52) { r=0.9; gg=0.8; b=0.2; } 
       
       const i = (y*size + x)*4; d[i+0] = to255(r); d[i+1] = to255(gg); d[i+2] = to255(b); d[i+3] = 255;
     }
@@ -614,23 +664,17 @@ function drawERPT(g, size){
 
 function buildBaseTextures(){
   const SZ = 512;
-  return { earth: makeCanvasTexture(drawEarth, SZ), moon: makeCanvasTexture(drawMoon, SZ), mars: makeCanvasTexture(drawMars, SZ), venus: makeCanvasTexture(drawVenus, SZ), mc: makeCanvasTexture(drawMonteCarlo, SZ), erpt: makeCanvasTexture(drawERPT, SZ) };
+  return { 
+      earth: makeCanvasTexture(drawEarth, SZ), 
+      moon: makeCanvasTexture(drawMoon, SZ), 
+      mars: makeCanvasTexture(drawMars, SZ), 
+      venus: makeCanvasTexture(drawVenus, SZ), 
+      mc: makeCanvasTexture(drawMonteCarlo, SZ), 
+      erpt: makeCanvasTexture(drawERPT, SZ) 
+  };
 }
 
-function buildEquationLayer(){
-  const layer = $("eqLayer"); layer.innerHTML = "";
-  const count = 12, items = [];
-  for (let i=0;i<count;i++){
-    const el = document.createElement("div"); el.className = "eq"; el.style.color = (root.getAttribute("data-theme")==="light")?"rgba(20,20,20,0.92)":"rgba(232,232,234,0.92)";
-    const tex = TEX[i % TEX.length];
-    try{ el.innerHTML = window.katex.renderToString(tex, { throwOnError:false, displayMode:false }); } catch(_){ el.textContent = tex; }
-    items.push({ el, a: Math.random()*Math.PI*2, r: 0.18 + Math.random()*0.82, s: 0.08 + Math.random()*0.18, ph: Math.random()*10, ox: (Math.random()-0.5)*140, oy: (Math.random()-0.5)*140 });
-    layer.appendChild(el);
-  }
-  return items;
-}
-
-if (!window.THREE){ showErr(new Error("Three.js unavailable.")); return; }
+if (!window.THREE){ showErr(new Error("Three.js unavailable")); return; }
 try{
   const canvas = $("gl");
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
@@ -793,27 +837,39 @@ try{
   function onPointerMove(e){ setPointerFromEvent(e); }
   canvas.addEventListener("pointermove", onPointerMove, { passive:true }); canvas.addEventListener("pointerdown", onTapStart, { passive:false }); canvas.addEventListener("pointerup", onTapEnd, { passive:false }); canvas.addEventListener("touchstart", onTapStart, { passive:false }); canvas.addEventListener("touchend", onTapEnd, { passive:false }); canvas.addEventListener("touchcancel", ()=>{ tapStart = null; }, { passive:true }); canvas.addEventListener("click", (e)=>{ tryPick(e); }, { passive:true });
 
-  const clock = new THREE.Clock(); let eqItems = buildEquationLayer(); const starAnim = { time: 0, rotY: 0, rotZ: 0 };
-  window.__RECOLOR__ = function(){ nebula.material.uniforms.uGold.value.set(cssVar("--gold") || "#D4AF37"); nebula.material.uniforms.uSilver.value.set(cssVar("--silver") || "#e8e8ea"); nebula.material.uniforms.uBg.value.set(cssVar("--bg") || "#050505"); scene.background.set(cssVar("--bg") || "#050505"); if (ringMeshes && ringMeshes.length){ const gold = new THREE.Color(cssVar("--gold") || "#D4AF37"), silv = new THREE.Color(cssVar("--silver") || "#e8e8ea"); ringMeshes.forEach(m=>{ if (m.material && m.material.uniforms){ m.material.uniforms.uGold.value.copy(gold); m.material.uniforms.uSilv.value.copy(silv); } }); } };
+  const clock = new THREE.Clock(); const starAnim = { time: 0, rotY: 0, rotZ: 0 };
   const _targetScale = new THREE.Vector3();
 
   function tick(){
     requestAnimationFrame(tick);
     
-    // Performance optimization: Halt entirely when modal is open to save battery and CPU cycles.
-    // Preserves the last rendered frame behind the backdrop-filter blur.
+    // Performance optimization Halt entirely when modal is open to save battery and CPU cycles
     if (modal.classList.contains("open")) return; 
     
     const dt = Math.min(0.033, clock.getDelta()), t = clock.getElapsedTime();
     const rect = canvas.getBoundingClientRect(); const nx = pointerActive ? (px / Math.max(1, rect.width) - 0.5) : 0.0, ny = pointerActive ? (py / Math.max(1, rect.height) - 0.5) : 0.0;
-    camera.position.x = lerp(camera.position.x, nx * 26, 0.06); camera.position.y = lerp(camera.position.y, (-ny) * 12, 0.06); camera.lookAt(0,0,0);
+    
+    // Instant Mouse Tracking
+    const targetCamX = nx * 30;
+    const targetCamY = (-ny) * 15;
+    camera.position.x = lerp(camera.position.x, targetCamX, 0.35); 
+    camera.position.y = lerp(camera.position.y, targetCamY, 0.35); 
+    camera.lookAt(0,0,0);
     nebula.material.uniforms.uTime.value = t; nebula.material.uniforms.uPointer.value.set(nx, -ny);
     
     if (pointerActive){ raycaster.setFromCamera(pointer, camera); const hits = raycaster.intersectObjects(planets.children, true); const hit = hits.find(h => h.object && h.object.userData && h.object.userData.article); const newHover = hit ? hit.object : null; if (hovered !== newHover){ hovered = newHover; document.body.style.cursor = hovered ? "pointer" : "default"; } } else { if (hovered !== null){ hovered = null; document.body.style.cursor = "default"; } }
     
     const isHoveringPlanet = !!(hovered && hovered.userData && hovered.userData.article);
     if (!isHoveringPlanet){ starAnim.time += dt; starAnim.rotY += dt * 0.05; starAnim.rotZ = Math.cos(starAnim.time*0.04)*0.06; }
-    stars.material.uniforms.uTime.value = starAnim.time; stars.material.uniforms.uDpr.value = DPR(); galaxy.rotation.y = starAnim.rotY; galaxy.rotation.z = starAnim.rotZ;
+    stars.material.uniforms.uTime.value = starAnim.time; stars.material.uniforms.uDpr.value = DPR(); 
+    
+    // Instant Star Parallax Response
+    const targetGalY = starAnim.rotY + nx * 0.4;
+    const targetGalX = -0.34 + ny * 0.4;
+    galaxy.rotation.y = lerp(galaxy.rotation.y, targetGalY, 0.35); 
+    galaxy.rotation.x = lerp(galaxy.rotation.x, targetGalX, 0.35);
+    galaxy.rotation.z = starAnim.rotZ;
+
     if (ringMeshes && ringMeshes.length){ ringMeshes.forEach(m=>{ if (m.material && m.material.uniforms) m.material.uniforms.uTime.value = t; }); ringGroup.rotation.y = Math.sin(t*0.05)*0.06; }
     const n = entries.length;
     for (let i=0;i<n;i++){
@@ -829,22 +885,17 @@ try{
     for (let it=0; it<2; it++) enforceAngularSeparation();
     for (let i=0;i<n;i++){ const p = entries[i]; const isHover = isHoveringPlanet && (hovered.userData.article === p.mesh.userData.article); applyOrbitPosition(p); const s = isHover ? 1.10 : 1.0; _targetScale.set(s, s, s); p.mesh.scale.lerp(_targetScale, 0.10); _targetScale.set(s*1.02, s*1.02, s*1.02); p.atmo.scale.lerp(_targetScale, 0.10); }
     $("depthName").style.transform = "translate(-50%, -50%)";
-    const w = window.innerWidth, h = window.innerHeight;
-    for (let i=0;i<eqItems.length;i++){ const it = eqItems[i]; it.a += dt * it.s; const rr = (0.18 + it.r*0.82), x = (0.5 + 0.46*Math.cos(it.a) * rr) * w + it.ox, y = (0.5 + 0.36*Math.sin(it.a*0.92 + it.ph) * rr) * h + it.oy, op = 0.18 + 0.12*(0.5+0.5*Math.sin(t*0.35 + i)); it.el.style.opacity = String(op); it.el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${Math.sin(it.a)*2.0}deg)`; }
     
     renderer.render(scene, camera); 
   }
 
-  function onResize(){ camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setPixelRatio(DPR()); renderer.setSize(window.innerWidth, window.innerHeight, false); buildPlanets(); eqItems = buildEquationLayer(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(()=>rebuildLabelTextures()).catch(()=>{}); }
+  function onResize(){ camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setPixelRatio(DPR()); renderer.setSize(window.innerWidth, window.innerHeight, false); buildPlanets(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(()=>rebuildLabelTextures()).catch(()=>{}); }
   window.addEventListener("resize", onResize, { passive:true });
   
   const brand = document.getElementById("brand");
   brand.addEventListener("click", ()=>camera.position.set(0,0,220)); brand.addEventListener("keydown", (e)=>{ if (e.key==="Enter"||e.key===" "){ e.preventDefault(); camera.position.set(0,0,220); } });
   
-  const themeBtn = document.getElementById("theme");
-  themeBtn.addEventListener("click", ()=>{ const cur = root.getAttribute("data-theme") || "dark"; applyTheme(cur === "dark" ? "light" : "dark", true); });
-  
-  applyTheme(getInitialTheme(), false); tick();
+  tick();
 
 }catch(e){ showErr(e); }
 })();
