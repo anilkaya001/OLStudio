@@ -40,7 +40,48 @@ body {
 .standalone-wrapper {
     max-width: 860px;
     margin: 0 auto;
-    padding: 60px 20px;
+    padding: 40px 20px 80px 20px;
+}
+
+/* Home Button Integration */
+.home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-ui) !important;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--silver);
+    text-decoration: none !important;
+    padding: 10px 22px;
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    background: color-mix(in oklab, var(--bg) 60%, transparent);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    margin-bottom: 3rem;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.home-btn:hover {
+    background: var(--gold);
+    color: #000;
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px color-mix(in oklab, var(--gold) 25%, transparent);
+}
+
+.home-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    transition: transform 0.3s ease;
+}
+
+.home-btn:hover svg {
+    transform: translateX(-3px);
 }
 
 /* Article Content Styling */
@@ -87,27 +128,31 @@ body {
     font-family: var(--font-main) !important;
 }
 
-/* Caption Styling */
-.caption {
+/* Very Classical Caption */
+.classical-caption {
     font-family: var(--font-main) !important;
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     font-style: italic;
-    color: color-mix(in oklab, var(--gold-soft) 85%, transparent);
+    color: color-mix(in oklab, var(--gold-soft) 95%, transparent);
     text-align: center;
-    margin: 1rem auto 3rem auto;
-    padding: 0 2rem;
-    border-left: 2px solid var(--gold);
-    border-right: 2px solid var(--gold);
+    margin: 2rem auto 3rem auto;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid color-mix(in oklab, var(--gold) 25%, transparent);
+    border-bottom: 1px solid color-mix(in oklab, var(--gold) 25%, transparent);
+    background: radial-gradient(ellipse at center, rgba(212,175,55,0.03) 0%, rgba(0,0,0,0) 80%);
+    line-height: 1.7;
+    max-width: 90%;
 }
 
 /* Pure CSS Expandable Abstract Component */
 .abstract-container {
     position: relative;
-    margin: 2rem 0 1rem 0;
-    padding: 2rem;
+    margin: 2rem 0 3rem 0;
+    padding: 2.5rem;
     background: rgba(255, 255, 255, 0.02);
     border-radius: 12px;
     border: 1px solid var(--border);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
 }
 
 .abstract-text {
@@ -138,7 +183,7 @@ body {
 .expand-btn-wrapper {
     display: flex;
     justify-content: flex-start;
-    margin-top: 15px;
+    margin-top: 20px;
     position: relative;
     z-index: 10;
 }
@@ -204,7 +249,7 @@ body {
     margin-bottom: 10px;
 }
 
-/* Programming Code Blocks */
+/* Programming Code Blocks & Strict Frame Enforcement */
 pre {
     background: rgba(15, 15, 18, 0.95);
     border: 1px solid var(--border);
@@ -215,8 +260,10 @@ pre {
     font-size: 0.9rem;
     color: #d1d1d1;
     box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
-    margin: 2.5rem 0;
+    margin: 0; /* Margin handled by JS wrapper */
     line-height: 1.5;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 code {
@@ -231,6 +278,46 @@ code {
 .cm { color: #7f848e; font-style: italic; } /* Comments */
 .nu { color: #d19a66; } /* Numbers */
 
+/* Dynamic Copy Button Styling */
+.code-wrapper {
+    position: relative;
+    margin: 2.5rem 0;
+    max-width: 100%;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(25, 25, 28, 0.85);
+    border: 1px solid var(--border);
+    color: var(--silver);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-family: var(--font-ui) !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 10;
+}
+
+.copy-btn:hover {
+    background: var(--gold);
+    color: #000;
+    border-color: var(--gold);
+}
+
+.copy-btn svg {
+    stroke: currentColor;
+}
+
 </style>
 </head>
 <body>
@@ -238,10 +325,25 @@ code {
 <div class="standalone-wrapper">
     <div class="content">
 
+        <!-- Universal Return Button -->
+        <a href="../index.html" class="home-btn" aria-label="Return to Universe">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Return to Universe
+        </a>
+
+        <!-- Classical Inscription / Caption -->
+        <div class="classical-caption">
+            A robust portfolio allocation framework designed to survive out of sample testing by assuming your return estimates are actively trying to destroy you.
+        </div>
+
+        <!-- Abstract Component -->
         <div class="abstract-container">
             <input type="checkbox" id="abs-toggle">
             <div class="abstract-text">
-                <strong>Note</strong> Here is a portfolio optimization setup I have been experimenting with recently. Instead of just blindly maximizing the Information Ratio I decided to structure the whole thing as a zero sum game. Maximizing a pure ratio is usually a terrible idea anyway since it lacks convexity and loves to chase noise. This new setup is basically you against a market adversary. You try to pick the best weights and the adversary actively tries to ruin your expected returns. If you solve for the saddle point you end up with a surprisingly stable Nash equilibrium. Better yet the math simplifies down into a basic quadratic program every month. I feed it exponentially weighted moments and shrink the covariance matrix to keep things grounded. To keep myself honest the backtest uses a strict walk forward loop with an embargo day to stop data leakage. It also applies proper turnover costs and uses some heavy duty statistical checks like the Deflated Sharpe Ratio.
+                <strong>Note:</strong> Here is a portfolio optimization setup I have been experimenting with recently. Instead of just blindly maximizing the Information Ratio I decided to structure the whole thing as a zero sum game. Maximizing a pure ratio is usually a terrible idea anyway since it lacks convexity and loves to chase noise. This new setup is basically you against a market adversary. You try to pick the best weights and the adversary actively tries to ruin your expected returns. If you solve for the saddle point you end up with a surprisingly stable Nash equilibrium. Better yet the math simplifies down into a basic quadratic program every month. I feed it exponentially weighted moments and shrink the covariance matrix to keep things grounded. To keep myself honest the backtest uses a strict walk forward loop with an embargo day to stop data leakage. It also applies proper turnover costs and uses some heavy duty statistical checks like the Deflated Sharpe Ratio.
             </div>
             <div class="expand-btn-wrapper">
                 <label for="abs-toggle" class="expand-btn">
@@ -252,16 +354,12 @@ code {
             </div>
         </div>
 
-        <div class="caption">
-            A robust portfolio allocation framework designed to survive out of sample testing by assuming your return estimates are actively trying to destroy you.
-        </div>
-
         <h2>1. The Mathematical Foundation</h2>
         
         <p>Note that none of this is investment advice. Let us dig deeply into the actual mathematics driving this setup. Standard mean variance optimization essentially operates as a ruthless error maximization machine. It aggressively overallocates capital to the specific assets that show the highest estimated returns combined with the lowest estimated variances. Naturally those extreme statistical estimates almost always contain the highest amounts of invisible market noise. You inevitably end up with massive concentrated positions in the exact areas where your historical data is the most hopelessly flawed. I built my framework to flip this entire destructive dynamic completely upside down. We begin by acknowledging our ignorance. We define our expected returns as a baseline historical estimate plus some unknown and highly hostile perturbation vector \(\delta\).</p>
 
         <div class="eq">
-          <div class="eq-title">Equation 1 Zero Sum Game Formulation</div>
+          <div class="eq-title">Equation 1: Zero Sum Game Formulation</div>
           \[
           \max_{w\in\mathcal{W}}\,\min_{\delta\in\mathbb{R}^N}\;
           (\hat{\mu}_t+\delta)^\top w
@@ -277,7 +375,7 @@ code {
         <p>You essentially select your portfolio weights trying to get the absolute best risk adjusted return possible. At the exact same time your theoretical adversary is doing everything in their mathematical power to wreck those expected returns. The genius part is that the adversary is forced to use the local covariance structure as their weapon. Because the penalty against the adversary is purely quadratic we can actually find an exact closed form solution for their ultimate best response. You take the derivative of the inner minimization problem with respect to \(\delta\) and set it to zero. The math works out perfectly because our filtered covariance matrix is guaranteed to be positive definite. Plugging that optimal adversarial response back into your original equation simplifies the landscape beautifully. The intimidating minimax problem completely dissolves into a straightforward concave maximization formula.</p>
 
         <div class="eq">
-          <div class="eq-title">Equation 2 The Reduced Saddle Point</div>
+          <div class="eq-title">Equation 2: The Reduced Saddle Point</div>
           \[
           w_t^\star=\arg\max_{w\in\mathcal{W}}\;
           \hat{\mu}_t^\top w
@@ -588,11 +686,12 @@ code {
     </div>
 </div>
 
-<!-- Math Rendering Initialization -->
+<!-- Math Rendering & Interactive Elements Initialization -->
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // Initialize KaTeX Math Engine
         if (typeof renderMathInElement === "function") {
             renderMathInElement(document.body, {
                 delimiters: [
@@ -603,6 +702,69 @@ code {
                 throwOnError: false
             });
         }
+
+        // Initialize Dynamic Copy Buttons for Code Blocks
+        const preElements = document.querySelectorAll('pre');
+        
+        preElements.forEach(pre => {
+            // Create the wrapper to maintain layout bounds and positioning
+            const wrapper = document.createElement('div');
+            wrapper.className = 'code-wrapper';
+            
+            // Re-parent the <pre> block
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+            
+            // Build the copy button
+            const btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            
+            const defaultHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg> Copy
+            `;
+            const successHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg> Copied!
+            `;
+            
+            btn.innerHTML = defaultHTML;
+            
+            btn.onclick = () => {
+                const textToCopy = pre.innerText;
+                
+                // Fallback approach utilizing execCommand to sidestep restrictive iframe policies perfectly
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                textArea.style.position = "fixed";
+                textArea.style.opacity = "0";
+                document.body.appendChild(textArea);
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    btn.innerHTML = successHTML;
+                    btn.style.color = "var(--gold)";
+                    btn.style.borderColor = "var(--gold)";
+                    
+                    // Revert state
+                    setTimeout(() => {
+                        btn.innerHTML = defaultHTML;
+                        btn.style.color = "";
+                        btn.style.borderColor = "";
+                    }, 2000);
+                } catch (err) {
+                    btn.innerText = "Error";
+                } finally {
+                    document.body.removeChild(textArea);
+                }
+            };
+            
+            wrapper.appendChild(btn);
+        });
     });
 </script>
 </body>
