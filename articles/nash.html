@@ -1,844 +1,609 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#050505" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<meta name="theme-color" content="#050505"/>
 
-  <title>Nash Equilibrium Active Risk Optimization | Technical Note</title>
-  <meta name="description" content="A game theoretic Nash equilibrium portfolio optimizer for active management." />
+<title>Nash Strategy of Portfolio Managing</title>
 
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<!-- Fonts and Math (Strictly Latin Modern) -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" crossorigin="anonymous"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
 
-  <style>
-    :root {
-      color-scheme: dark;
-      --font-main: "Latin Modern Roman", serif;
-      --font-ui: "Latin Modern Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --nav-h: 64px;
-      
-      /* Dark Theme Variables */
-      --bg: #050505;
-      --border: rgba(255,255,255,0.10);
-      --silver: #e8e8ea;
-      --silver-dim: rgba(232,232,234,0.72);
-      --gold: #D4AF37;
-      --gold-soft: #F7E7CE;
-      --glass-bg: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(212,175,55,0.02) 100%);
-      
-      --maxw: 1080px;
-      --mouse-x: 50%;
-      --mouse-y: 50%;
-    }
-
-    /* Light Theme Variables */
-    [data-theme="light"] {
-      color-scheme: light;
-      --bg: #f4f4f6;
-      --border: rgba(0,0,0,0.12);
-      --silver: #1a1a1a;
-      --silver-dim: rgba(26,26,26,0.78);
-      --gold: #b8860b;
-      --gold-soft: #856404;
-      --glass-bg: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%);
-    }
-
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--silver);
-      font-family: var(--font-main) !important;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      transition: background 0.3s ease, color 0.3s ease;
-    }
-
-    a { color: var(--gold-soft); text-decoration: none; }
-    a:hover { opacity: 0.92; text-decoration: underline; }
-    code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      background: rgba(128,128,128,0.15);
-      padding: 2px 5px;
-      border-radius: 3px;
-      font-size: 0.92em;
-    }
-
-    .ambient {
-      position: fixed; inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.12), rgba(0,0,0,0) 60%),
-        radial-gradient(900px 520px at 82% 70%, rgba(232,232,234,0.08), rgba(0,0,0,0) 58%),
-        linear-gradient(135deg, rgba(10,10,10,0.88), rgba(18,18,18,0.58));
-      z-index: 0;
-      transition: all 0.5s ease;
-    }
-
-    [data-theme="light"] .ambient {
-      background:
-        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.15), rgba(255,255,255,0) 60%),
-        radial-gradient(900px 520px at 82% 70%, rgba(0,0,0,0.03), rgba(255,255,255,0) 58%),
-        linear-gradient(135deg, rgba(240,240,245,0.88), rgba(220,220,230,0.58));
-    }
-
-    nav {
-      position: fixed; top: 0; left: 0; right: 0;
-      height: calc(var(--nav-h) + var(--safe-top));
-      padding-top: var(--safe-top);
-      padding-left: clamp(14px, 4vw, 44px);
-      padding-right: clamp(14px, 4vw, 44px);
-      display: flex; align-items: center; justify-content: space-between;
-      z-index: 1000;
-      border-bottom: 1px solid var(--border);
-      background:
-        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.11), rgba(0,0,0,0) 60%),
-        linear-gradient(135deg, rgba(10,10,10,0.82), rgba(18,18,18,0.60));
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      transition: background 0.3s ease, border-color 0.3s ease;
-    }
-
-    [data-theme="light"] nav {
-      background:
-        radial-gradient(1200px 600px at 20% 30%, rgba(212,175,55,0.08), rgba(255,255,255,0) 60%),
-        linear-gradient(135deg, rgba(250,250,255,0.82), rgba(240,240,245,0.60));
-    }
-
-    #brand {
-      appearance: none; border: none; background: transparent;
-      font-family: var(--font-ui) !important;
-      font-size: 0.92rem;
-      font-weight: 900;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: color-mix(in oklab, var(--gold) 70%, var(--silver));
-      user-select: none;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    #actions { display: flex; align-items: center; gap: 10px; }
+<style>
+:root{
+    color-scheme: dark;
+    --font-main: "Latin Modern Roman", serif;
+    --font-ui: "Latin Modern Sans", sans-serif;
     
-    .btn {
-      font-family: var(--font-ui) !important;
-      font-size: 0.75rem;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 8px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(212,175,55,0.25);
-      background: linear-gradient(135deg, rgba(18,18,18,0.58), rgba(18,18,18,0.34));
-      color: var(--silver);
-      cursor: pointer;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      transition: all 0.22s ease;
-      min-height: 38px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .btn:hover {
-      background: rgba(212,175,55,0.14);
-      border-color: rgba(212,175,55,0.52);
-    }
+    --bg: #050505;
+    --border: rgba(255, 255, 255, 0.08);
+    --silver: #e8e8ea;
+    --silver-dim: rgba(232, 232, 234, 0.65);
+    --gold: #D4AF37;
+    --gold-soft: #F7E7CE;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--silver);
+    font-family: var(--font-main);
+    -webkit-font-smoothing: antialiased; 
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base Content Container for Standalone Viewing */
+.standalone-wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+/* Article Content Styling */
+.content { 
+    font-family: var(--font-main) !important;
+    font-size: 1.22rem;
+    line-height: 1.95;
+    color: color-mix(in oklab, var(--silver) 94%, var(--silver-dim));
+    text-align: justify;
+    text-justify: inter-word;
+    letter-spacing: 0.3px;
+}
+
+.content h2 { 
+    font-family: var(--font-main) !important;
+    color: var(--silver);
+    line-height: 1.35;
+    text-align: left;
+    font-weight: normal;
+    font-size: 2.1rem; 
+    border-bottom: 1px solid var(--border); 
+    padding-bottom: 0.8rem;
+    margin-top: 4rem;
+    margin-bottom: 1.5rem;
+}
+
+.content h3 { 
+    font-family: var(--font-main) !important;
+    font-size: 1.5rem; 
+    font-style: italic; 
+    color: var(--gold-soft);
+    margin: 2.5rem 0 1.2rem;
+    font-weight: normal;
+}
+
+.content p { margin: 0 0 2rem; }
+.content p:first-of-type::first-letter {
+    font-size: 3.8rem;
+    line-height: 0.85;
+    float: left;
+    margin-right: 0.6rem;
+    margin-top: 0.25rem;
+    color: var(--gold);
+    font-family: var(--font-main) !important;
+}
+
+/* Caption Styling */
+.caption {
+    font-family: var(--font-main) !important;
+    font-size: 1.3rem;
+    font-style: italic;
+    color: color-mix(in oklab, var(--gold-soft) 85%, transparent);
+    text-align: center;
+    margin: 1rem auto 3rem auto;
+    padding: 0 2rem;
+    border-left: 2px solid var(--gold);
+    border-right: 2px solid var(--gold);
+}
+
+/* Pure CSS Expandable Abstract Component */
+.abstract-container {
+    position: relative;
+    margin: 2rem 0 1rem 0;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.abstract-text {
+    font-family: var(--font-ui) !important;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: color-mix(in oklab, var(--silver) 85%, transparent);
+    transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     
-    [data-theme="light"] .btn {
-      background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
-      border-color: rgba(0,0,0,0.1);
-      color: #333;
-    }
-    [data-theme="light"] .btn:hover {
-      background: rgba(212,175,55,0.1);
-      border-color: rgba(212,175,55,0.4);
-    }
+    /* Default Collapsed State */
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+}
 
-    main {
-      position: relative;
-      z-index: 2;
-      padding-top: calc(var(--nav-h) + var(--safe-top) + 26px);
-      padding-bottom: calc(40px + var(--safe-bottom));
-      padding-left: clamp(16px, 5vw, 60px);
-      padding-right: clamp(16px, 5vw, 60px);
-    }
+#abs-toggle { display: none; }
 
-    .wrap {
-      max-width: var(--maxw);
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
+/* Expanded State Logic via Checkbox Hack */
+#abs-toggle:checked ~ .abstract-text {
+    -webkit-line-clamp: 100;
+    mask-image: none;
+    -webkit-mask-image: none;
+}
 
-    .glass {
-      background:
-        radial-gradient(circle at var(--mouse-x) var(--mouse-y),
-          rgba(255,255,255,0.03) 0%,
-          rgba(255,255,255,0.012) 48%,
-          rgba(0,0,0,0.0) 100%),
-        var(--glass-bg);
-      border: 1px solid var(--border);
-      border-top: 1px solid color-mix(in oklab, var(--border) 150%, white);
-      border-left: 1px solid color-mix(in oklab, var(--border) 120%, white);
-      border-radius: 14px;
-      padding: 26px 36px;
-      box-shadow: 0 10px 34px rgba(0,0,0,0.15);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      position: relative;
-      overflow: hidden;
-      transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-    }
-    .glass::after {
-      content: "";
-      position: absolute; inset: 0;
-      background: radial-gradient(650px circle at var(--mouse-x) var(--mouse-y), rgba(212,175,55,0.08), transparent 42%);
-      opacity: 0;
-      transition: opacity 0.26s ease;
-      pointer-events: none;
-    }
-    .glass:hover::after { opacity: 1; }
+.expand-btn-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 15px;
+    position: relative;
+    z-index: 10;
+}
 
-    header h1 {
-      margin: 0;
-      font-size: clamp(1.95rem, 4.0vw, 2.95rem);
-      line-height: 1.08;
-      color: color-mix(in oklab, var(--gold-soft) 66%, var(--silver));
-      letter-spacing: 0.2px;
-    }
+.expand-btn {
+    background: var(--bg);
+    border: 1px solid color-mix(in oklab, var(--gold) 35%, transparent);
+    border-radius: 30px;
+    color: var(--gold);
+    font-family: var(--font-ui) !important;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 8px 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    user-select: none;
+}
 
-    /* Aesthetically Perfect Read More Component */
-    .abstract-container {
-      position: relative;
-      margin-top: 18px;
-    }
-    
-    .abstract-text {
-      font-family: var(--font-ui) !important;
-      font-size: 0.92rem;
-      line-height: 1.7;
-      color: color-mix(in oklab, var(--silver) 75%, transparent);
-      max-width: 90ch;
-      transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    
-    .abstract-container:not(.expanded) .abstract-text {
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-    }
+.expand-btn:hover {
+    background: var(--gold);
+    color: #000;
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px color-mix(in oklab, var(--gold) 35%, transparent);
+}
 
-    .expand-btn-wrapper {
-      display: flex;
-      justify-content: flex-start;
-      margin-top: -12px;
-      position: relative;
-      z-index: 10;
-      opacity: 1;
-    }
-    
-    .abstract-container.expanded .expand-btn-wrapper {
-      margin-top: 20px;
-    }
+.expand-btn svg {
+    width: 16px; height: 16px;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    stroke: currentColor;
+}
 
-    .expand-btn {
-      background: var(--bg);
-      border: 1px solid color-mix(in oklab, var(--gold) 35%, transparent);
-      border-radius: 30px;
-      color: var(--gold);
-      font-family: var(--font-ui) !important;
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-      padding: 8px 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-    
-    .expand-btn:hover {
-      background: var(--gold);
-      color: #000;
-      border-color: var(--gold);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px color-mix(in oklab, var(--gold) 35%, transparent);
-    }
-    
-    .expand-btn svg {
-      width: 16px; height: 16px;
-      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      stroke: currentColor;
-    }
-    
-    .abstract-container.expanded .expand-btn svg {
-      transform: rotate(180deg);
-    }
+/* Button Text and Icon Swapping */
+.btn-text-collapse { display: none; }
+#abs-toggle:checked ~ .expand-btn-wrapper .btn-text-expand { display: none; }
+#abs-toggle:checked ~ .expand-btn-wrapper .btn-text-collapse { display: inline; }
+#abs-toggle:checked ~ .expand-btn-wrapper svg { transform: rotate(180deg); }
 
-    .article {
-      font-size: 1.15rem;
-      line-height: 1.85;
-      color: color-mix(in oklab, var(--silver) 92%, var(--silver-dim));
-      text-align: justify;
-      text-justify: inter-word;
-    }
-    .article h2 {
-      margin: 3.2rem 0 1.2rem 0;
-      font-family: var(--font-ui) !important;
-      font-size: 1rem;
-      letter-spacing: 1.3px;
-      text-transform: uppercase;
-      color: color-mix(in oklab, var(--gold) 62%, var(--silver));
-      border-left: 3px solid var(--gold);
-      padding-left: 14px;
-    }
-    .article h3 {
-      margin: 2.2rem 0 0.8rem 0;
-      font-family: var(--font-main) !important;
-      font-size: 1.35rem;
-      font-style: italic;
-      color: color-mix(in oklab, var(--gold-soft) 55%, var(--silver));
-    }
-    .article p { margin: 0 0 1.5rem 0; }
-    .article ul, .article ol { margin: 0 0 1.5rem 0; padding-left: 22px; }
-    .article li { margin: 0.6rem 0; }
+/* Equation Styling */
+.eq {
+    margin: 1.8rem 0;
+    padding: 22px 22px;
+    border-radius: 12px;
+    border: 1px solid rgba(128,128,128,0.15);
+    background: rgba(0,0,0,0.22);
+    overflow-x: auto;
+    color: var(--silver);
+    font-size: 1.05rem;
+}
 
-    .eq {
-      margin: 1.8rem 0;
-      padding: 22px 22px;
-      border-radius: 12px;
-      border: 1px solid rgba(128,128,128,0.15);
-      background: rgba(0,0,0,0.22);
-      overflow-x: auto;
-      color: var(--silver);
-      font-size: 1.05rem;
-    }
-    [data-theme="light"] .eq { background: rgba(0,0,0,0.03); }
-    
-    .eq-title {
-      font-family: var(--font-ui) !important;
-      font-size: 0.78rem;
-      letter-spacing: 1.1px;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 10px;
-    }
+.eq-title {
+    font-family: var(--font-ui) !important;
+    font-size: 0.78rem;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+}
 
-    .proof {
-      margin: 1.8rem 0;
-      padding: 24px 24px;
-      border-radius: 12px;
-      border-left: 4px solid var(--gold);
-      background: rgba(212,175,55,0.04);
-      position: relative;
-    }
-    [data-theme="light"] .proof { background: rgba(212,175,55,0.08); }
-    
-    .proof-label {
-      font-family: var(--font-ui) !important;
-      font-size: 0.8rem;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: var(--gold);
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
+/* Programming Code Blocks */
+pre {
+    background: rgba(15, 15, 18, 0.95);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    border-radius: 12px;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    font-size: 0.9rem;
+    color: #d1d1d1;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    margin: 2.5rem 0;
+    line-height: 1.5;
+}
 
-    .policy-box {
-      margin: 1.8rem 0;
-      padding: 22px 22px;
-      border-radius: 12px;
-      border: 1px solid rgba(122,166,255,0.25);
-      background: linear-gradient(135deg, rgba(10,20,40,0.5), rgba(5,10,20,0.7));
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-    [data-theme="light"] .policy-box {
-      background: linear-gradient(135deg, rgba(240,245,255,0.8), rgba(230,238,255,0.9));
-      border-color: rgba(0,80,255,0.15);
-    }
+code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
 
-    .policy-box h4 {
-      font-family: var(--font-ui) !important;
-      font-size: 0.82rem;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: #7aa6ff;
-      margin: 0 0 12px 0;
-    }
-    [data-theme="light"] .policy-box h4 { color: #0056b3; }
-    
-    .policy-box ul {
-      margin: 0; padding-left: 18px;
-      color: rgba(179,209,255,0.88);
-      font-size: 1.05rem;
-      line-height: 1.7;
-    }
-    [data-theme="light"] .policy-box ul { color: #333; }
+/* Python Syntax Highlighting Simulation */
+.kw { color: #c678dd; } /* Keywords */
+.fu { color: #61afef; } /* Functions */
+.st { color: #98c379; } /* Strings */
+.op { color: #56b6c2; } /* Operators */
+.cm { color: #7f848e; font-style: italic; } /* Comments */
+.nu { color: #d19a66; } /* Numbers */
 
-    .refs {
-      font-family: var(--font-ui) !important;
-      font-size: 0.88rem;
-      line-height: 1.7;
-      color: color-mix(in oklab, var(--silver) 68%, transparent);
-    }
-    .refs ol { margin: 0; padding-left: 20px; }
-    .refs li { margin: 0.75rem 0; }
-
-    footer {
-      margin-top: 8px;
-      padding-top: 18px;
-      border-top: 1px solid var(--border);
-      font-family: var(--font-ui) !important;
-      font-size: 0.8rem;
-      color: color-mix(in oklab, var(--silver) 58%, transparent);
-      text-align: center;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .btn, .glass::after, body, nav, .glass, .expand-btn, .expand-btn svg, .ambient { transition: none !important; }
-    }
-
-    @media (max-width: 760px) {
-      .glass { padding: 20px 18px; }
-      .article { font-size: 1.02rem; }
-    }
-  </style>
+</style>
 </head>
-
 <body>
-  <div class="ambient" aria-hidden="true"></div>
 
-  <nav aria-label="Primary">
-    <button id="brand" type="button" aria-label="Back to index">Anıl Kaya</button>
-    <div id="actions">
-      <a class="btn" href="#">Home</a>
-      <button class="btn" id="theme" type="button" aria-pressed="false" aria-label="Toggle theme">Light</button>
-    </div>
-  </nav>
+<div class="standalone-wrapper">
+    <div class="content">
 
-  <main>
-    <div class="wrap">
-
-      <section class="glass" aria-label="Header">
-        <header>
-          <h1>Nash Equilibrium Portfolio Optimization</h1>
-          
-          <div class="abstract-container" id="abstractContainer">
+        <div class="abstract-container">
+            <input type="checkbox" id="abs-toggle">
             <div class="abstract-text">
-              <strong>Note</strong> This is definitely not financial advice. I decided to build an active equity strategy balancing BIST names against a benchmark on a monthly basis. The whole thing is built to be extremely difficult to fool. You see most people try to maximize the Information Ratio directly. The problem is that this approach relies on ratios and lacks convexity. It usually just pushes you into corner solutions because of estimation noise. I decided to replace that fragile setup with a two player zero sum game. One player is the investor picking weights and the other is an adversary messing with expected returns to simulate drift uncertainty. We can find a saddle point for this game under standard conditions. This point acts as a Nash equilibrium. Every month it simplifies down into a nice stable quadratic program. I used exponentially weighted moving averages for the moment estimates. This keeps the focus squarely on recent market regimes. The covariance matrix gets regularized through shrinkage so the optimizer does not blow up on us. For validation I relied on a walk forward evaluation. This includes an embargo day along with turnover costs and diagnostics that account for selection bias like PSR and DSR. Finally I wrapped it all in stationary bootstrap uncertainty bands.
+                <strong>Note</strong> Here is a portfolio optimization setup I have been experimenting with recently. Instead of just blindly maximizing the Information Ratio I decided to structure the whole thing as a zero sum game. Maximizing a pure ratio is usually a terrible idea anyway since it lacks convexity and loves to chase noise. This new setup is basically you against a market adversary. You try to pick the best weights and the adversary actively tries to ruin your expected returns. If you solve for the saddle point you end up with a surprisingly stable Nash equilibrium. Better yet the math simplifies down into a basic quadratic program every month. I feed it exponentially weighted moments and shrink the covariance matrix to keep things grounded. To keep myself honest the backtest uses a strict walk forward loop with an embargo day to stop data leakage. It also applies proper turnover costs and uses some heavy duty statistical checks like the Deflated Sharpe Ratio.
             </div>
             <div class="expand-btn-wrapper">
-              <button class="expand-btn" id="expandBtn" aria-expanded="false" aria-controls="abstractContainer">
-                <span class="btn-text">Read Full Abstract</span>
-                <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-              </button>
+                <label for="abs-toggle" class="expand-btn">
+                    <span class="btn-text-expand">Read Full Abstract</span>
+                    <span class="btn-text-collapse">Show Less</span>
+                    <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                </label>
             </div>
-          </div>
-        </header>
-      </section>
-
-      <section class="glass article" aria-label="Article content">
-
-        <h2>1. Problem Setup</h2>
-
-        <p>
-          Let us define \(P_{t,i}\) as the adjusted price of an asset \(i\) on a given trading day \(t\). We also need \(B_t\) to represent the benchmark price level. From there we can calculate simple returns. The asset return is \(r_{t,i} = P_{t,i}/P_{t-1,i} - 1\). The benchmark return is \(b_t = B_t/B_{t-1} - 1\). Our primary focus naturally falls on active returns.
-        </p>
-
-        <div class="eq">
-          <div class="eq-title">Definition 1 Active returns</div>
-          \[
-            A_{t,i} \equiv r_{t,i} - b_t,\qquad
-            a_t(w) \equiv \sum_{i=1}^{N} w_i\,A_{t,i}.
-          \]
-          <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
-            Here \(w\in\mathbb{R}^N\) represents our portfolio weights. The active return of the portfolio at time \(t\) is \(a_t(w)\). We naturally define the active return of the benchmark as zero.
-          </p>
         </div>
 
-        <p>
-          The Information Ratio serves as a benchmark relative version of the Sharpe ratio. You simply divide the expected active return by the tracking error. Tracking error is just the standard deviation of those active returns. Industry professionals use this metric constantly for active risk management and performance evaluation.
-        </p>
-
-        <div class="eq">
-          <div class="eq-title">Definition 2 Tracking error and Information Ratio</div>
-          \[
-            \mathrm{TE}(w) = \sqrt{\mathrm{Var}\big(a_t(w)\big)},\qquad
-            \mathrm{IR}(w) = \frac{\mathbb{E}[a_t(w)]}{\mathrm{TE}(w)}.
-          \]
-          <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
-            In practice we compute tracking error as the standard deviation of relative returns over a specific window. Everyone in the industry accepts this active risk definition.
-          </p>
+        <div class="caption">
+            A robust portfolio allocation framework designed to survive out of sample testing by assuming your return estimates are actively trying to destroy you.
         </div>
 
-        <h2>2. The Danger of Naively Maximizing the Information Ratio</h2>
-
-        <p>
-          Trying to directly maximize the ratio \(\mathrm{IR}(w)=\mu(w)/\sigma(w)\) usually ends badly. The problem is definitely not convex. It is also incredibly sensitive to estimation noise. Sometimes sampling artifacts cause the denominator \(\hat{\sigma}(w)\) to shrink. When that happens the entire ratio spikes artificially. This pulls the optimizer right into highly unstable allocations. Even worse the optimizer might discover a completely fake performance edge by overfitting the lookback window. We see this classic backtest pathology all the time.
-        </p>
-
-        <div class="proof">
-          <div class="proof-label">Observation on ratio fragility</div>
-          <p style="margin:0;">
-            These objectives easily fall apart due to noise in either the numerator or the denominator. Mean estimation error ruins the top part while tracking error estimation ruins the bottom. The denominator acts particularly treacherous in finite samples. It relies heavily on covariance estimates. Portfolio optimization inherently amplifies errors in those exact estimates.
-          </p>
-        </div>
-
-        <p>
-          Therefore our goal moves away from just maximizing a pretty statistic. We instead need to choose a portfolio rule that rests on solid mathematical foundations. It must remain robust against estimation errors. The validation method also needs to strictly resist any data leakage.
-        </p>
-
-        <h2>3. The Core Idea with a Drift Adversary Game</h2>
-
-        <p>
-          I prefer to treat expected active returns as highly uncertain quantities. We calculate estimates for the mean \(\hat{\mu}_t\) and covariance \(\hat{\Sigma}_t\) from a trailing window at every rebalance time \(t\). However I refuse to blindly trust that mean estimate. Instead I introduce a theoretical adversary allowed to perturb the mean by a vector \(\delta\). This adversary faces a penalty through a quadratic form scaling with the covariance matrix. The setup creates a fascinating two player zero sum game.
-        </p>
+        <h2>1. The Mathematical Foundation</h2>
+        
+        <p>Let us dig deeply into the actual mathematics driving this setup. Standard mean variance optimization essentially operates as a ruthless error maximization machine. It aggressively overallocates capital to the specific assets that show the highest estimated returns combined with the lowest estimated variances. Naturally those extreme statistical estimates almost always contain the highest amounts of invisible market noise. You inevitably end up with massive concentrated positions in the exact areas where your historical data is the most hopelessly flawed. I built my framework to flip this entire destructive dynamic completely upside down. We begin by acknowledging our ignorance. We define our expected returns as a baseline historical estimate plus some unknown and highly hostile perturbation vector \(\delta\).</p>
 
         <div class="eq">
-          <div class="eq-title">Equation 1 Minimax formulation</div>
+          <div class="eq-title">Equation 1 Zero Sum Game Formulation</div>
           \[
           \max_{w\in\mathcal{W}}\,\min_{\delta\in\mathbb{R}^N}\;
           (\hat{\mu}_t+\delta)^\top w
           -\frac{\gamma}{2}\,w^\top \hat{\Sigma}_t w
           +\frac{\eta}{2}\,\delta^\top \hat{\Sigma}_t^{-1}\delta
-          -\tau\|w\|_2^2.
+          -\tau\|w\|_2^2
           \]
           <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
-            Here \(\gamma\) represents your risk aversion and acts as an active risk penalty. The variable \(\eta\) determines your robustness strength. A smaller value creates a stronger adversary. Finally \(\tau\) provides regularization to avoid asset concentration.
+            Here \(\gamma\) is your personal risk aversion parameter which acts as a fundamental active risk penalty. The variable \(\eta\) directly controls the strength of the adversary. A smaller value for \(\eta\) creates a far more aggressive and damaging opponent. The final term uses \(\tau\) to strictly penalize highly concentrated portfolio weights.
           </p>
         </div>
 
-        <div class="proof">
-          <div class="proof-label">Proposition 1 about the Saddle Point</div>
-          <p style="margin:0;">
-            We assume standard conditions where the function is concave in \(w\) and convex in \(\delta\) over a convex feasible set \(\mathcal{W}\). A minimax saddle point exists naturally under these rules. This point perfectly coincides with the Nash equilibrium of our zero sum game. That specific mathematical property gives us the right to claim a Nash equilibrium at every single rebalance.
-          </p>
-        </div>
-
-        <h3>3.1 Finding a Closed Form Adversary</h3>
-
-        <p>
-          Notice how the inner minimization is purely quadratic with respect to \(\delta\). This means the best response of the adversary has an explicit mathematical form. You simply take the derivative with respect to \(\delta\) and set it equal to zero.
-        </p>
+        <p>You essentially select your portfolio weights trying to get the absolute best risk adjusted return possible. At the exact same time your theoretical adversary is doing everything in their mathematical power to wreck those expected returns. The genius part is that the adversary is forced to use the local covariance structure as their weapon. Because the penalty against the adversary is purely quadratic we can actually find an exact closed form solution for their ultimate best response. You take the derivative of the inner minimization problem with respect to \(\delta\) and set it to zero. The math works out perfectly because our filtered covariance matrix is guaranteed to be positive definite. Plugging that optimal adversarial response back into your original equation simplifies the landscape beautifully. The intimidating minimax problem completely dissolves into a straightforward concave maximization formula.</p>
 
         <div class="eq">
-          <div class="eq-title">Equation 2 Adversary best response</div>
-          \[
-            \nabla_\delta\Big(\delta^\top w + \frac{\eta}{2}\delta^\top\hat{\Sigma}_t^{-1}\delta\Big)=0
-            \;\;\Rightarrow\;\;
-            \delta^\star(w) = -\frac{1}{\eta}\hat{\Sigma}_t w.
-          \]
-        </div>
-
-        <p>
-          We then plug the optimal \(\delta^\star(w)\) back into the main objective. The entire game collapses beautifully into a single concave maximization problem.
-        </p>
-
-        <div class="eq">
-          <div class="eq-title">Equation 3 Reduced Nash objective</div>
+          <div class="eq-title">Equation 2 The Reduced Saddle Point</div>
           \[
           w_t^\star=\arg\max_{w\in\mathcal{W}}\;
           \hat{\mu}_t^\top w
           -\frac{1}{2}\Big(\gamma + \frac{1}{\eta}\Big)\,w^\top\hat{\Sigma}_t w
-          -\tau\|w\|_2^2.
+          -\tau\|w\|_2^2
           \]
           <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
-            The robustness term \(\eta^{-1}\) effectively adds extra curvature to our risk penalty. This simple addition makes the optimizer substantially more conservative whenever the covariance gets large.
+            Notice how the inverse of \(\eta\) effectively adds pure extra curvature directly to our risk penalty. This simple but profound mathematical trick forces the optimizer to act substantially more conservatively whenever the underlying market covariance grows dangerously large.
           </p>
         </div>
 
-        <h2>4. Estimation Using Moving Averages and Shrinkage</h2>
+        <h2>2. Fetching Market Data Reliably</h2>
+        
+        <p>Grabbing historical price data from external web sources can turn into a massive nightmare during live execution. Open source APIs change their endpoint structures constantly and sometimes the adjusted close column simply disappears from the payload without any warning. I specifically wrote the primary fetch function to handle those exact edge cases gracefully. The code attempts to request the modern automatic adjustment feature first. If the local version of the library lacks that capability the script automatically catches the type error and instantly falls back to parsing the raw standard closing prices. This rigorous defensive logic ensures the data pipeline never snaps and ruins your automated monthly execution sequences.</p>
 
-        <h3>4.1 Adapting to Market Regimes</h3>
+<pre><code><span class="kw">def</span> <span class="fu">fetch_prices</span>(tickers, benchmark, start_date=<span class="st">"2023-01-01"</span>, auto_adjust=<span class="kw">True</span>):
+    symbols = <span class="fu">list</span>(<span class="fu">dict.fromkeys</span>(<span class="fu">list</span>(tickers) + [benchmark]))
 
-        <p>
-          I implemented an exponentially weighted scheme. This ensures that recent active returns influence the model much more than stale historical data. We define a span \(s\) and calculate the decay parameter as \(\alpha = 2/(s+1)\). Most programming libraries use this exact span convention.
-        </p>
+    <span class="kw">try</span>:
+        data = yf.download(
+            symbols,
+            start=start_date,
+            progress=<span class="kw">False</span>,
+            auto_adjust=auto_adjust,
+            actions=<span class="kw">False</span>,
+            group_by=<span class="st">"column"</span>,
+            threads=<span class="kw">True</span>,
+        )
+        auto_adjust_effective = auto_adjust
+    <span class="kw">except</span> <span class="fu">TypeError</span>:
+        data = yf.download(
+            symbols,
+            start=start_date,
+            progress=<span class="kw">False</span>,
+            actions=<span class="kw">False</span>,
+            group_by=<span class="st">"column"</span>,
+            threads=<span class="kw">True</span>,
+        )
+        auto_adjust_effective = <span class="kw">False</span>
 
-        <div class="eq">
-          <div class="eq-title">Equation 4 EWMA mean and covariance</div>
-          \[
-            \omega_k = \frac{(1-\alpha)^k}{\sum_{j=0}^{T-1}(1-\alpha)^j},\quad
-            \hat{\mu}_t = \sum_{k=0}^{T-1}\omega_k\,A_{t-k},\quad
-            \hat{\Sigma}_t = \sum_{k=0}^{T-1}\omega_k\,(A_{t-k}-\hat{\mu}_t)(A_{t-k}-\hat{\mu}_t)^\top.
-          \]
-        </div>
+    <span class="kw">def</span> <span class="fu">_extract_field</span>(df, field):
+        <span class="kw">if</span> <span class="fu">isinstance</span>(df.columns, pd.MultiIndex):
+            <span class="kw">if</span> field <span class="kw">in</span> df.columns.get_level_values(<span class="nu">0</span>):
+                <span class="kw">return</span> df[field].copy()
+            <span class="kw">return None</span>
+        <span class="kw">else</span>:
+            <span class="kw">return</span> df[field].copy() <span class="kw">if</span> field <span class="kw">in</span> df.columns <span class="kw">else None</span>
 
-        <h3>4.2 Using Shrinkage to Stabilize Covariance</h3>
+    prices = <span class="kw">None</span>
+    <span class="kw">if</span> auto_adjust_effective:
+        prices = _extract_field(data, <span class="st">"Close"</span>)
+    <span class="kw">else</span>:
+        prices = _extract_field(data, <span class="st">"Adj Close"</span>)
+        <span class="kw">if</span> prices <span class="kw">is None</span>:
+            prices = _extract_field(data, <span class="st">"Close"</span>)
 
-        <p>
-          Relying purely on sample covariance usually acts like a chaos generator during portfolio optimization. Even tiny estimation errors can trigger massive swings in your asset weights. Shrinkage provides a very reliable remedy for this issue. You basically blend a noisy covariance estimate with a highly structured target matrix. People often use a diagonal or constant correlation target. I went with a very conservative diagonal shrinkage approach here.
-        </p>
+    <span class="kw">if</span> prices <span class="kw">is None</span>:
+        <span class="kw">raise</span> <span class="fu">ValueError</span>(<span class="st">"Could not extract prices from yfinance output."</span>)
 
-        <div class="eq">
-          <div class="eq-title">Equation 5 Diagonal shrinkage</div>
-          \[
-            \tilde{\Sigma}_t = (1-s)\hat{\Sigma}_t + s\,\mathrm{diag}(\hat{\Sigma}_t),
-            \qquad s\in[0,1].
-          \]
-          <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
-            The intuition behind this is quite simple. Shrinkage heavily reduces estimation error right where it hurts the optimizer the most. It simultaneously preserves enough structure so we do not pretend the assets are totally independent.
-          </p>
-        </div>
+    prices.index = pd.to_datetime(prices.index)
+    prices = prices[~prices.index.duplicated(keep=<span class="st">"last"</span>)].sort_index()
+    prices = prices.replace([np.inf, -np.inf], np.nan)
 
-        <h2>5. Execution Constraints and Risk Limits</h2>
+    bench = prices[benchmark].dropna()
+    assets = [t <span class="kw">for</span> t <span class="kw">in</span> tickers <span class="kw">if</span> t <span class="kw">in</span> prices.columns]
+    port = prices[assets].copy()
 
-        <p>
-          The feasible set \(\mathcal{W}\) guarantees we stay fully invested while strictly enforcing a maximum cap on any single asset.
-        </p>
+    <span class="kw">return</span> port, bench</code></pre>
 
-        <div class="eq">
-          <div class="eq-title">Equation 6 Feasible set</div>
-          \[
-            \mathcal{W}=\Big\{w\in\mathbb{R}^N:\;\sum_{i=1}^N w_i = 1,\;\;0\le w_i\le c\Big\}.
-          \]
-        </div>
+        <h2>3. Dynamic Moments and Covariance Shrinkage</h2>
 
-        <p>
-          The model also incorporates a simple proportional transaction cost based strictly on portfolio turnover. We calculate the absolute change in weights and apply a cost multiplier \(\kappa\) at every rebalance. This simple step aggressively prevents the illusion of paper alpha that comes from excessive trading.
-        </p>
+        <p>Financial data structures never sit still for very long in the real world. A simple static average from five years ago tells you absolutely nothing about the complex market dynamics today. I choose to use an exponentially weighted moving average to calculate our vector inputs. You take your raw return matrix and apply a mathematically derived decay factor based on your desired span. This mechanism forces the internal model to care exponentially more about recent market regimes than ancient history. Dealing with the covariance matrix itself requires an entirely different layer of protection.</p>
+        
+        <p>Unfiltered sample covariance matrices act notoriously unstable when the number of assets begins to approach the number of time observations. The matrix frequently becomes poorly conditioned which makes reliable inversion practically impossible and destroys the optimizer. I apply a proven diagonal shrinkage technique directly to the raw covariance values. You take the noisy sample matrix and gently pull it toward a perfectly structured diagonal matrix. This vital stabilization step fundamentally stops the optimization engine from making extreme bets based on totally spurious historical correlations.</p>
 
-        <div class="policy-box">
-          <h4>Execution and Risk Controls</h4>
-          <ul>
-            <li>We rebalance monthly using the absolute last trading day of each calendar month.</li>
-            <li>A strict per asset weight cap of 15 percent limits concentration and significantly reduces estimation driven cornering.</li>
-            <li>Turnover costs are charged in basis points per unit of turnover to heavily penalize portfolio churning.</li>
-            <li>A coverage filter automatically drops any assets showing too many missing returns during the training window.</li>
-          </ul>
-        </div>
+<pre><code><span class="kw">def</span> <span class="fu">ewma_mean_cov</span>(X: np.ndarray, span: <span class="fu">int</span>):
+    T, N = X.shape
+    <span class="kw">if</span> T < <span class="nu">2</span>:
+        <span class="kw">raise</span> <span class="fu">ValueError</span>(<span class="st">"Need at least 2 observations for covariance."</span>)
 
-        <h2>6. Validation by Fighting Data Leakage</h2>
+    alpha = <span class="nu">2.0</span> / (span + <span class="nu">1.0</span>)
+    w = (<span class="nu">1.0</span> - alpha) ** np.arange(T - <span class="nu">1</span>, -<span class="nu">1</span>, -<span class="nu">1</span>)
+    w /= w.sum()
 
-        <p>
-          Finding a perfectly unbiased validation method in finance simply does not happen in reality. You can however aggressively strip out the major known sources of bias. This means fighting look ahead errors and stopping leakage at your data split boundaries. You also must control performance inflation caused by running multiple tests.
-        </p>
+    mu = w @ X
+    Xm = X - mu
+    cov = (Xm.T * w) @ Xm
+    cov = <span class="nu">0.5</span> * (cov + cov.T)
+    <span class="kw">return</span> mu, cov
 
-        <div class="policy-box">
-          <h4>Leakage Resistant Validation Used</h4>
-          <ul>
-            <li>Walk forward testing ensures we train on a trailing window and apply those exact weights exclusively to future unseen days.</li>
-            <li>An embargo day purposefully excludes the specific day right before rebalancing from our training set to block boundary leakage.</li>
-            <li>Significance testing relies on methods aware of selection bias. We use Probabilistic and Deflated Sharpe Ratios to evaluate performance while adjusting for skewness and kurtosis and the dangers of multiple testing.</li>
-            <li>We handle dependent data uncertainty by generating a stationary bootstrap confidence interval for the annualized Information Ratio.</li>
-          </ul>
-        </div>
+<span class="kw">def</span> <span class="fu">shrink_cov</span>(cov: np.ndarray, shrink: <span class="fu">float</span>):
+    s = <span class="fu">float</span>(np.clip(shrink, <span class="nu">0.0</span>, <span class="nu">1.0</span>))
+    d = np.diag(np.diag(cov))
+    <span class="kw">return</span> (<span class="nu">1.0</span> - s) * cov + s * d</code></pre>
 
-        <h3>6.1 Correcting Claims for Researcher Bias</h3>
+        <h2>4. Implementing the Nash Solver Algorithm</h2>
 
-        <p>
-          The Probabilistic Sharpe Ratio helps estimate the probability that our true performance exceeds a benchmark while accounting for non normal distributions and finite sample lengths. The Deflated Sharpe Ratio takes this a step further by adjusting the threshold for multiple testing and selection bias. If you try hundreds of strategies your best one is probably just pure statistical noise. I ran these diagnostics directly on the active returns so the final statistics align perfectly with our Information Ratio goals.
-        </p>
+        <p>Now we finally arrive at the core execution logic of the solver function. Because we brilliantly reduced the complex minimax problem down to a single equation earlier the implementation code becomes incredibly clean. You just need to define the objective function combining the expected returns with our artificially inflated risk penalty. I decided to pass that function directly into the SciPy library using the Sequential Least Squares Programming algorithm. I specifically chose the SLSQP method because it handles strict equality constraints exceptionally well. We desperately need our final output weights to sum exactly to one hundred percent. We also need to enforce hard boundary conditions so no single stock accidentally dominates the entire portfolio allocation. The algorithm rapidly descends to find the exact saddle point where neither the investor nor the adversary can profitably alter their strategy.</p>
 
-        <h3>6.2 Bootstrap Methods for Uncertainty</h3>
+<pre><code><span class="kw">def</span> <span class="fu">solve_nash_weights</span>(
+    mu: np.ndarray,
+    cov: np.ndarray,
+    cap: <span class="fu">float</span> = <span class="nu">0.15</span>,
+    l2: <span class="fu">float</span> = <span class="nu">1e-3</span>,
+    risk_aversion: <span class="fu">float</span> = <span class="nu">8.0</span>,
+    robustness_eta: <span class="fu">float</span> = <span class="nu">4.0</span>,
+    maxiter: <span class="fu">int</span> = <span class="nu">3000</span>,
+    tol: <span class="fu">float</span> = <span class="nu">1e-12</span>,
+):
+    mu = np.asarray(mu, <span class="fu">float</span>)
+    cov = np.asarray(cov, <span class="fu">float</span>)
+    N = <span class="fu">len</span>(mu)
 
-        <p>
-          Financial returns exhibit weak dependence which makes standard independent bootstrap confidence intervals far too optimistic. The stationary bootstrap fixes this by resampling blocks of random lengths drawn from a geometric distribution. This preserves short range dependence while still generating a strictly stationary pseudo series. I applied this technique to construct a rigorous 95 percent uncertainty interval around the annualized Information Ratio.
-        </p>
+    cov = <span class="nu">0.5</span> * (cov + cov.T)
+    cov = cov + np.eye(N) * <span class="nu">1e-10</span>
 
-        <h2>7. Empirical Output From the Recent Run</h2>
+    lam_eff = <span class="fu">float</span>(risk_aversion + <span class="nu">1.0</span> / robustness_eta)
 
-        <p>
-          You can review the specific audit metrics reported by the recent backtest execution below. This run used strict walk forward testing with the transaction cost model fully enabled. Please treat these numbers simply as the output of one specific run rather than some universal law. Acknowledging that inherent uncertainty is the entire point of this exercise.
-        </p>
+    <span class="kw">def</span> <span class="fu">obj</span>(w):
+        w = np.asarray(w, <span class="fu">float</span>)
+        quad = w @ cov @ w
+        <span class="kw">return</span> -(mu @ w - <span class="nu">0.5</span> * lam_eff * quad - l2 * (w @ w))
 
-        <div class="eq">
-          <div class="eq-title">Backtest audit metrics</div>
-          \[
-          \begin{aligned}
-          \text{CAGR (Portfolio)} &= 63.3654\%,\quad \text{CAGR (Benchmark)} = 49.4504\%\\
-          \sigma_{\text{ann}}(\text{Portfolio}) &= 30.4660\%,\quad \sigma_{\text{ann}}(\text{Benchmark}) = 27.9692\%\\
-          \text{Sharpe (Portfolio)} &= 1.7650,\quad \text{Sharpe (Benchmark)} = 1.5773\\
-          \text{Tracking Error (Ann.)} &= 13.7237\%,\quad \text{Information Ratio (Ann.)} = 0.7036\\
-          \text{IR 95\% CI} &= [-0.5191,\; 1.9841]\\
-          \text{Max Drawdown (Portfolio)} &= -24.7214\%,\quad \text{Max Drawdown (Benchmark)} = -21.9586\%\\
-          \text{Avg Turnover (monthly)} &= 1.0303\\
-          \text{PSR on Active } (\mathrm{SR}^*>0) &= 1.0000,\quad \text{DSR on Active } (\mathrm{SR}^*>0) = 1.0000
-          \end{aligned}
-          \]
-          <p style="margin:10px 0 0 0; font-size:0.95rem; opacity:0.8; font-family: var(--font-ui) !important;">
-            Seeing a probability ratio reported as exactly one typically just means the value sits extremely close to one for that specific sample. Strong active returns certainly cause this. However seeing a perfect score should always trigger some immediate suspicion. You must carefully confirm that you did not implicitly optimize any hyperparameters on your evaluation data slice.
-          </p>
-        </div>
+    cons = [{<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> w: np.sum(w) - <span class="nu">1.0</span>}]
+    bnds = <span class="fu">tuple</span>((<span class="nu">0.0</span>, <span class="fu">float</span>(cap)) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fu">range</span>(N))
+    w0 = np.full(N, <span class="nu">1.0</span> / N)
 
-        <h2>8. Mathematical Improvements Over the Baseline</h2>
+    res = sco.minimize(
+        obj,
+        w0,
+        method=<span class="st">"SLSQP"</span>,
+        bounds=bnds,
+        constraints=cons,
+        tol=tol,
+        options={<span class="st">"maxiter"</span>: maxiter, <span class="st">"ftol"</span>: tol, <span class="st">"disp"</span>: <span class="kw">False</span>},
+    )
 
-        <h3>8.1 Removing the Ratio Objective</h3>
+    w = res.x <span class="kw">if</span> res.success <span class="kw">else</span> w0.copy()
+    w = np.clip(w, <span class="nu">0.0</span>, cap)
+    s = w.sum()
+    w = (w / s) <span class="kw">if</span> s > <span class="nu">0</span> <span class="kw">else</span> w0.copy()
+    <span class="kw">return</span> w, res</code></pre>
 
-        <p>
-          The baseline concept involves maximizing a ratio of random variables that we can only ever estimate with significant error. My replacement objective utilizes a concave quadratic utility in \(w\) featuring explicit robustness guarantees. The new setup still generously rewards expected active returns while penalizing active risk. The adversary adds critical extra curvature to that penalty. This elegant trick keeps the monthly optimization incredibly stable under heavy estimation error. That is the exact spot where naive ratio maximization usually breaks down.
-        </p>
+        <h2>5. Rigorous Statistical Validation</h2>
 
-        <h3>8.2 Enforcing the Existence of a Solution</h3>
+        <p>Evaluating strategy performance accurately poses immense difficulty for most researchers. Asset returns constantly exhibit fat tails and clump together in volatile clusters over time. Standard normal statistics blindly assume every single trading day operates independently. Betting real capital on that foolish assumption will inevitably bankrupt you. I integrated the Probabilistic Sharpe Ratio specifically to automatically adjust the performance score based on the underlying skewness and kurtosis found in the backtest logs.</p>
+        
+        <p>I also wrote a custom stationary bootstrap function to calculate our confidence intervals. Instead of just picking single random days from the past it selectively grabs random sequential blocks of daily returns. The length of each chosen block follows a strict geometric probability distribution. This advanced technique keeps the original market autocorrelation structures perfectly intact while generating highly realistic error bands for our final Information Ratio.</p>
 
-        <div class="proof">
-          <div class="proof-label">Proposition 2 Existence and stability</div>
-          <p style="margin:0;">
-            Given our specific parameter constraints and a convex compact set \(\mathcal{W}\) the reduced objective remains strictly concave in \(w\). This mathematically guarantees that a clear maximizing solution exists. The original two player formulation possesses a clear saddle point under these conditions. We interpret this wonderful property as a true Nash equilibrium.
-          </p>
-        </div>
+<pre><code><span class="kw">def</span> <span class="fu">probabilistic_sharpe_ratio</span>(r, sr_star=<span class="nu">0.0</span>, periods=<span class="nu">252</span>):
+    r = np.asarray(r, <span class="fu">float</span>)
+    r = r[np.isfinite(r)]
+    T = <span class="fu">len</span>(r)
+    <span class="kw">if</span> T < <span class="nu">30</span>: <span class="kw">return</span> np.nan
 
-        <h3>8.3 Quantifying Uncertainty Honestly</h3>
+    sr_hat = sharpe_ratio(r, periods=periods)
+    <span class="kw">if not</span> np.isfinite(sr_hat): <span class="kw">return</span> np.nan
 
-        <p>
-          The calculated stationary bootstrap band looks remarkably wide on purpose. It honestly reflects the harsh reality that relatively short samples combined with dependent returns naturally produce massive uncertainty. A wide band is certainly not a bug in the code. It serves as the deeply honest error bar for the entire strategy.
-        </p>
+    g3 = st.skew(r, bias=<span class="kw">False</span>)
+    g4 = st.kurtosis(r, fisher=<span class="kw">False</span>, bias=<span class="kw">False</span>)
 
-        <h2>9. Practical Limitations</h2>
+    denom = np.sqrt((<span class="nu">1.0</span> - g3 * sr_hat + ((g4 - <span class="nu">1.0</span>) / <span class="nu">4.0</span>) * (sr_hat ** <span class="nu">2</span>)) / (T - <span class="nu">1.0</span>))
+    <span class="kw">if</span> denom <= <span class="nu">0</span>: <span class="kw">return</span> np.nan
 
-        <ul>
-          <li>Universe bias happens when you fix the asset list after the fact. Survivorship effects easily creep into the results. You should always prefer time consistent membership rules to avoid this.</li>
-          <li>The basis point transaction costs serve merely as simplified placeholders. Real world costs invariably include bid ask spreads alongside market impact and strict liquidity constraints.</li>
-          <li>Any hyperparameter search significantly inflates backtest metrics. You absolutely must use an effective number of trials in your diagnostics that honestly reflects how many variants you tested.</li>
-          <li>Model risk remains a constant threat. The moving average inherently assumes one very specific decay structure. I strongly recommend stress testing different span lengths and tweaking the robustness parameter.</li>
-        </ul>
+    z = (sr_hat - sr_star) / denom
+    <span class="kw">return</span> <span class="fu">float</span>(st.norm.cdf(z))
 
-        <p>
-          The net result shows we did not just artificially discover alpha through backtest cleverness. I systematically replaced a highly fragile objective with a robust formulation grounded in game theory. I carefully controlled estimation error using covariance shrinkage. I demanded that our validation framework attack the strategy exactly like a real adversary would. That encompasses the entire philosophy of this project. You have to make the model violently earn its right to exist.
-        </p>
+<span class="kw">def</span> <span class="fu">stationary_bootstrap_ir</span>(active_r, n_boot=<span class="nu">500</span>, p=<span class="nu">0.10</span>, seed=<span class="nu">42</span>, periods=<span class="nu">252</span>):
+    x = np.asarray(active_r, <span class="fu">float</span>)
+    x = x[np.isfinite(x)]
+    T = <span class="fu">len</span>(x)
+    <span class="kw">if</span> T < <span class="nu">60</span>: <span class="kw">return</span> np.nan, (np.nan, np.nan)
 
-        <h2>References</h2>
-        <div class="refs">
-          <ol>
-            <li>
-              Bailey D. H. and López de Prado M. 2014. <em>The Deflated Sharpe Ratio Correcting for Selection Bias Backtest Overfitting and Non Normality</em>.
-              PDF <a href="https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf" target="_blank" rel="noreferrer">davidhbailey.com</a>
-            </li>
-            <li>
-              Ledoit O. and Wolf M. 2003 2004. <em>Honey I Shrunk the Sample Covariance Matrix</em>.
-              PDF <a href="https://www.ledoit.net/honey.pdf" target="_blank" rel="noreferrer">ledoit.net</a>
-            </li>
-            <li>
-              Ledoit O. 2020. <em>A Review and Guide to Covariance Matrix Estimation</em>.
-              PDF <a href="https://www.ledoit.net/Review_Paper_2020_JFEc.pdf" target="_blank" rel="noreferrer">ledoit.net</a>
-            </li>
-            <li>
-              Politis D. N. and Romano J. P. 1994. <em>The Stationary Bootstrap</em>.
-              PDF copy <a href="https://www.ssc.wisc.edu/~bhansen/718/Politis%20Romano.pdf" target="_blank" rel="noreferrer">ssc.wisc.edu</a>
-            </li>
-            <li>
-              Pandas Documentation <code>DataFrame.ewm</code> EWMA parameterization span com alpha.
-              <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.ewm.html" target="_blank" rel="noreferrer">pandas.pydata.org</a>
-            </li>
-            <li>
-              Lazard Asset Management 2019. <em>Its Time to Talk About Tracking Error</em> active risk as standard deviation of relative returns.
-              PDF <a href="https://www.lazardassetmanagement.com/docs/89302/LazardLetter_ItsTimeToTalkAboutTrackingError_2019-08_en.pdf" target="_blank" rel="noreferrer">lazardassetmanagement.com</a>
-            </li>
-            <li>
-              Investopedia <em>Information Ratio IR Definition Formula vs Sharpe Ratio</em>.
-              <a href="https://www.investopedia.com/terms/i/informationratio.asp" target="_blank" rel="noreferrer">investopedia.com</a>
-            </li>
-            <li>
-              Ferreira M. A. M. et al. 2012. <em>Minimax theorem and Nash equilibrium</em> overview connecting minimax and Nash.
-              PDF <a href="https://www.um.edu.mt/library/oar/bitstream/123456789/68887/1/Minimax_theorem_and_nash_equilibrium.pdf" target="_blank" rel="noreferrer">um.edu.mt</a>
-            </li>
-          </ol>
-        </div>
-      </section>
+    rng = np.random.default_rng(seed)
+    ir_hat = info_ratio(x, periods=periods)
 
-      <section class="glass" aria-label="Footer">
-        <footer>
-          © <span id="yr"></span> Anıl Kaya Technical note on Nash Equilibrium robust active risk optimization
-        </footer>
-      </section>
+    irs = np.empty(n_boot, dtype=<span class="fu">float</span>)
+    <span class="kw">for</span> b <span class="kw">in</span> <span class="fu">range</span>(n_boot):
+        sample = np.empty(T, dtype=<span class="fu">float</span>)
+        t = <span class="nu">0</span>
+        <span class="kw">while</span> t < T:
+            start = rng.integers(<span class="nu">0</span>, T)
+            L = <span class="fu">int</span>(rng.geometric(p))
+            end = <span class="fu">min</span>(T, start + L)
+            chunk = x[start:end]
+            k = <span class="fu">min</span>(<span class="fu">len</span>(chunk), T - t)
+            sample[t:t+k] = chunk[:k]
+            t += k
+        irs[b] = info_ratio(sample, periods=periods)
+
+    lo, hi = np.nanpercentile(irs, [<span class="nu">2.5</span>, <span class="nu">97.5</span>])
+    <span class="kw">return</span> ir_hat, (<span class="fu">float</span>(lo), <span class="fu">float</span>(hi))</code></pre>
+
+        <h2>6. A Hostile Testing Engine</h2>
+
+        <p>You can invent the most mathematically elegant optimization model in human history but if your backtest lies to you it means absolutely nothing. That is exactly why the testing environment must remain completely ruthless. Standard open source backtesting frameworks almost always leak future data into the past eventually. I actively chose to build a custom execution loop from scratch to enforce a brutally strict walk forward testing process. The code manages an index of pure trading dates and only executes logical steps at the absolute end of the month.</p>
+        
+        <p>I also implement a deliberate gap logic known as an embargo. The engine intentionally lops off the final closing day of the training set before letting the optimizer see anything. Doing this permanently stops the final closing prices from magically bleeding across the validation boundary and inflating our theoretical returns. The loop then calculates portfolio turnover precisely by computing the absolute difference between the exact newly generated weights against the old active weights. It immediately subtracts a realistic basis point trading cost on the exact day the transition occurs. There is absolutely no hidden magic happening here. It just utilizes very careful chronological accounting and highly defensive logic.</p>
+
+<pre><code><span class="kw">def</span> <span class="fu">run_backtest_nash</span>(
+    port_prices: pd.DataFrame,
+    bench_prices: pd.Series,
+    lookback_days: <span class="fu">int</span> = <span class="nu">90</span>,
+    embargo_days: <span class="fu">int</span> = <span class="nu">1</span>,
+    ewma_span: <span class="fu">int</span> = <span class="nu">60</span>,
+    cap: <span class="fu">float</span> = <span class="nu">0.15</span>,
+    shrink: <span class="fu">float</span> = <span class="nu">0.10</span>,
+    risk_aversion: <span class="fu">float</span> = <span class="nu">8.0</span>,
+    robustness_eta: <span class="fu">float</span> = <span class="nu">4.0</span>,
+    l2: <span class="fu">float</span> = <span class="nu">1e-3</span>,
+    min_obs: <span class="fu">int</span> = <span class="nu">60</span>,
+    min_coverage: <span class="fu">float</span> = <span class="nu">0.95</span>,
+    tc_bps: <span class="fu">float</span> = <span class="nu">10.0</span>,
+    dsr_trials: <span class="fu">int</span> = <span class="nu">1</span>,
+    bootstrap_n: <span class="fu">int</span> = <span class="nu">500</span>,
+    bootstrap_p: <span class="fu">float</span> = <span class="nu">0.10</span>,
+):
+    r_assets = port_prices.pct_change()
+    r_bench = bench_prices.pct_change().rename(<span class="st">"BENCH"</span>)
+
+    df = r_assets.join(r_bench, how=<span class="st">"inner"</span>).dropna(subset=[<span class="st">"BENCH"</span>])
+    assets = <span class="fu">list</span>(port_prices.columns)
+
+    eom = month_end_trading_dates(df.index)
+    <span class="kw">if</span> <span class="fu">len</span>(eom) < <span class="nu">3</span>:
+        <span class="kw">raise</span> <span class="fu">ValueError</span>(<span class="st">"Not enough months to run backtest."</span>)
+
+    executed_weights = []
+    executed_dates = []
+
+    port_ret = []
+    bench_ret = []
+    active_ret = []
+    idx_all = []
+
+    prev_w = pd.Series(<span class="nu">0.0</span>, index=assets)
+    turnover_hist = []
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fu">range</span>(<span class="fu">len</span>(eom) - <span class="nu">1</span>):
+        reb = eom[i]
+        nxt = eom[i + <span class="nu">1</span>]
+        <span class="kw">if</span> reb <span class="kw">not in</span> df.index <span class="kw">or</span> nxt <span class="kw">not in</span> df.index:
+            <span class="kw">continue</span>
+
+        reb_i = df.index.get_loc(reb)
+        nxt_i = df.index.get_loc(nxt)
+
+        <span class="cm"># Embargo day logic completely prevents boundary leakage</span>
+        train_end = reb_i - <span class="fu">int</span>(embargo_days)
+        <span class="kw">if</span> train_end <= <span class="nu">0</span>:
+            <span class="kw">continue</span>
+        train_start = <span class="fu">max</span>(<span class="nu">0</span>, train_end - <span class="fu">int</span>(lookback_days) + <span class="nu">1</span>)
+
+        train = df.iloc[train_start : train_end + <span class="nu">1</span>]
+        <span class="kw">if</span> <span class="fu">len</span>(train) < min_obs:
+            <span class="kw">continue</span>
+
+        A = train[assets].sub(train[<span class="st">"BENCH"</span>], axis=<span class="nu">0</span>)
+        coverage = A.notna().mean()
+        valid = coverage[coverage >= min_coverage].index.tolist()
+        
+        <span class="kw">if</span> <span class="fu">len</span>(valid) < <span class="nu">2</span>: <span class="kw">continue</span>
+
+        A_valid = A[valid].dropna()
+        <span class="kw">if</span> <span class="fu">len</span>(A_valid) < min_obs: <span class="kw">continue</span>
+
+        X = A_valid.to_numpy(dtype=<span class="fu">float</span>)
+        mu, cov = ewma_mean_cov(X, span=ewma_span)
+        cov = shrink_cov(cov, shrink=shrink)
+
+        w_valid, _ = solve_nash_weights(
+            mu=mu, cov=cov, cap=cap, l2=l2,
+            risk_aversion=risk_aversion, robustness_eta=robustness_eta,
+        )
+
+        w = pd.Series(<span class="nu">0.0</span>, index=assets)
+        w.loc[valid] = w_valid
+
+        executed_dates.append(reb)
+        executed_weights.append(w.copy())
+
+        turnover = <span class="fu">float</span>(np.abs(w - prev_w).sum())
+        turnover_hist.append((reb, turnover))
+        cost = (tc_bps / <span class="nu">1e4</span>) * turnover
+        prev_w = w
+
+        test = df.iloc[reb_i : nxt_i + <span class="nu">1</span>].iloc[<span class="nu">1</span>:]
+        <span class="kw">if</span> <span class="fu">len</span>(test) == <span class="nu">0</span>: <span class="kw">continue</span>
+
+        test_assets = test[assets].fillna(<span class="nu">0.0</span>).to_numpy(dtype=<span class="fu">float</span>)
+        w_vec = w.to_numpy(dtype=<span class="fu">float</span>)
+
+        pr = test_assets @ w_vec
+        br = test[<span class="st">"BENCH"</span>].to_numpy(dtype=<span class="fu">float</span>)
+
+        pr = pr.copy()
+        pr[<span class="nu">0</span>] -= cost
+
+        port_ret.extend(pr.tolist())
+        bench_ret.extend(br.tolist())
+        active_ret.extend((pr - br).tolist())
+        idx_all.extend(test.index.tolist())
+
+    <span class="kw">return</span> port_cum, bench_cum, avg_w, port_ret, bench_ret, active_ret, turnover_s, metrics</code></pre>
+
+        <p>The compiled output ultimately flows into an entirely separate visualization block that creates a stark and mathematically honest view of the strategy over time. I consistently rely solely on the underlying hard data to defend the structural integrity of this Nash equilibrium model.</p>
 
     </div>
-  </main>
+</div>
 
-  <script>
-    (function(){
-      "use strict";
-
-      const brand = document.getElementById("brand");
-      if(brand) {
-          brand.addEventListener("click", () => { window.location.href = "#"; });
-      }
-
-      const LSKEY = "theme";
-      const root = document.documentElement;
-      const themeBtn = document.getElementById("theme");
-
-      function applyTheme(theme, persist){
-        root.setAttribute("data-theme", theme);
-        if(persist) localStorage.setItem(LSKEY, theme);
-        const isLight = (theme === "light");
-        if(themeBtn) {
-            themeBtn.setAttribute("aria-pressed", String(isLight));
-            themeBtn.textContent = isLight ? "Dark" : "Light";
+<!-- Math Rendering Initialization -->
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof renderMathInElement === "function") {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
         }
-        const meta = document.querySelector('meta[name="theme-color"]');
-        if(meta) meta.setAttribute("content", isLight ? "#f4f4f6" : "#050505");
-      }
-
-      function getInitialTheme(){
-        const saved = localStorage.getItem(LSKEY);
-        if(saved === "light" || saved === "dark") return saved;
-        return "dark"; // Defaulting to dark
-      }
-
-      applyTheme(getInitialTheme(), false);
-      if(themeBtn) {
-          themeBtn.addEventListener("click", () => {
-            const now = (root.getAttribute("data-theme") === "light") ? "dark" : "light";
-            applyTheme(now, true);
-          });
-      }
-
-      const updateSpotlight = (e) => {
-        const cards = document.querySelectorAll(".glass");
-        cards.forEach(card => {
-          const rect = card.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          card.style.setProperty("--mouse-x", x + "px");
-          card.style.setProperty("--mouse-y", y + "px");
-        });
-      };
-      document.addEventListener("mousemove", updateSpotlight, { passive: true });
-
-      // Ultra-smooth Abstract Expand/Collapse logic
-      const abstractContainer = document.getElementById("abstractContainer");
-      const expandBtn = document.getElementById("expandBtn");
-      
-      if(expandBtn && abstractContainer) {
-        expandBtn.addEventListener("click", () => {
-          abstractContainer.classList.toggle("expanded");
-          const isExpanded = abstractContainer.classList.contains("expanded");
-          expandBtn.setAttribute("aria-expanded", isExpanded);
-          expandBtn.querySelector(".btn-text").textContent = isExpanded ? "Show Less" : "Read Full Abstract";
-        });
-      }
-
-      function renderMath(){
-        if(!window.renderMathInElement) return;
-        window.renderMathInElement(document.body, {
-          delimiters: [
-            { left: "$$", right: "$$", display: true },
-            { left: "\\(", right: "\\)", display: false },
-            { left: "\\[", right: "\\]", display: true }
-          ]
-        });
-      }
-      window.addEventListener("load", () => { setTimeout(renderMath, 50); });
-
-      const yrSpan = document.getElementById("yr");
-      if(yrSpan) yrSpan.textContent = new Date().getFullYear();
-    })();
-  </script>
+    });
+</script>
 </body>
 </html>
