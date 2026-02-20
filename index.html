@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
 <meta name="theme-color" content="#050505"/>
 
-<!-- Updated CSP to allow multiple secure CDNs and blob data for seamless loading -->
+<!-- Strict CSP for GitHub Pages - Allows essential CDNs and inline blobs -->
 <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com;
+    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
     style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
-    font-src https://fonts.gstatic.com;
+    font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net;
     img-src 'self' data: blob:;
     connect-src 'self' https://cdn.jsdelivr.net;
     object-src 'none';
@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" crossorigin="anonymous"/>
 
-<!-- KaTeX -->
+<!-- KaTeX (Math) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
@@ -32,7 +32,7 @@
 <!-- DOMPurify -->
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js" crossorigin="anonymous"></script>
 
-<!-- Three.js (Fixed Version: 0.160.0 is stable and globally available) -->
+<!-- Three.js (v0.160.0 - Highly stable for modern WebGL) -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
 
 <style>
@@ -45,7 +45,7 @@
     --font-ui: "Latin Modern Sans", sans-serif;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --nav-h: 72px;
+    --nav-h: 64px; /* Slightly slimmer nav */
 
     --bg: #050505;
     --border: rgba(255, 255, 255, 0.08);
@@ -53,10 +53,11 @@
     --silver-dim: rgba(232, 232, 234, 0.65);
     --gold: #D4AF37;
     --gold-soft: #F7E7CE;
+    --gold-glow: color-mix(in oklab, var(--gold) 20%, transparent);
 
-    --paper-bg: rgba(12, 12, 14, 0.95);
-    --paper-border: rgba(255, 255, 255, 0.08);
-    --paper-shadow: 0 40px 100px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.05) inset;
+    --card-bg: rgba(14, 14, 16, 0.96);
+    --card-border: rgba(212, 175, 55, 0.15);
+    --card-shadow: 0 40px 100px rgba(0,0,0,0.95), 0 0 0 1px var(--card-border) inset;
 }
 
 html, body { height: 100%; margin: 0; }
@@ -70,13 +71,13 @@ body {
     transition: background-color 0.5s ease;
 }
 
-body.modal-open #gl { filter: blur(14px) brightness(0.4); transform: scale(1.02); }
+body.modal-open #gl { filter: blur(12px) brightness(0.3); transform: scale(1.015); }
 body.modal-open #depthName, body.modal-open #orbitHint { opacity: 0 !important; }
 
 * { box-sizing: border-box; }
 a { color: var(--gold-soft); text-decoration: none; }
 a:hover { opacity: 0.9; }
-:focus-visible { outline: 2px solid color-mix(in oklab, var(--gold) 65%, #fff); outline-offset: 3px; border-radius: 14px; }
+:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 3px; border-radius: 8px; }
 
 /* ==========================================================================
    USER INTERFACE (NAV & BRANDING)
@@ -85,217 +86,345 @@ a:hover { opacity: 0.9; }
     position: fixed; top: 0; left: 0; right: 0;
     height: calc(var(--nav-h) + var(--safe-top));
     padding-top: var(--safe-top);
-    padding-left: clamp(24px, 6vw, 64px);
-    padding-right: clamp(24px, 6vw, 64px);
+    padding-left: clamp(20px, 5vw, 48px);
+    padding-right: clamp(20px, 5vw, 48px);
     display: flex; align-items: center; justify-content: space-between;
     z-index: 1000;
     border-bottom: 1px solid var(--border);
-    background: radial-gradient(1200px 600px at 50% 0%, rgba(212,175,55,0.04), rgba(0,0,0,0.0) 80%),
-                linear-gradient(180deg, color-mix(in oklab, var(--bg) 95%, transparent), color-mix(in oklab, var(--bg) 50%, transparent));
+    background: radial-gradient(1200px 600px at 50% 0%, rgba(212,175,55,0.03), rgba(0,0,0,0.0) 80%),
+                linear-gradient(180deg, color-mix(in oklab, var(--bg) 95%, transparent), color-mix(in oklab, var(--bg) 40%, transparent));
     backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-    transition: transform 0.4s ease;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 body.modal-open #nav { transform: translateY(-100%); }
 
 #brand {
     appearance: none; border: none; background: transparent;
-    font-family: var(--font-ui); font-size: 0.95rem; font-weight: 900;
-    letter-spacing: 2.5px; text-transform: uppercase;
+    font-family: var(--font-ui); font-size: 0.85rem; font-weight: 900;
+    letter-spacing: 2px; text-transform: uppercase;
     color: var(--silver);
     user-select: none; white-space: nowrap; cursor: pointer; padding: 0;
-    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), text-shadow 0.3s ease;
+    transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
 }
-#brand:hover {
-    transform: translateY(-1px);
-    text-shadow: 0 4px 15px rgba(212,175,55,0.3);
-    color: var(--gold);
-}
-
-#actions { display: flex; align-items: center; gap: 16px; }
+#brand:hover { transform: translateY(-1px); color: var(--gold); text-shadow: 0 4px 15px rgba(212,175,55,0.3); }
 
 .btn {
-    font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700;
+    font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700;
     letter-spacing: 1.2px; text-transform: uppercase;
-    padding: 10px 24px; border-radius: 30px; border: 1px solid var(--border);
-    background: color-mix(in oklab, var(--bg) 40%, transparent);
+    padding: 8px 20px; border-radius: 30px; border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--bg) 50%, transparent);
     color: var(--silver); cursor: pointer; backdrop-filter: blur(14px);
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    -webkit-user-select: none; user-select: none; touch-action: manipulation;
-    min-height: 40px; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 .btn:hover {
     background: var(--gold); border-color: var(--gold); color: #000;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px color-mix(in oklab, var(--gold) 25%, transparent);
+    transform: translateY(-2px); box-shadow: 0 8px 20px var(--gold-glow);
 }
 
 #copyright {
-    position: fixed; bottom: clamp(16px, 4vw, 28px); left: 50%; transform: translateX(-50%);
-    font-family: var(--font-ui); font-size: 0.70rem; font-weight: 600;
+    position: fixed; bottom: clamp(12px, 3vw, 24px); left: 50%; transform: translateX(-50%);
+    font-family: var(--font-ui); font-size: 0.65rem; font-weight: 600;
     letter-spacing: 2px; text-transform: uppercase;
-    color: color-mix(in oklab, var(--silver) 35%, transparent);
+    color: color-mix(in oklab, var(--silver) 30%, transparent);
     z-index: 500; pointer-events: none; user-select: none; text-align: center; white-space: nowrap;
     transition: opacity 0.4s ease;
 }
 body.modal-open #copyright { opacity: 0; }
 
 /* ==========================================================================
-   WEBGL CANVAS & HUD OVERLAYS
+   WEBGL CANVAS & HUD
    ========================================================================== */
 #gl {
-    position: fixed; inset: 0; width: 100%; height: 100%;
-    display: block; z-index: 1; touch-action: none; user-select: none;
-    transition: filter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: fixed; inset: 0; width: 100%; height: 100%; display: block;
+    z-index: 1; touch-action: none; user-select: none;
+    transition: filter 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-@keyframes breath {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; filter: blur(0.2px); }
-    50% { transform: translate(-50%, -50%) scale(1.03); opacity: 1; filter: blur(0px); }
-}
-
+@keyframes breath { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; filter: blur(0.2px); } 50% { transform: translate(-50%, -50%) scale(1.03); opacity: 1; filter: blur(0px); } }
 #depthName {
     position: fixed; left: 50%; top: 50%; z-index: 650; pointer-events: none;
-    font-family: var(--font-main); font-weight: 300; letter-spacing: 0.06em;
-    font-size: clamp(1.8rem, 6vw, 7rem); color: rgba(212,175,55,0.20);
-    text-shadow: 0 0 60px rgba(212,175,55,0.15);
-    white-space: nowrap; text-align: center; width: 100%; line-height: 1;
+    font-family: var(--font-main); font-weight: 300; letter-spacing: 0.05em;
+    font-size: clamp(1.6rem, 5vw, 6rem); color: rgba(212,175,55,0.18);
+    text-shadow: 0 0 50px rgba(212,175,55,0.15); white-space: nowrap; text-align: center; width: 100%;
     animation: breath 8s infinite ease-in-out; transition: opacity 0.5s ease;
-}
-#depthName::after {
-    content: ""; position: absolute; inset: -30px -80px;
-    background: radial-gradient(closest-side, rgba(232,232,234,0.08), rgba(0,0,0,0.0) 70%);
-    z-index: -1; filter: blur(12px); opacity: 0.50;
 }
 #orbitHint {
     position: fixed; inset: 0; z-index: 600; pointer-events: none; opacity: 0.55;
-    background: radial-gradient(circle at 50% 50%, rgba(212,175,55,0.08) 0%, rgba(212,175,55,0.04) 20%, rgba(232,232,234,0.02) 34%, rgba(0,0,0,0.0) 60%),
-                conic-gradient(from 220deg at 50% 50%, rgba(212,175,55,0.10), rgba(122,166,255,0.04), rgba(232,232,234,0.06), rgba(212,175,55,0.10));
+    background: radial-gradient(circle at 50% 50%, rgba(212,175,55,0.08) 0%, rgba(212,175,55,0.04) 20%, rgba(232,232,234,0.02) 34%, rgba(0,0,0,0.0) 60%);
     mask: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0 26%, rgba(0,0,0,1) 34% 42%, rgba(0,0,0,0) 60%);
     -webkit-mask: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0 26%, rgba(0,0,0,1) 34% 42%, rgba(0,0,0,0) 60%);
-    filter: blur(0.6px); transition: opacity 0.5s ease;
+    transition: opacity 0.5s ease;
 }
 
 /* ==========================================================================
-   READER MODAL & TYPOGRAPHY
+   ADVANCED CARD-READER UI (MOBILE & DESKTOP OPTIMIZED)
    ========================================================================== */
-#modal { position: fixed; inset: 0; z-index: 2000; display: none; background: rgba(0,0,0,0.3); touch-action: manipulation; opacity: 0; transition: opacity 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
-#modal.open { display: block; opacity: 1; }
-#readProgress { position: fixed; top: 0; left: 0; height: 3px; background: var(--gold); width: 0%; z-index: 2100; transition: width 0.1s; box-shadow: 0 0 10px var(--gold); }
-
-#modalBody {
-    position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden;
-    padding: clamp(60px, 10vw, 120px) 20px;
-    -webkit-user-select: text; user-select: text; touch-action: pan-y;
-    scroll-behavior: smooth; display: flex; justify-content: center; align-items: flex-start;
+#modal {
+    position: fixed; inset: 0; z-index: 2000;
+    display: flex; justify-content: center; align-items: flex-start;
+    background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    overflow-y: auto; -webkit-overflow-scrolling: touch; perspective: 1200px;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-#modalBody::-webkit-scrollbar { width: 8px; background: transparent; }
-#modalBody::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; border: 2px solid var(--paper-bg); }
-#modalBody::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+#modal.open { opacity: 1; pointer-events: auto; }
+
+#readProgress {
+    position: fixed; top: 0; left: 0; height: 3px; background: var(--gold);
+    width: 0%; z-index: 2100; transition: width 0.15s ease-out; box-shadow: 0 0 12px var(--gold);
+}
 
 #closeBtn {
-    position: fixed; top: clamp(20px, 4vw, 36px); right: clamp(20px, 4vw, 48px);
-    width: 52px; height: 52px; border-radius: 50%;
-    background: rgba(20, 20, 20, 0.8); border: 1px solid var(--paper-border);
-    color: var(--silver); cursor: pointer; display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.4); z-index: 2010; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    position: fixed; top: clamp(16px, 3vw, 32px); right: clamp(16px, 3vw, 40px);
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(20, 20, 22, 0.9); border: 1px solid var(--gold);
+    color: var(--gold); cursor: pointer; display: flex; justify-content: center; align-items: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 2010;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); backdrop-filter: blur(12px);
 }
-#closeBtn:hover { transform: scale(1.1) rotate(90deg); background: var(--gold); color: #000; border-color: var(--gold); box-shadow: 0 12px 30px color-mix(in oklab, var(--gold) 40%, transparent); }
-#closeBtn svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+#closeBtn:hover { transform: scale(1.1) rotate(90deg); background: var(--gold); color: #000; box-shadow: 0 12px 30px var(--gold-glow); }
+#closeBtn svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
+/* The actual Card */
 .article-wrapper {
-    background: var(--paper-bg); border: 1px solid var(--paper-border); box-shadow: var(--paper-shadow);
-    border-radius: 16px; width: 100%; max-width: 860px;
-    padding: clamp(50px, 8vw, 100px) clamp(30px, 7vw, 90px);
-    transform: translateY(60px) scale(0.96); opacity: 0; position: relative;
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow); border-radius: 20px;
+    width: 100%; max-width: 820px; margin: 6vh auto;
+    padding: clamp(40px, 6vw, 80px) clamp(24px, 5vw, 60px);
+    position: relative; will-change: transform, opacity;
+    transform: translateY(80px) scale(0.97) rotateX(4deg); opacity: 0;
 }
 .article-wrapper::before {
     content: ""; position: absolute; inset: 0; border-radius: inherit;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.025'/%3E%3C/svg%3E");
     pointer-events: none; z-index: -1;
 }
-
-#modal.open .article-wrapper { animation: paperRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-@keyframes paperRise { 0% { transform: translateY(60px) scale(0.96); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
-
-.article-header { margin-bottom: 4rem; text-align: center; }
-.article-header .meta { font-family: var(--font-ui) !important; font-size: 0.85rem; color: var(--silver-dim); letter-spacing: 2.5px; text-transform: uppercase; display: flex; justify-content: center; gap: 16px; align-items: center; margin-bottom: 1.8rem; }
-.article-header .pill { background: color-mix(in oklab, var(--gold) 12%, transparent); color: var(--gold); padding: 6px 14px; border-radius: 30px; font-weight: 800; border: 1px solid color-mix(in oklab, var(--gold) 25%, transparent); }
-.article-header h1 { font-size: clamp(2.6rem, 5.5vw, 4rem); color: var(--gold); margin: 0; line-height: 1.15; text-align: center; letter-spacing: -0.5px; text-shadow: 0 4px 20px rgba(212,175,55,0.1); }
-
-.article-content { font-family: var(--font-main) !important; font-size: 1.22rem; line-height: 1.95; color: color-mix(in oklab, var(--silver) 94%, var(--silver-dim)); text-align: justify; text-justify: inter-word; letter-spacing: 0.3px; }
-.article-content h1, .article-content h2, .article-content h3, .article-content h4 { font-family: var(--font-main) !important; color: var(--silver); line-height: 1.35; margin: 3rem 0 1.5rem; text-align: left; font-weight: normal; }
-.article-content h2 { font-size: 2.1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; margin-top: 4rem; }
-.article-content h3 { font-size: 1.5rem; font-style: italic; color: var(--gold-soft); }
-.article-content p { margin: 0 0 2rem; }
-.article-content p:first-of-type::first-letter { font-size: 3.8rem; line-height: 0.85; float: left; margin-right: 0.6rem; margin-top: 0.25rem; color: var(--gold); font-family: var(--font-main) !important; }
-.article-content a { color: var(--gold); text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--gold) 35%, transparent); text-underline-offset: 6px; transition: all 0.3s; }
-.article-content a:hover { color: var(--silver); text-decoration-color: var(--silver); }
-.article-content ul, .article-content ol { margin: 0 0 2rem; padding-left: 2.2rem; }
-.article-content li { margin-bottom: 0.8rem; padding-left: 0.5rem;}
-.article-content li::marker { color: var(--gold); }
-.article-content blockquote { margin: 3rem 0; padding: 2rem 2.5rem 2rem 3.5rem; background: color-mix(in oklab, var(--border) 15%, transparent); font-style: italic; border-radius: 12px; position: relative; border: 1px solid var(--border); color: color-mix(in oklab, var(--silver) 85%, var(--silver-dim)); }
-.article-content blockquote::before { content: "“"; position: absolute; left: 0.8rem; top: 0.8rem; font-family: var(--font-main) !important; font-size: 4.5rem; color: var(--gold); line-height: 1; opacity: 0.4; }
-
-.article-content .katex-display, .article-content .katex-display > .katex { max-width: 100%; }
-.article-content .katex-display { overflow-x: auto; overflow-y: hidden; padding: 1.5rem 0; margin: 2.5rem 0; background: color-mix(in oklab, var(--border) 8%, transparent); border-radius: 12px; }
-
-#loadingLine { margin: 0; font-family: var(--font-ui); letter-spacing: 1.4px; text-transform: uppercase; font-size: 0.78rem; color: color-mix(in oklab, var(--silver) 55%, transparent); }
-
-#err { position: fixed; inset: 0; z-index: 9999; display: none; padding: 96px 18px 18px; background: var(--bg); color: var(--silver); font-family: var(--font-ui); -webkit-user-select: text; user-select: text; touch-action: pan-y; }
-#err h2 { margin: 0 0 12px; font-weight: 900; letter-spacing: 1px; color: var(--gold); text-transform: uppercase; }
-#err pre { margin: 12px 0 0; padding: 12px; border-radius: 14px; border: 1px solid var(--border); background: rgba(18,18,18,0.6); overflow: auto; max-height: 55vh; white-space: pre-wrap; line-height: 1.5; opacity: 0.9; }
-
-@media (max-width: 900px) {
-  #actions { gap: 10px; }
-  .btn { padding: 8px 16px; font-size: 0.7rem; min-height: 36px; }
+#modal.open .article-wrapper {
+    animation: cardRise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
+@keyframes cardRise {
+    0% { transform: translateY(80px) scale(0.97) rotateX(4deg); opacity: 0; }
+    100% { transform: translateY(0) scale(1) rotateX(0deg); opacity: 1; }
+}
+
+/* Mobile specific docking */
+@media (max-width: 768px) {
+    .article-wrapper {
+        margin: 12vh 0 0 0;
+        border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+        min-height: 88vh; border-bottom: none;
+    }
+}
+
+/* ==========================================================================
+   ARTICLE TYPOGRAPHY (Refined & Golden)
+   ========================================================================== */
+.article-header { margin-bottom: 3.5rem; text-align: center; }
+.article-header .meta { font-family: var(--font-ui) !important; font-size: 0.75rem; color: var(--silver-dim); letter-spacing: 2px; text-transform: uppercase; display: flex; justify-content: center; gap: 12px; align-items: center; margin-bottom: 1.5rem; }
+.article-header .pill { background: var(--gold-glow); color: var(--gold); padding: 4px 12px; border-radius: 20px; font-weight: 800; border: 1px solid rgba(212,175,55,0.3); }
+.article-header h1 { font-size: clamp(2.2rem, 4.5vw, 3.2rem); color: var(--gold); margin: 0; line-height: 1.15; text-align: center; letter-spacing: -0.5px; text-shadow: 0 4px 20px var(--gold-glow); }
+
+.article-content { font-family: var(--font-main) !important; font-size: 1.08rem; line-height: 1.85; color: color-mix(in oklab, var(--silver) 90%, var(--silver-dim)); text-align: justify; text-justify: inter-word; letter-spacing: 0.2px; }
+
+/* Golden Main Sections */
+.article-content h1, .article-content h2, .article-content h3, .article-content h4 { font-family: var(--font-main) !important; color: var(--gold); line-height: 1.35; margin: 2.8rem 0 1.2rem; text-align: left; font-weight: normal; }
+.article-content h2 { font-size: 1.8rem; border-bottom: 1px solid var(--gold-glow); padding-bottom: 0.6rem; margin-top: 3.5rem; }
+.article-content h3 { font-size: 1.4rem; font-style: italic; color: var(--gold-soft); }
+
+.article-content p { margin: 0 0 1.8rem; }
+.article-content p:first-of-type::first-letter { font-size: 3.4rem; line-height: 0.85; float: left; margin-right: 0.6rem; margin-top: 0.25rem; color: var(--gold); font-family: var(--font-main) !important; }
+.article-content a { color: var(--gold); text-decoration: underline; text-decoration-color: var(--gold-glow); text-underline-offset: 4px; transition: all 0.3s; }
+.article-content a:hover { color: var(--silver); text-decoration-color: var(--silver); }
+.article-content ul, .article-content ol { margin: 0 0 1.8rem; padding-left: 2rem; }
+.article-content li { margin-bottom: 0.6rem; padding-left: 0.4rem;}
+.article-content li::marker { color: var(--gold); }
+
+.article-content blockquote { margin: 2.5rem 0; padding: 1.8rem 2rem 1.8rem 3rem; background: rgba(255,255,255,0.02); font-style: italic; border-radius: 10px; position: relative; border: 1px solid var(--card-border); border-left: 4px solid var(--gold); color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim)); }
+.article-content blockquote::before { content: "“"; position: absolute; left: 0.6rem; top: 0.6rem; font-family: var(--font-main) !important; font-size: 3.5rem; color: var(--gold); line-height: 1; opacity: 0.3; }
+
+.article-content .katex-display { overflow-x: auto; overflow-y: hidden; padding: 1.2rem 0; margin: 2rem 0; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+
+/* Custom Article Components */
+.classical-caption { font-family: var(--font-main) !important; font-size: 1.2rem; font-style: italic; color: var(--gold-soft); text-align: center; margin: 1.5rem auto 2.5rem; padding: 1.2rem; border-top: 1px solid var(--gold-glow); border-bottom: 1px solid var(--gold-glow); background: radial-gradient(ellipse at center, rgba(212,175,55,0.04) 0%, rgba(0,0,0,0) 80%); line-height: 1.6; max-width: 95%; }
+
+.abstract-container { position: relative; margin: 2rem 0; padding: 2rem; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px solid var(--card-border); box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+.abstract-text { font-family: var(--font-ui) !important; font-size: 0.9rem; line-height: 1.6; color: color-mix(in oklab, var(--silver) 85%, transparent); transition: all 0.5s ease; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; mask-image: linear-gradient(to bottom, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); }
+#abs-toggle { display: none; }
+#abs-toggle:checked ~ .abstract-text { -webkit-line-clamp: 100; mask-image: none; -webkit-mask-image: none; }
+.expand-btn-wrapper { display: flex; justify-content: flex-start; margin-top: 15px; position: relative; z-index: 10; }
+.expand-btn { background: rgba(10,10,10,0.8); border: 1px solid var(--gold-glow); border-radius: 20px; color: var(--gold); font-family: var(--font-ui) !important; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; padding: 6px 16px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease; }
+.expand-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 4px 15px var(--gold-glow); }
+.expand-btn svg { width: 14px; height: 14px; transition: transform 0.4s; stroke: currentColor; }
+.btn-text-collapse { display: none; }
+#abs-toggle:checked ~ .expand-btn-wrapper .btn-text-expand { display: none; }
+#abs-toggle:checked ~ .expand-btn-wrapper .btn-text-collapse { display: inline; }
+#abs-toggle:checked ~ .expand-btn-wrapper svg { transform: rotate(180deg); }
+
+.eq { margin: 1.5rem 0; padding: 1.5rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); overflow-x: auto; color: var(--silver); }
+.eq-title { font-family: var(--font-ui) !important; font-size: 0.7rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+
+/* Syntax Highlighting Base */
+.article-content pre { background: rgba(10, 10, 12, 0.95); border: 1px solid var(--border); padding: 1.2rem; border-radius: 10px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; font-size: 0.85rem; color: #d1d1d1; margin: 0; line-height: 1.5; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
+.article-content code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; }
+.kw { color: #c678dd; } .fu { color: #61afef; } .st { color: #98c379; } .op { color: #56b6c2; } .cm { color: #7f848e; font-style: italic; } .nu { color: #d19a66; }
+
+.code-wrapper { position: relative; margin: 2rem 0; width: 100%; }
+.copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(20, 20, 24, 0.9); border: 1px solid var(--border); color: var(--silver); border-radius: 6px; padding: 5px 12px; font-family: var(--font-ui) !important; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; z-index: 10; }
+.copy-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
+.copy-btn svg { stroke: currentColor; width: 14px; height: 14px; }
+
+#loadingLine { text-align: center; margin: 2rem 0; font-family: var(--font-ui); letter-spacing: 1.5px; text-transform: uppercase; font-size: 0.75rem; color: var(--gold-soft); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+#err { position: fixed; inset: 0; z-index: 9999; display: none; padding: 40px; background: var(--bg); color: var(--silver); font-family: var(--font-ui); overflow-y: auto; }
+#err h2 { color: var(--gold); margin-top: 0; text-transform: uppercase; }
+#err pre { background: #111; padding: 15px; border-radius: 8px; border: 1px solid var(--border); white-space: pre-wrap; font-size: 0.8rem; }
 </style>
 </head>
 
 <body>
-<!-- Embedded Article Templates -->
+<!-- Embedded Article Template (Zero external fetch needed for GH Pages) -->
 <template id="tpl-nash">
-  <main id="article"
-        data-title="Nash Strategy of Portfolio Managing"
-        data-date="FEB 2026"
-        data-category="Domestic Finance">
-    <p>
-      The Nash strategy in portfolio management reframes “risk” as a multi-agent equilibrium problem: the market is not a benevolent distribution,
-      it’s an adversary that reacts. The practical outcome is simple: build allocations that remain coherent when the world stops being cooperative.
-    </p>
+  <main id="article" data-title="Nash Strategy of Portfolio Managing" data-date="FEB 2026" data-category="Domestic Finance">
+    <div class="classical-caption">
+        A robust portfolio allocation framework designed to survive out of sample testing by assuming your return estimates are actively trying to destroy you.
+    </div>
 
-    <h2>The Minimax Paradigm</h2>
-    <p>
-      A minimax drift lens replaces “optimize expected value under assumed covariance” with “optimize against the worst credible covariance.”
-      It’s not pessimism; it’s an explicit model of model error.
-    </p>
+    <div class="abstract-container">
+        <input type="checkbox" id="abs-toggle">
+        <div class="abstract-text">
+            <strong>Note:</strong> Here is a portfolio optimization setup I have been experimenting with recently. Instead of just blindly maximizing the Information Ratio I decided to structure the whole thing as a zero sum game. Maximizing a pure ratio is usually a terrible idea anyway since it lacks convexity and loves to chase noise. This new setup is basically you against a market adversary. You try to pick the best weights and the adversary actively tries to ruin your expected returns. If you solve for the saddle point you end up with a surprisingly stable Nash equilibrium. Better yet the math simplifies down into a basic quadratic program every month. I feed it exponentially weighted moments and shrink the covariance matrix to keep things grounded. To keep myself honest the backtest uses a strict walk forward loop with an embargo day to stop data leakage. It also applies proper turnover costs and uses some heavy duty statistical checks like the Deflated Sharpe Ratio.
+        </div>
+        <div class="expand-btn-wrapper">
+            <label for="abs-toggle" class="expand-btn">
+                <span class="btn-text-expand">Read Full Abstract</span>
+                <span class="btn-text-collapse">Show Less</span>
+                <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+            </label>
+        </div>
+    </div>
 
-    <blockquote>
-      In a game against the market, the only rational move is to anticipate the market’s optimal move against you.
-      Risk is the cost of assumption.
-    </blockquote>
+    <h2>1. The Mathematical Foundation</h2>
+    <p>Note that none of this is investment advice. Let us dig deeply into the actual mathematics driving this setup. Standard mean variance optimization essentially operates as a ruthless error maximization machine. It aggressively overallocates capital to the specific assets that show the highest estimated returns combined with the lowest estimated variances. Naturally those extreme statistical estimates almost always contain the highest amounts of invisible market noise. You inevitably end up with massive concentrated positions in the exact areas where your historical data is the most hopelessly flawed. I built my framework to flip this entire destructive dynamic completely upside down. We begin by acknowledging our ignorance. We define our expected returns as a baseline historical estimate plus some unknown and highly hostile perturbation vector \(\delta\).</p>
 
-    <h3>Mathematical Formulation</h3>
-    <p>
-      One canonical robust form writes the investor as maximizing over weights while the adversary minimizes over covariance:
-    </p>
+    <div class="eq">
+      <div class="eq-title">Equation 1: Zero Sum Game Formulation</div>
+      \[
+      \max_{w\in\mathcal{W}}\,\min_{\delta\in\mathbb{R}^N}\;
+      (\hat{\mu}_t+\delta)^\top w
+      -\frac{\gamma}{2}\,w^\top \hat{\Sigma}_t w
+      +\frac{\eta}{2}\,\delta^\top \hat{\Sigma}_t^{-1}\delta
+      -\tau\|w\|_2^2
+      \]
+      <p style="margin:10px 0 0 0; font-size:0.85rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.5;">
+        Here \(\gamma\) is your personal risk aversion parameter which acts as a fundamental active risk penalty. The variable \(\eta\) directly controls the strength of the adversary. A smaller value for \(\eta\) creates a far more aggressive and damaging opponent. The final term uses \(\tau\) to strictly penalize highly concentrated portfolio weights.
+      </p>
+    </div>
 
-    $$\max_{w}\ \min_{\Sigma}\ \Big( w^{T}\mu - \frac{\gamma}{2}\, w^{T}\Sigma w \Big)$$
+    <p>You essentially select your portfolio weights trying to get the absolute best risk adjusted return possible. At the exact same time your theoretical adversary is doing everything in their mathematical power to wreck those expected returns. The genius part is that the adversary is forced to use the local covariance structure as their weapon. Because the penalty against the adversary is purely quadratic we can actually find an exact closed form solution for their ultimate best response. You take the derivative of the inner minimization problem with respect to \(\delta\) and set it to zero. The math works out perfectly because our filtered covariance matrix is guaranteed to be positive definite. Plugging that optimal adversarial response back into your original equation simplifies the landscape beautifully. The intimidating minimax problem completely dissolves into a straightforward concave maximization formula.</p>
 
-    <p>
-      The point isn’t the aesthetics of the expression; it’s the contract it encodes: you don’t get to pick a single “true” \(\Sigma\).
-      You pick a rule that remains stable across a set of plausible \(\Sigma\)’s.
-    </p>
+    <div class="eq">
+      <div class="eq-title">Equation 2: The Reduced Saddle Point</div>
+      \[
+      w_t^\star=\arg\max_{w\in\mathcal{W}}\;
+      \hat{\mu}_t^\top w
+      -\frac{1}{2}\Big(\gamma + \frac{1}{\eta}\Big)\,w^\top\hat{\Sigma}_t w
+      -\tau\|w\|_2^2
+      \]
+      <p style="margin:10px 0 0 0; font-size:0.85rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.5;">
+        Notice how the inverse of \(\eta\) effectively adds pure extra curvature directly to our risk penalty. This simple but profound mathematical trick forces the optimizer to act substantially more conservatively whenever the underlying market covariance grows dangerously large.
+      </p>
+    </div>
 
-    <p>
-      Result: fewer catastrophic drawdown cascades when correlations spike, regimes flip, or your “historical” window stops being historical and
-      starts being fiction.
-    </p>
+    <h2>2. Fetching Market Data Reliably</h2>
+    <p>Grabbing historical price data from external web sources can turn into a massive nightmare during live execution. Open source APIs change their endpoint structures constantly and sometimes the adjusted close column simply disappears from the payload without any warning. I specifically wrote the primary fetch function to handle those exact edge cases gracefully. The code attempts to request the modern automatic adjustment feature first. If the local version of the library lacks that capability the script automatically catches the type error and instantly falls back to parsing the raw standard closing prices. This rigorous defensive logic ensures the data pipeline never snaps and ruins your automated monthly execution sequences.</p>
+
+<pre><code><span class="kw">def</span> <span class="fu">fetch_prices</span>(tickers, benchmark, start_date=<span class="st">"2023-01-01"</span>, auto_adjust=<span class="kw">True</span>):
+    symbols = <span class="fu">list</span>(<span class="fu">dict.fromkeys</span>(<span class="fu">list</span>(tickers) + [benchmark]))
+
+    <span class="kw">try</span>:
+        data = yf.download(
+            symbols, start=start_date, progress=<span class="kw">False</span>,
+            auto_adjust=auto_adjust, actions=<span class="kw">False</span>,
+            group_by=<span class="st">"column"</span>, threads=<span class="kw">True</span>,
+        )
+        auto_adjust_effective = auto_adjust
+    <span class="kw">except</span> <span class="fu">TypeError</span>:
+        data = yf.download(
+            symbols, start=start_date, progress=<span class="kw">False</span>,
+            actions=<span class="kw">False</span>, group_by=<span class="st">"column"</span>, threads=<span class="kw">True</span>,
+        )
+        auto_adjust_effective = <span class="kw">False</span>
+
+    <span class="kw">def</span> <span class="fu">_extract_field</span>(df, field):
+        <span class="kw">if</span> <span class="fu">isinstance</span>(df.columns, pd.MultiIndex):
+            <span class="kw">if</span> field <span class="kw">in</span> df.columns.get_level_values(<span class="nu">0</span>):
+                <span class="kw">return</span> df[field].copy()
+            <span class="kw">return None</span>
+        <span class="kw">return</span> df[field].copy() <span class="kw">if</span> field <span class="kw">in</span> df.columns <span class="kw">else None</span>
+
+    prices = _extract_field(data, <span class="st">"Close"</span>) <span class="kw">if</span> auto_adjust_effective <span class="kw">else</span> _extract_field(data, <span class="st">"Adj Close"</span>)
+    <span class="kw">if</span> prices <span class="kw">is None</span>: prices = _extract_field(data, <span class="st">"Close"</span>)
+    <span class="kw">if</span> prices <span class="kw">is None</span>: <span class="kw">raise</span> <span class="fu">ValueError</span>(<span class="st">"Could not extract prices."</span>)
+
+    prices.index = pd.to_datetime(prices.index)
+    prices = prices[~prices.index.duplicated(keep=<span class="st">"last"</span>)].sort_index().replace([np.inf, -np.inf], np.nan)
+    
+    <span class="kw">return</span> prices[[t <span class="kw">for</span> t <span class="kw">in</span> tickers <span class="kw">if</span> t <span class="kw">in</span> prices.columns]].copy(), prices[benchmark].dropna()</code></pre>
+
+    <h2>3. Dynamic Moments & Covariance Shrinkage</h2>
+    <p>Financial data structures never sit still for very long in the real world. A simple static average from five years ago tells you absolutely nothing about the complex market dynamics today. I choose to use an exponentially weighted moving average to calculate our vector inputs. You take your raw return matrix and apply a mathematically derived decay factor based on your desired span. This mechanism forces the internal model to care exponentially more about recent market regimes than ancient history. Dealing with the covariance matrix itself requires an entirely different layer of protection.</p>
+    <p>Unfiltered sample covariance matrices act notoriously unstable when the number of assets begins to approach the number of time observations. The matrix frequently becomes poorly conditioned which makes reliable inversion practically impossible and destroys the optimizer. I apply a proven diagonal shrinkage technique directly to the raw covariance values. You take the noisy sample matrix and gently pull it toward a perfectly structured diagonal matrix. This vital stabilization step fundamentally stops the optimization engine from making extreme bets based on totally spurious historical correlations.</p>
+
+<pre><code><span class="kw">def</span> <span class="fu">ewma_mean_cov</span>(X: np.ndarray, span: <span class="fu">int</span>):
+    T, N = X.shape
+    <span class="kw">if</span> T < <span class="nu">2</span>: <span class="kw">raise</span> <span class="fu">ValueError</span>(<span class="st">"Need >= 2 obs for covariance."</span>)
+
+    alpha = <span class="nu">2.0</span> / (span + <span class="nu">1.0</span>)
+    w = (<span class="nu">1.0</span> - alpha) ** np.arange(T - <span class="nu">1</span>, -<span class="nu">1</span>, -<span class="nu">1</span>)
+    w /= w.sum()
+
+    mu = w @ X
+    Xm = X - mu
+    cov = (Xm.T * w) @ Xm
+    <span class="kw">return</span> mu, <span class="nu">0.5</span> * (cov + cov.T)
+
+<span class="kw">def</span> <span class="fu">shrink_cov</span>(cov: np.ndarray, shrink: <span class="fu">float</span>):
+    s = <span class="fu">float</span>(np.clip(shrink, <span class="nu">0.0</span>, <span class="nu">1.0</span>))
+    <span class="kw">return</span> (<span class="nu">1.0</span> - s) * cov + s * np.diag(np.diag(cov))</code></pre>
+
+    <h2>4. Implementing the Nash Solver Algorithm</h2>
+    <p>Now we finally arrive at the core execution logic of the solver function. Because we brilliantly reduced the complex minimax problem down to a single equation earlier the implementation code becomes incredibly clean. You just need to define the objective function combining the expected returns with our artificially inflated risk penalty. I decided to pass that function directly into the SciPy library using the Sequential Least Squares Programming algorithm. I specifically chose the SLSQP method because it handles strict equality constraints exceptionally well. We desperately need our final output weights to sum exactly to one hundred percent. We also need to enforce hard boundary conditions so no single stock accidentally dominates the entire portfolio allocation. The algorithm rapidly descends to find the exact saddle point where neither the investor nor the adversary can profitably alter their strategy.</p>
+
+<pre><code><span class="kw">def</span> <span class="fu">solve_nash_weights</span>(mu, cov, cap=<span class="nu">0.15</span>, l2=<span class="nu">1e-3</span>, risk_aversion=<span class="nu">8.0</span>, robustness_eta=<span class="nu">4.0</span>):
+    mu, cov = np.asarray(mu, <span class="fu">float</span>), np.asarray(cov, <span class="fu">float</span>)
+    N = <span class="fu">len</span>(mu)
+    cov = <span class="nu">0.5</span> * (cov + cov.T) + np.eye(N) * <span class="nu">1e-10</span>
+
+    lam_eff = <span class="fu">float</span>(risk_aversion + <span class="nu">1.0</span> / robustness_eta)
+
+    <span class="kw">def</span> <span class="fu">obj</span>(w):
+        w = np.asarray(w, <span class="fu">float</span>)
+        <span class="kw">return</span> -(mu @ w - <span class="nu">0.5</span> * lam_eff * (w @ cov @ w) - l2 * (w @ w))
+
+    cons = [{<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> w: np.sum(w) - <span class="nu">1.0</span>}]
+    bnds = <span class="fu">tuple</span>((<span class="nu">0.0</span>, <span class="fu">float</span>(cap)) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fu">range</span>(N))
+    w0 = np.full(N, <span class="nu">1.0</span> / N)
+
+    res = sco.minimize(obj, w0, method=<span class="st">"SLSQP"</span>, bounds=bnds, constraints=cons, tol=<span class="nu">1e-12</span>)
+
+    w = res.x <span class="kw">if</span> res.success <span class="kw">else</span> w0.copy()
+    w = np.clip(w, <span class="nu">0.0</span>, cap)
+    s = w.sum()
+    <span class="kw">return</span> (w / s) <span class="kw">if</span> s > <span class="nu">0</span> <span class="kw">else</span> w0.copy(), res</code></pre>
+
+    <h2>5. A Hostile Testing Engine</h2>
+    <p>You can invent the most mathematically elegant optimization model in human history but if your backtest lies to you it means absolutely nothing. That is exactly why the testing environment must remain completely ruthless. Standard open source backtesting frameworks almost always leak future data into the past eventually. I actively chose to build a custom execution loop from scratch to enforce a brutally strict walk forward testing process. The code manages an index of pure trading dates and only executes logical steps at the absolute end of the month.</p>
+    <p>I also implement a deliberate gap logic known as an embargo. The engine intentionally lops off the final closing day of the training set before letting the optimizer see anything. Doing this permanently stops the final closing prices from magically bleeding across the validation boundary and inflating our theoretical returns. The loop then calculates portfolio turnover precisely by computing the absolute difference between the exact newly generated weights against the old active weights. It immediately subtracts a realistic basis point trading cost on the exact day the transition occurs. There is absolutely no hidden magic happening here. It just utilizes very careful chronological accounting and highly defensive logic.</p>
   </main>
 </template>
 
+<!-- Primary UI -->
 <nav id="nav" aria-label="Primary">
   <button id="brand" type="button" aria-label="Reset View">Anıl Kaya</button>
   <div id="actions">
@@ -306,22 +435,20 @@ body.modal-open #copyright { opacity: 0; }
 <canvas id="gl" aria-hidden="true"></canvas>
 <div id="orbitHint" aria-hidden="true"></div>
 <div id="depthName" aria-hidden="true">In Econometrics We Trust</div>
-
 <div id="copyright" aria-hidden="true">© 2026 Anıl Kaya</div>
 
+<!-- Card Reader Overlay -->
 <div id="readProgress" aria-hidden="true"></div>
-<div id="modal" role="dialog" aria-modal="true" aria-label="Content reader">
+<div id="modal" role="dialog" aria-modal="true" aria-label="Article Reader">
   <button id="closeBtn" aria-label="Close Article">
       <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12"></path></svg>
   </button>
-  <div id="modalBody">
-      <div class="article-wrapper">
-          <div class="article-content" id="articleContentArea"></div>
-      </div>
+  <div class="article-wrapper" id="modalBody">
+      <div class="article-content" id="articleContentArea"></div>
   </div>
 </div>
 
-<div id="err"><h2>Render error</h2><div>Error details</div><pre id="errText"></pre></div>
+<div id="err"><h2>Render error</h2><pre id="errText"></pre></div>
 
 <script>
 window.addEventListener('load', () => {
@@ -332,39 +459,22 @@ function cssVar(name){ return getComputedStyle(document.documentElement).getProp
 function showErr(e){
   const txt = $("errText");
   if(txt) txt.textContent = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
-  const el = $("err");
-  if(el) el.style.display = "block";
+  $("err").style.display = "block";
 }
 
 /* ==========================================================================
-   ARTICLE PARSING & MODAL LOGIC
+   ARTICLE PARSING & MODAL LOGIC (Optimized for GH Pages)
    ========================================================================== */
 function sanitizeHTML(str) {
   if (!str) return "";
-  if (window.DOMPurify) {
-    return window.DOMPurify.sanitize(str, { USE_PROFILES: { html: true }, FORBID_TAGS: ["style","script","iframe","object","embed","form"] });
-  }
+  if (window.DOMPurify) return window.DOMPurify.sanitize(str, { USE_PROFILES: { html: true }, FORBID_TAGS: ["style","script","iframe","object","embed","form"] });
   return str.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "").replace(/<(iframe|object|embed|form|style)\b[^>]*>([\s\S]*?)<\/\1>/gim, "");
-}
-
-function postProcessInjectedContent(root){
-  if (!root) return;
-  root.querySelectorAll('a[href]').forEach(a=>{
-    const href = a.getAttribute("href") || "";
-    if (/^https?:\/\//i.test(href) && !href.startsWith(location.origin)) {
-      a.setAttribute("target","_blank"); a.setAttribute("rel","noopener noreferrer");
-    }
-  });
 }
 
 const ARTICLE_CACHE = new Map();
 const ARTICLES = [{
-  id: "nash-minimax-drift",
-  templateId: "tpl-nash",
-  contentSelector: "#article",
-  category: "Domestic Finance",
-  title: "Nash Strategy of Portfolio Managing",
-  date: "FEB 2026"
+  id: "nash-minimax-drift", templateId: "tpl-nash", contentSelector: "#article",
+  category: "Domestic Finance", title: "Nash Strategy of Portfolio Managing", date: "FEB 2026"
 }];
 
 async function loadArticle(a){
@@ -376,75 +486,88 @@ async function loadArticle(a){
   const node = doc.querySelector(a.contentSelector) || doc.body;
   const meta = { title: node.getAttribute("data-title") || a.title, date: node.getAttribute("data-date") || a.date, category: node.getAttribute("data-category") || a.category };
   const payload = { meta, safeHTML: sanitizeHTML(node.innerHTML) };
-  
-  ARTICLE_CACHE.set(a.id, payload);
-  return payload;
+  ARTICLE_CACHE.set(a.id, payload); return payload;
 }
 
-const modal = $("modal"), contentArea = $("articleContentArea"), modalBody = $("modalBody");
+const modal = $("modal"), contentArea = $("articleContentArea"), scrollCtx = modal;
 let modalJustOpenedAt = 0;
 
 function closeModal(){
   modal.classList.remove("open"); document.body.classList.remove("modal-open");
-  modalBody.scrollTop = 0; $("readProgress").style.width = "0%";
-  if (window.resume3D) window.resume3D();
+  scrollCtx.scrollTop = 0; $("readProgress").style.width = "0%";
+  if (window.resume3D) window.resume3D(); // Restart rendering loop
 }
 
-modal.addEventListener("click", (e)=>{ if (performance.now() - modalJustOpenedAt > 250 && (e.target === modal || e.target.id === "modalBody")) closeModal(); });
+// Close events
+modal.addEventListener("click", (e)=>{ if (performance.now() - modalJustOpenedAt > 250 && e.target === modal) closeModal(); });
 window.addEventListener("keydown", (e)=>{ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
 $("closeBtn").addEventListener("click", closeModal);
-modalBody.addEventListener("scroll", (e) => { const el = e.target; $("readProgress").style.width = ((el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)) * 100) + "%"; }, { passive: true });
+
+// Scroll progress bar logic applied to the modal scroll context
+scrollCtx.addEventListener("scroll", (e) => { 
+    const el = e.target;
+    $("readProgress").style.width = ((el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)) * 100) + "%"; 
+}, { passive: true });
 
 function openArticle(a){
   modalJustOpenedAt = performance.now();
   modal.classList.add("open"); document.body.classList.add("modal-open");
-  if (window.pause3D) window.pause3D();
+  if (window.pause3D) window.pause3D(); // Halt rendering loop for performance
 
-  contentArea.innerHTML = `<header class="article-header"><div class="meta"><span class="pill">${a.category||""}</span><span>•</span><span>${a.date||""}</span></div><h1>${a.title||""}</h1></header><p id="loadingLine">Loading…</p>`;
+  contentArea.innerHTML = `<header class="article-header"><div class="meta"><span class="pill">${a.category||""}</span><span>•</span><span>${a.date||""}</span></div><h1>${a.title||""}</h1></header><p id="loadingLine">Loading Document...</p>`;
 
   loadArticle(a).then(({ meta, safeHTML })=>{
     contentArea.innerHTML = `<header class="article-header"><div class="meta"><span class="pill">${meta.category||""}</span><span>•</span><span>${meta.date||""}</span></div><h1>${meta.title||""}</h1></header>` + safeHTML;
-    postProcessInjectedContent(contentArea);
+    
+    // External links
+    contentArea.querySelectorAll('a[href]').forEach(link=>{
+      if (/^https?:\/\//i.test(link.getAttribute("href"))) { link.setAttribute("target","_blank"); link.setAttribute("rel","noopener noreferrer"); }
+    });
+
+    // KaTeX
     if (window.renderMathInElement) window.renderMathInElement(contentArea, { delimiters: [{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false}], throwOnError: false });
+    
+    // Copy Buttons for Code
+    contentArea.querySelectorAll('pre').forEach(pre => {
+        const wrapper = document.createElement('div'); wrapper.className = 'code-wrapper';
+        pre.parentNode.insertBefore(wrapper, pre); wrapper.appendChild(pre);
+        const btn = document.createElement('button'); btn.className = 'copy-btn';
+        const defaultHTML = `<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy`;
+        const successHTML = `<svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
+        btn.innerHTML = defaultHTML;
+        btn.onclick = () => {
+            const ta = document.createElement("textarea"); ta.value = pre.innerText; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); btn.innerHTML = successHTML; btn.style.color = "var(--gold)"; btn.style.borderColor = "var(--gold)"; setTimeout(() => { btn.innerHTML = defaultHTML; btn.style.color = ""; btn.style.borderColor = ""; }, 2000); } 
+            catch (err) { btn.innerText = "Error"; } finally { document.body.removeChild(ta); }
+        };
+        wrapper.appendChild(btn);
+    });
+
   }).catch(err=>showErr(err));
 }
 
 /* ==========================================================================
-   LIGHTWEIGHT 3D PROCEDURAL TEXTURES
+   CPU-BASED PROCEDURAL TEXTURES
    ========================================================================== */
 function makeCanvasTexture(drawFn, size){
-  const c = document.createElement("canvas"); c.width = c.height = size;
-  drawFn(c.getContext("2d"), size);
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4; tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  return tex;
+  const c = document.createElement("canvas"); c.width = c.height = size; drawFn(c.getContext("2d", {willReadFrequently:true}), size);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; return tex;
 }
 
-// Optimized CPU Noise generator (Dropped to 3 octaves & 256x256 res for massive startup boost)
 function drawNash(g, size){
   const img = g.createImageData(size,size); const d = img.data;
-  const clamp = (x,a,b)=>Math.max(a,Math.min(b,x)), fract = x => x - Math.floor(x);
-  const hash2 = (x,y,s) => fract(Math.sin(x*127.1 + y*311.7 + s*74.7) * 43758.545);
-  const mix = (a,b,t) => a+(b-a)*t, smoothstep = (a,b,x) => { let t = clamp((x-a)/(b-a), 0, 1); return t*t*(3-2*t); };
-  
+  const clamp = (x,a,b)=>Math.max(a,Math.min(b,x)), fract = x => x - Math.floor(x), hash2 = (x,y,s) => fract(Math.sin(x*127.1 + y*311.7 + s*74.7) * 43758.545), mix = (a,b,t) => a+(b-a)*t, smoothstep = (a,b,x) => { let t = clamp((x-a)/(b-a), 0, 1); return t*t*(3-2*t); };
   for(let y=0; y<size; y++){
     const v = y/(size-1);
     for(let x=0; x<size; x++){
-      const u = x/(size-1);
-      // 3-octave FBM loop optimized inline
-      let n = 0, amp = 0.5, freq = 24.0, u2 = u, v2 = v;
+      const u = x/(size-1); let n = 0, amp = 0.5, freq = 24.0;
       for(let i=0; i<3; i++){
-          let px = Math.floor(u2*freq), py = Math.floor(v2*freq);
-          let fx = u2*freq - px, fy = v2*freq - py;
-          let ux = fx*fx*(3-2*fx), uy = fy*fy*(3-2*fy);
+          let px = Math.floor(u*freq), py = Math.floor(v*freq), fx = u*freq - px, fy = v*freq - py, ux = fx*fx*(3-2*fx), uy = fy*fy*(3-2*fy);
           let A=hash2(px,py,3.3+i*19), B=hash2(px+1,py,3.3+i*19), C=hash2(px,py+1,3.3+i*19), D=hash2(px+1,py+1,3.3+i*19);
-          n += amp * mix(mix(A,B,ux), mix(C,D,ux), uy);
-          freq *= 2.0; amp *= 0.5;
+          n += amp * mix(mix(A,B,ux), mix(C,D,ux), uy); freq *= 2.0; amp *= 0.5;
       }
-      
       const grid = smoothstep(0.48, 0.52, Math.abs(Math.sin(u*60.0)*Math.sin(v*60.0)));
-      const r = mix(0.05 + 0.1*n, 0.83, grid*0.4), gg = mix(0.08 + 0.15*n, 0.68, grid*0.4), b = mix(0.2 + 0.3*n, 0.21, grid*0.4);
-      const idx = (y*size + x)*4;
+      const r = mix(0.05 + 0.1*n, 0.83, grid*0.4), gg = mix(0.08 + 0.15*n, 0.68, grid*0.4), b = mix(0.2 + 0.3*n, 0.21, grid*0.4), idx = (y*size + x)*4;
       d[idx]=Math.round(clamp(r,0,1)*255); d[idx+1]=Math.round(clamp(gg,0,1)*255); d[idx+2]=Math.round(clamp(b,0,1)*255); d[idx+3]=255;
     }
   }
@@ -452,27 +575,21 @@ function drawNash(g, size){
 }
 
 /* ==========================================================================
-   THREE.JS SCENE PIPELINE
+   THREE.JS 60FPS LOCKED ENGINE
    ========================================================================== */
-if (!window.THREE){ showErr(new Error("Three.js library failed to load. Check network/CSP settings.")); return; }
+if (!window.THREE) { showErr(new Error("Three.js library failed to load.")); return; }
 
 try {
   const canvas = $("gl");
+  // Enforce DPR limit for solid 60fps on mobile
+  const getDPR = ()=>Math.min(window.devicePixelRatio || 1, 1.5); 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
-  const DPR = ()=>Math.min(window.devicePixelRatio || 1, 2);
-  
-  renderer.setPixelRatio(DPR());
-  renderer.setSize(window.innerWidth, window.innerHeight, false);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+  renderer.setPixelRatio(getDPR()); renderer.setSize(window.innerWidth, window.innerHeight, false);
+  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.08;
 
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(cssVar("--bg") || "#050505");
-  const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 5000);
-  camera.position.set(0, 0, 220);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(cssVar("--bg") || "#050505");
+  const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 5000); camera.position.set(0, 0, 220);
 
-  // Lighting
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
   const key = new THREE.DirectionalLight(0xffffff, 1.85); key.position.set(160, 190, 130); scene.add(key);
   const fill = new THREE.DirectionalLight(0xfff1cc, 0.72); fill.position.set(-210, 70, 160); scene.add(fill);
@@ -480,113 +597,80 @@ try {
 
   const pointer = new THREE.Vector2(0,0); let px=0, py=0, pointerActive=false;
 
-  // Optimized Stars (Capped at 24k for smoother mobile performance)
+  // Optimized Stars
   const galaxy = new THREE.Group(); scene.add(galaxy);
-  const starCount = Math.min(24000, Math.round(((navigator.deviceMemory || 4) * (navigator.hardwareConcurrency || 4)) * 800));
-  const starGeom = new THREE.BufferGeometry();
+  const starCount = Math.min(20000, Math.round(((navigator.deviceMemory || 4) * (navigator.hardwareConcurrency || 4)) * 800));
   const starPos = new Float32Array(starCount*3), starCol = new Float32Array(starCount*3), starSize = new Float32Array(starCount);
   const colors = [new THREE.Color(0xe8e8ea), new THREE.Color(0xD4AF37), new THREE.Color(0x001d4a), new THREE.Color(0xff9900)];
   
   for (let i=0; i<starCount; i++){
     const r = Math.pow(Math.random(), 0.42) * 1100, theta = Math.random() * Math.PI*2;
-    starPos[i*3] = Math.cos(theta)*r + (Math.random()-0.5)*15;
-    starPos[i*3+1] = (Math.random()-0.5) * (20 + 200*(1-r/1100));
-    starPos[i*3+2] = Math.sin(theta)*r + (Math.random()-0.5)*15;
-    const rand = Math.random(), c = colors[rand < 0.6 ? 0 : rand < 0.8 ? 1 : rand < 0.95 ? 2 : 3];
-    starCol[i*3]=c.r; starCol[i*3+1]=c.g; starCol[i*3+2]=c.b;
-    starSize[i] = 0.6 + Math.random()*2.4;
+    starPos[i*3] = Math.cos(theta)*r + (Math.random()-0.5)*15; starPos[i*3+1] = (Math.random()-0.5) * (20 + 200*(1-r/1100)); starPos[i*3+2] = Math.sin(theta)*r + (Math.random()-0.5)*15;
+    const c = colors[Math.random() < 0.6 ? 0 : Math.random() < 0.8 ? 1 : Math.random() < 0.95 ? 2 : 3];
+    starCol[i*3]=c.r; starCol[i*3+1]=c.g; starCol[i*3+2]=c.b; starSize[i] = 0.6 + Math.random()*2.4;
   }
   
-  starGeom.setAttribute("position", new THREE.BufferAttribute(starPos,3));
-  starGeom.setAttribute("color", new THREE.BufferAttribute(starCol,3));
-  starGeom.setAttribute("aSize", new THREE.BufferAttribute(starSize,1));
-  const stars = new THREE.Points(starGeom, new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    uniforms: { uTime: { value: 0 }, uDpr: { value: DPR() } },
-    vertexShader: `attribute float aSize; attribute vec3 color; varying vec3 vColor; uniform float uTime; uniform float uDpr;
-      void main(){ vColor = color; vec3 p = position; p.y += sin(uTime*0.18 + p.x*0.01 + p.z*0.01)*0.3; vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = clamp(aSize * (300.0 / -mv.z) * uDpr, 1.0, 10.0); }`,
-    fragmentShader: `varying vec3 vColor; void main(){ vec2 uv = gl_PointCoord.xy - 0.5; float d = dot(uv, uv); float a = smoothstep(0.25, 0.0, d); float halo = smoothstep(0.48, 0.10, d) * 0.55; gl_FragColor = vec4(vColor * (1.2*a + 0.9*halo), (a + halo) * 0.85); }`
-  }));
+  const starGeom = new THREE.BufferGeometry(); starGeom.setAttribute("position", new THREE.BufferAttribute(starPos,3)); starGeom.setAttribute("color", new THREE.BufferAttribute(starCol,3)); starGeom.setAttribute("aSize", new THREE.BufferAttribute(starSize,1));
+  const stars = new THREE.Points(starGeom, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uTime: { value: 0 }, uDpr: { value: getDPR() } }, vertexShader: `attribute float aSize; attribute vec3 color; varying vec3 vColor; uniform float uTime; uniform float uDpr; void main(){ vColor = color; vec3 p = position; p.y += sin(uTime*0.18 + p.x*0.01 + p.z*0.01)*0.3; vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = clamp(aSize * (300.0 / -mv.z) * uDpr, 1.0, 10.0); }`, fragmentShader: `varying vec3 vColor; void main(){ vec2 uv = gl_PointCoord.xy - 0.5; float d = dot(uv, uv); float a = smoothstep(0.25, 0.0, d); float halo = smoothstep(0.48, 0.10, d) * 0.55; gl_FragColor = vec4(vColor * (1.2*a + 0.9*halo), (a + halo) * 0.85); }` }));
   stars.rotation.x = -0.34; galaxy.add(stars);
 
-  // Optimized Nebula Shader (Drastically reduced noise octave count)
-  const nebula = new THREE.Mesh(new THREE.SphereGeometry(1900, 48, 48), new THREE.ShaderMaterial({
-    side: THREE.BackSide,
-    uniforms: { uTime:{value:0}, uPointer:{value:new THREE.Vector2(0,0)}, uGold:{value:new THREE.Color(cssVar("--gold")||"#D4AF37")}, uSilver:{value:new THREE.Color(cssVar("--silver")||"#e8e8ea")}, uBg:{value:new THREE.Color(cssVar("--bg")||"#050505")} },
-    vertexShader: `varying vec3 vP; uniform float uTime; uniform vec2 uPointer; void main(){ vec3 p = position; float band = exp(-abs(p.y)/240.0); float swirl = sin(uTime*0.08 + p.x*0.002 + p.z*0.002) * 22.0 * band; p.x += swirl + uPointer.x * 12.0 * band; p.z -= swirl * 0.55; p.y += uPointer.y * 6.0 * band; vP = p; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }`,
-    fragmentShader: `varying vec3 vP; uniform float uTime; uniform vec3 uGold; uniform vec3 uSilver; uniform vec3 uBg;
-      float hash(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); float n00=mix(fract(sin(dot(i,vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,0,0),vec3(1.0,57.0,113.0)))*43758.5453), f.x), n01=mix(fract(sin(dot(i+vec3(0,0,1),vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,0,1),vec3(1.0,57.0,113.0)))*43758.5453), f.x), n10=mix(fract(sin(dot(i+vec3(0,1,0),vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,1,0),vec3(1.0,57.0,113.0)))*43758.5453), f.x), n11=mix(fract(sin(dot(i+vec3(0,1,1),vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,1,1),vec3(1.0,57.0,113.0)))*43758.5453), f.x); return mix(mix(n00, n10, f.y), mix(n01, n11, f.y), f.z); }
-      void main(){
-        float band = exp(-abs(vP.y) / 170.0); vec3 q = vP * 0.0018 + vec3(0.0, 0.0, uTime*0.015);
-        // Reduced to 3 octaves for massive perf boost
-        float n = hash(q*3.0)*0.5 + hash(q*6.0)*0.25 + hash(q*12.0)*0.125;
-        float cloud = smoothstep(0.35, 0.92, n) * band;
-        float dust = smoothstep(0.20, 0.85, fract(n * 2.5 + vP.x*0.001)) * band;
-        vec3 mixc = mix(uSilver, uGold, clamp(0.5 + 0.5*sin(vP.x*0.002 + uTime*0.06), 0.0, 1.0));
-        gl_FragColor = vec4(clamp(uBg + mixc*(0.18*cloud + 0.12*dust) + uGold*(0.06*band), 0.0, 1.0), 1.0);
-      }`
-  }));
+  // Fast Nebula
+  const nebula = new THREE.Mesh(new THREE.SphereGeometry(1900, 48, 48), new THREE.ShaderMaterial({ side: THREE.BackSide, uniforms: { uTime:{value:0}, uPointer:{value:new THREE.Vector2(0,0)}, uGold:{value:new THREE.Color(cssVar("--gold")||"#D4AF37")}, uSilver:{value:new THREE.Color(cssVar("--silver")||"#e8e8ea")}, uBg:{value:new THREE.Color(cssVar("--bg")||"#050505")} }, vertexShader: `varying vec3 vP; uniform float uTime; uniform vec2 uPointer; void main(){ vec3 p = position; float band = exp(-abs(p.y)/240.0); float swirl = sin(uTime*0.08 + p.x*0.002 + p.z*0.002) * 22.0 * band; p.x += swirl + uPointer.x * 12.0 * band; p.z -= swirl * 0.55; p.y += uPointer.y * 6.0 * band; vP = p; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }`, fragmentShader: `varying vec3 vP; uniform float uTime; uniform vec3 uGold; uniform vec3 uSilver; uniform vec3 uBg; float hash(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); float n00=mix(fract(sin(dot(i,vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,0,0),vec3(1.0,57.0,113.0)))*43758.5453), f.x), n01=mix(fract(sin(dot(i+vec3(0,0,1),vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,0,1),vec3(1.0,57.0,113.0)))*43758.5453), f.x), n10=mix(fract(sin(dot(i+vec3(0,1,0),vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,1,0),vec3(1.0,57.0,113.0)))*43758.5453), f.x), n11=mix(fract(sin(dot(i+vec3(0,1,1),vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,1,1),vec3(1.0,57.0,113.0)))*43758.5453), f.x); return mix(mix(n00, n10, f.y), mix(n01, n11, f.y), f.z); } void main(){ float band = exp(-abs(vP.y) / 170.0); vec3 q = vP * 0.0018 + vec3(0.0, 0.0, uTime*0.015); float n = hash(q*3.0)*0.5 + hash(q*6.0)*0.25 + hash(q*12.0)*0.125; float cloud = smoothstep(0.35, 0.92, n) * band; float dust = smoothstep(0.20, 0.85, fract(n * 2.5 + vP.x*0.001)) * band; vec3 mixc = mix(uSilver, uGold, clamp(0.5 + 0.5*sin(vP.x*0.002 + uTime*0.06), 0.0, 1.0)); gl_FragColor = vec4(clamp(uBg + mixc*(0.18*cloud + 0.12*dust) + uGold*(0.06*band), 0.0, 1.0), 1.0); }` }));
   scene.add(nebula);
 
-  const planets = new THREE.Group(), ringGroup = new THREE.Group();
-  scene.add(planets); planets.add(ringGroup);
+  const planets = new THREE.Group(), ringGroup = new THREE.Group(); scene.add(planets); planets.add(ringGroup);
   const ringTiltX = 0.38, ringTiltZ = -0.12; ringGroup.rotation.set(ringTiltX, 0, ringTiltZ);
 
-  // Labels and Objects
+  // Label Sprites (Smart dynamic scaling to prevent cutoff)
   function labelSprite(text){
-    const w=1200, h=380, c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
-    g.shadowColor = "rgba(0,0,0,0.8)"; g.shadowBlur = 18; g.fillStyle = "rgba(255,255,255,0.95)"; g.textAlign = "center"; g.textBaseline = "middle"; g.font = "800 90px 'Latin Modern Sans','Latin Modern Roman',system-ui,sans-serif";
-    g.fillText(text, w/2, h/2); // Simplistic one-line render for speed
-    const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
-    const spr=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false }));
-    spr.scale.set(100, 36, 1); spr.userData._labelText = text; return spr;
+    const w=2048, h=256, c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
+    g.shadowColor = "rgba(0,0,0,0.85)"; g.shadowBlur = 15; g.fillStyle = "rgba(255,255,255,0.95)"; 
+    g.textAlign = "center"; g.textBaseline = "middle"; 
+    
+    // Dynamically shrink font until it fits perfectly inside the canvas
+    let fSize = 80; g.font = `800 ${fSize}px 'Latin Modern Sans',sans-serif`;
+    while(g.measureText(text).width > w - 80) g.font = `800 ${fSize-=4}px 'Latin Modern Sans',sans-serif`;
+    
+    g.fillText(text, w/2, h/2); const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
+    const spr=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false })); 
+    spr.scale.set(160, 20, 1); spr.userData._labelText = text; return spr;
   }
 
   const baseTextures = { nash: makeCanvasTexture(drawNash, 256) };
   let ringMeshes = [], entries = [];
   
   function buildPlanets(){
-    for(let i = planets.children.length - 1; i >= 0; i--) if(planets.children[i] !== ringGroup){ planets.remove(planets.children[i]); }
+    for(let i = planets.children.length - 1; i >= 0; i--) if(planets.children[i] !== ringGroup) planets.remove(planets.children[i]);
     entries.length = 0; ringGroup.clear(); ringMeshes = [];
 
     const isMobile = window.innerWidth < 800;
     const vH = 2 * 220 * Math.tan((52 * Math.PI / 180) / 2);
     let finalScale = Math.max(Math.min((vH * (window.innerWidth / window.innerHeight)) / 560, vH / 560), 0.22);
     
-    // Build Rings
+    // Rings
     const gold = new THREE.Color(cssVar("--gold") || "#D4AF37"), silv = new THREE.Color(cssVar("--silver") || "#e8e8ea");
     const makeRing = (r0, r1, op, z, t)=>{
-      const m = new THREE.Mesh(new THREE.RingGeometry(r0, r1, 128, 1), new THREE.ShaderMaterial({
-        transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
-        uniforms:{ uTime:{value:0}, uGold:{value:gold}, uSilv:{value:silv}, uOpacity:{value:op}, uTint:{value:t} },
-        vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix * viewMatrix * modelMatrix * vec4(position,1.0); }`,
-        fragmentShader: `varying vec2 vUv; uniform float uTime; uniform vec3 uGold; uniform vec3 uSilv; uniform float uOpacity; uniform float uTint; float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); float h=fract(sin(dot(i,vec2(127.1,311.7)))*43758.545); return mix(h, fract(sin(dot(i+vec2(1,0),vec2(127.1,311.7)))*43758.545), f.x); } void main(){ float r=length(vUv-0.5)*2.0, g=noise((vUv-0.5)*vec2(120.0,20.0)+uTime*0.02), edge=smoothstep(0.98,0.65,r)*smoothstep(0.02,0.18,r); gl_FragColor=vec4(mix(uSilv,uGold,uTint+0.15*sin(vUv.x*20.0)), (0.55+0.45*g)*edge*uOpacity); }`
-      }));
+      const m = new THREE.Mesh(new THREE.RingGeometry(r0, r1, 128, 1), new THREE.ShaderMaterial({ transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, uniforms:{ uTime:{value:0}, uGold:{value:gold}, uSilv:{value:silv}, uOpacity:{value:op}, uTint:{value:t} }, vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix * viewMatrix * modelMatrix * vec4(position,1.0); }`, fragmentShader: `varying vec2 vUv; uniform float uTime; uniform vec3 uGold; uniform vec3 uSilv; uniform float uOpacity; uniform float uTint; float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); float h=fract(sin(dot(i,vec2(127.1,311.7)))*43758.545); return mix(h, fract(sin(dot(i+vec2(1,0),vec2(127.1,311.7)))*43758.545), f.x); } void main(){ float r=length(vUv-0.5)*2.0, g=noise((vUv-0.5)*vec2(120.0,20.0)+uTime*0.02), edge=smoothstep(0.98,0.65,r)*smoothstep(0.02,0.18,r); gl_FragColor=vec4(mix(uSilv,uGold,uTint+0.15*sin(vUv.x*20.0)), (0.55+0.45*g)*edge*uOpacity); }` }));
       m.position.z = z; ringGroup.add(m); ringMeshes.push(m);
     };
     makeRing(142*finalScale*0.78, 142*finalScale*1.12, 0.22, 0.0, 0.55);
     makeRing(142*finalScale*0.78*1.02, 142*finalScale*1.12*0.985, 0.16, 0.06, 0.35);
 
-    // Build Planet
+    // Planets
     ARTICLES.forEach((art, i) => {
       const radius = (isMobile ? 50 : 25) * finalScale;
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 48, 48), new THREE.MeshStandardMaterial({ map: baseTextures.nash, roughness: 0.75, metalness: 0.15 }));
-      const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 48, 48), new THREE.ShaderMaterial({
-        transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, uniforms:{ uColor:{value:new THREE.Color("#d4af37")} },
-        vertexShader:`varying vec3 vNormal; void main(){ vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-        fragmentShader:`varying vec3 vNormal; uniform vec3 uColor; void main(){ gl_FragColor = vec4(uColor, pow(0.65 - dot(vNormal, vec3(0,0,1)), 2.8)*0.45); }`
-      }));
-      const label = labelSprite(art.title); label.scale.multiplyScalar(finalScale * (isMobile ? 2.05 : 1.0));
+      const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 48, 48), new THREE.ShaderMaterial({ transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, uniforms:{ uColor:{value:new THREE.Color("#d4af37")} }, vertexShader:`varying vec3 vNormal; void main(){ vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`, fragmentShader:`varying vec3 vNormal; uniform vec3 uColor; void main(){ gl_FragColor = vec4(uColor, pow(0.65 - dot(vNormal, vec3(0,0,1)), 2.8)*0.45); }` }));
+      const label = labelSprite(art.title); label.scale.multiplyScalar(finalScale * (isMobile ? 2.0 : 1.0));
       mesh.userData.article = atmo.userData.article = label.userData.article = art;
 
-      entries.push({ mesh, atmo, label, radius, angle: (i/ARTICLES.length)*Math.PI*2 + Math.PI/5, angVel: 0, rMod: 0, zMod: 0, ringR: 142*finalScale, hoverPull: 0, scale: finalScale, labelMult: (isMobile?2.05:1.0) });
+      entries.push({ mesh, atmo, label, radius, angle: (i/ARTICLES.length)*Math.PI*2 + Math.PI/5, angVel: 0, rMod: 0, zMod: 0, ringR: 142*finalScale, hoverPull: 0, scale: finalScale, labelMult: (isMobile?2.0:1.0) });
       planets.add(mesh); planets.add(atmo); planets.add(label);
     });
   }
-
   buildPlanets();
 
-  // Raycasting and Events
+  // Raycasting & Controls
   const raycaster = new THREE.Raycaster(); let hovered = null;
   function updatePointer(ev){
     const r = canvas.getBoundingClientRect(), p = ev.touches ? ev.touches[0] : (ev.changedTouches ? ev.changedTouches[0] : ev);
@@ -594,7 +678,6 @@ try {
     pointer.x = ((p.clientX - r.left)/Math.max(1, r.width))*2 - 1; pointer.y = -((p.clientY - r.top)/Math.max(1, r.height))*2 + 1;
     px = p.clientX - r.left; py = p.clientY - r.top; pointerActive = true;
   }
-  
   canvas.addEventListener("pointermove", updatePointer, { passive:true });
   canvas.addEventListener("click", (e)=>{ if(document.body.classList.contains("modal-open")) return; updatePointer(e); raycaster.setFromCamera(pointer, camera); const h = raycaster.intersectObjects(planets.children, true).find(x=>x.object.userData.article); if(h) openArticle(h.object.userData.article); }, { passive:true });
 
@@ -606,14 +689,12 @@ try {
 
   function frame(){
     rafId = requestAnimationFrame(frame);
-    if (document.body.classList.contains("modal-open")) return;
+    if (document.body.classList.contains("modal-open")) return; // Hard loop stop protection
     
     const dt = Math.min(0.033, clock.getDelta()), t = clock.getElapsedTime();
     const nx = pointerActive ? pointer.x : 0.0, ny = pointerActive ? -pointer.y : 0.0;
-    camera.position.x += (nx * 12 - camera.position.x) * 0.15;
-    camera.position.y += (-ny * 6 - camera.position.y) * 0.15;
+    camera.position.x += (nx * 12 - camera.position.x) * 0.15; camera.position.y += (-ny * 6 - camera.position.y) * 0.15;
     camera.lookAt(0,0,0);
-
     nebula.material.uniforms.uTime.value = t; nebula.material.uniforms.uPointer.value.set(nx, ny);
     
     if (pointerActive){
@@ -632,26 +713,26 @@ try {
       p.hoverPull += ( (isHover?1:0) - p.hoverPull ) * 0.12;
       p.angVel += ( (0.012 + (pointerActive?nx*0.015:0) + p.hoverPull*nx*0.004) - p.angVel ) * 0.05;
       p.angle = (p.angle + (p.angVel + Math.sin(t*0.7+i*1.7)*0.0009)*dt) % (Math.PI*2);
-      p.rMod += ( (isHover?0.03:0) - p.rMod ) * 0.09;
-      p.zMod += ( (isHover?24.0:0) - p.zMod ) * 0.10;
+      p.rMod += ( (isHover?0.03:0) - p.rMod ) * 0.09; p.zMod += ( (isHover?24.0:0) - p.zMod ) * 0.10;
 
       const r = p.ringR*(1.0+p.rMod), pos = new THREE.Vector3(Math.cos(p.angle)*r, Math.sin(p.angle)*r, 0).applyEuler(new THREE.Euler(ringTiltX, 0, ringTiltZ, "XYZ"));
       pos.z += p.zMod;
       p.mesh.position.copy(pos); p.atmo.position.copy(pos); p.label.position.copy(pos);
-      p.label.position.addScaledVector(new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(ringTiltX, 0, ringTiltZ, "XYZ")), (p.radius + 42*p.scale*p.labelMult) * (pos.y>=0?1:-1) * 0.6);
+      
+      // Increased offset multiplier from 40 to 50 to clear the planet cleanly
+      p.label.position.addScaledVector(new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(ringTiltX, 0, ringTiltZ, "XYZ")), (p.radius + 50*p.scale*p.labelMult) * (pos.y>=0?1:-1) * 0.6);
       p.label.quaternion.copy(camera.quaternion);
 
       const s = isHover ? 1.15 : 1.0; targetScale.set(s,s,s); p.mesh.scale.lerp(targetScale, 0.12);
       targetScale.set(s*1.08, s*1.08, s*1.08); p.atmo.scale.lerp(targetScale, 0.12);
     });
-
     renderer.render(scene, camera);
   }
 
-  window.addEventListener("resize", ()=>{ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setPixelRatio(DPR()); renderer.setSize(window.innerWidth, window.innerHeight, false); buildPlanets(); }, { passive:true });
+  window.addEventListener("resize", ()=>{ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setPixelRatio(getDPR()); renderer.setSize(window.innerWidth, window.innerHeight, false); buildPlanets(); }, { passive:true });
   $("brand").addEventListener("click", ()=>camera.position.set(0,0,220));
   
-  window.resume3D();
+  window.resume3D(); // Start loop
 } catch(e) { showErr(e); }
 
 });
