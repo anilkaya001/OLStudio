@@ -5,34 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
 <meta name="theme-color" content="#050505"/>
 
-<!-- Strict CSP for GitHub Pages - Allows essential CDNs and inline blobs -->
+<!-- Strict CSP explicitly allowing Cloudflare Analytics, CDN assets, and inline styles/blobs -->
 <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://static.cloudflareinsights.com;
     style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
     font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net;
     img-src 'self' data: blob:;
-    connect-src 'self' https://cdn.jsdelivr.net;
+    connect-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com;
     object-src 'none';
 ">
 
 <title>Anıl Kaya | Research and Articles</title>
 <meta name="description" content="Academic articles and research by Anıl Kaya">
 
-<!-- Fonts -->
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-roman.css" crossorigin="anonymous"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/style/latinmodern-sans.css" crossorigin="anonymous"/>
+<!-- Inlined Fonts for Zero Render-Blocking (Fixes FCP & font-display issues) -->
+<style>
+    @font-face {
+        font-family: 'Latin Modern Roman';
+        src: url('https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/font/lmroman-regular-webfont.woff') format('woff');
+        font-weight: normal; font-style: normal; font-display: swap;
+    }
+    @font-face {
+        font-family: 'Latin Modern Sans';
+        src: url('https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/font/lmsans-bold-webfont.woff') format('woff');
+        font-weight: bold; font-style: normal; font-display: swap;
+    }
+</style>
 
-<!-- KaTeX (Math) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<!-- Async Loading for Non-Critical Math CSS -->
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" crossorigin="anonymous">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous"></noscript>
+
+<!-- Deferred JavaScript (Moves heavy parsing off the critical path) -->
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
-
-<!-- DOMPurify -->
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js" crossorigin="anonymous"></script>
-
-<!-- Three.js (v0.160.0 - Highly stable for modern WebGL) -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
 
 <style>
@@ -45,7 +53,7 @@
     --font-ui: "Latin Modern Sans", sans-serif;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --nav-h: 64px; /* Slightly slimmer nav */
+    --nav-h: 64px;
 
     --bg: #050505;
     --border: rgba(255, 255, 255, 0.08);
@@ -55,23 +63,28 @@
     --gold-soft: #F7E7CE;
     --gold-glow: color-mix(in oklab, var(--gold) 20%, transparent);
 
-    --card-bg: rgba(14, 14, 16, 0.96);
-    --card-border: rgba(212, 175, 55, 0.15);
-    --card-shadow: 0 40px 100px rgba(0,0,0,0.95), 0 0 0 1px var(--card-border) inset;
+    --card-bg: rgba(14, 14, 16, 0.98);
+    --card-border: rgba(212, 175, 55, 0.20);
+    --card-shadow: 0 30px 80px rgba(0,0,0,0.95), 0 0 0 1px var(--card-border) inset;
+    
+    /* Adjusted baseline for smaller, refined typography */
+    --base-font-size: 0.95rem; 
 }
 
-html, body { height: 100%; margin: 0; }
+html, body { height: 100%; margin: 0; padding: 0; }
 body {
-    background: var(--bg);
-    color: var(--silver);
-    font-family: var(--font-main);
-    overflow: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.5s ease;
+    background: var(--bg); color: var(--silver); font-family: var(--font-main);
+    overflow: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 
-body.modal-open #gl { filter: blur(12px) brightness(0.3); transform: scale(1.015); }
+/* 3D Scene Fade-in to prevent initial main-thread blocking */
+#gl {
+    position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; 
+    touch-action: none; user-select: none; opacity: 0;
+    transition: opacity 1.2s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#gl.ready { opacity: 1; }
+body.modal-open #gl { transform: scale(1.02); opacity: 0.3; }
 body.modal-open #depthName, body.modal-open #orbitHint { opacity: 0 !important; }
 
 * { box-sizing: border-box; }
@@ -83,13 +96,9 @@ a:hover { opacity: 0.9; }
    USER INTERFACE (NAV & BRANDING)
    ========================================================================== */
 #nav {
-    position: fixed; top: 0; left: 0; right: 0;
-    height: calc(var(--nav-h) + var(--safe-top));
-    padding-top: var(--safe-top);
-    padding-left: clamp(20px, 5vw, 48px);
-    padding-right: clamp(20px, 5vw, 48px);
-    display: flex; align-items: center; justify-content: space-between;
-    z-index: 1000;
+    position: fixed; top: 0; left: 0; right: 0; height: calc(var(--nav-h) + var(--safe-top));
+    padding-top: var(--safe-top); padding-left: clamp(20px, 5vw, 48px); padding-right: clamp(20px, 5vw, 48px);
+    display: flex; align-items: center; justify-content: space-between; z-index: 1000;
     border-bottom: 1px solid var(--border);
     background: radial-gradient(1200px 600px at 50% 0%, rgba(212,175,55,0.03), rgba(0,0,0,0.0) 80%),
                 linear-gradient(180deg, color-mix(in oklab, var(--bg) 95%, transparent), color-mix(in oklab, var(--bg) 40%, transparent));
@@ -99,71 +108,52 @@ a:hover { opacity: 0.9; }
 body.modal-open #nav { transform: translateY(-100%); }
 
 #brand {
-    appearance: none; border: none; background: transparent;
-    font-family: var(--font-ui); font-size: 0.85rem; font-weight: 900;
-    letter-spacing: 2px; text-transform: uppercase;
-    color: var(--silver);
-    user-select: none; white-space: nowrap; cursor: pointer; padding: 0;
+    appearance: none; border: none; background: transparent; font-family: var(--font-ui);
+    font-size: 0.8rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--silver); cursor: pointer; padding: 0;
     transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
 }
 #brand:hover { transform: translateY(-1px); color: var(--gold); text-shadow: 0 4px 15px rgba(212,175,55,0.3); }
 
 .btn {
-    font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700;
-    letter-spacing: 1.2px; text-transform: uppercase;
+    font-family: var(--font-ui); font-size: 0.65rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
     padding: 8px 20px; border-radius: 30px; border: 1px solid var(--border);
-    background: color-mix(in oklab, var(--bg) 50%, transparent);
-    color: var(--silver); cursor: pointer; backdrop-filter: blur(14px);
-    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    background: color-mix(in oklab, var(--bg) 50%, transparent); color: var(--silver);
+    cursor: pointer; backdrop-filter: blur(14px); transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-.btn:hover {
-    background: var(--gold); border-color: var(--gold); color: #000;
-    transform: translateY(-2px); box-shadow: 0 8px 20px var(--gold-glow);
-}
+.btn:hover { background: var(--gold); border-color: var(--gold); color: #000; transform: translateY(-2px); box-shadow: 0 8px 20px var(--gold-glow); }
 
 #copyright {
     position: fixed; bottom: clamp(12px, 3vw, 24px); left: 50%; transform: translateX(-50%);
-    font-family: var(--font-ui); font-size: 0.65rem; font-weight: 600;
-    letter-spacing: 2px; text-transform: uppercase;
-    color: color-mix(in oklab, var(--silver) 30%, transparent);
-    z-index: 500; pointer-events: none; user-select: none; text-align: center; white-space: nowrap;
+    font-family: var(--font-ui); font-size: 0.6rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+    color: color-mix(in oklab, var(--silver) 30%, transparent); z-index: 500; pointer-events: none; text-align: center;
     transition: opacity 0.4s ease;
 }
 body.modal-open #copyright { opacity: 0; }
 
-/* ==========================================================================
-   WEBGL CANVAS & HUD
-   ========================================================================== */
-#gl {
-    position: fixed; inset: 0; width: 100%; height: 100%; display: block;
-    z-index: 1; touch-action: none; user-select: none;
-    transition: filter 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-}
-@keyframes breath { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; filter: blur(0.2px); } 50% { transform: translate(-50%, -50%) scale(1.03); opacity: 1; filter: blur(0px); } }
+/* GPU-Accelerated background elements (No CSS Filters to avoid layout shifts/performance hits) */
+@keyframes breath { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; } 50% { transform: translate(-50%, -50%) scale(1.02); opacity: 1; } }
 #depthName {
     position: fixed; left: 50%; top: 50%; z-index: 650; pointer-events: none;
     font-family: var(--font-main); font-weight: 300; letter-spacing: 0.05em;
-    font-size: clamp(1.6rem, 5vw, 6rem); color: rgba(212,175,55,0.18);
-    text-shadow: 0 0 50px rgba(212,175,55,0.15); white-space: nowrap; text-align: center; width: 100%;
+    font-size: clamp(1.4rem, 4.5vw, 5rem); color: rgba(212,175,55,0.22);
+    text-shadow: 0 0 40px rgba(212,175,55,0.2); white-space: nowrap; text-align: center; width: 100%;
     animation: breath 8s infinite ease-in-out; transition: opacity 0.5s ease;
 }
 #orbitHint {
     position: fixed; inset: 0; z-index: 600; pointer-events: none; opacity: 0.55;
-    background: radial-gradient(circle at 50% 50%, rgba(212,175,55,0.08) 0%, rgba(212,175,55,0.04) 20%, rgba(232,232,234,0.02) 34%, rgba(0,0,0,0.0) 60%);
-    mask: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0 26%, rgba(0,0,0,1) 34% 42%, rgba(0,0,0,0) 60%);
-    -webkit-mask: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0 26%, rgba(0,0,0,1) 34% 42%, rgba(0,0,0,0) 60%);
+    background: radial-gradient(circle at 50% 50%, rgba(212,175,55,0.06) 0%, rgba(232,232,234,0.02) 20%, rgba(0,0,0,0.0) 50%);
     transition: opacity 0.5s ease;
 }
 
 /* ==========================================================================
-   ADVANCED CARD-READER UI (MOBILE & DESKTOP OPTIMIZED)
+   INTELLIGENT CARD-READER UI (Desktop vs Mobile Optimized)
    ========================================================================== */
 #modal {
     position: fixed; inset: 0; z-index: 2000;
-    display: flex; justify-content: center; align-items: flex-start;
-    background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    display: flex; justify-content: center; align-items: center; /* Centered for Desktop */
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
     overflow-y: auto; -webkit-overflow-scrolling: touch; perspective: 1200px;
     opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -176,114 +166,111 @@ body.modal-open #copyright { opacity: 0; }
 
 #closeBtn {
     position: fixed; top: clamp(16px, 3vw, 32px); right: clamp(16px, 3vw, 40px);
-    width: 48px; height: 48px; border-radius: 50%;
-    background: rgba(20, 20, 22, 0.9); border: 1px solid var(--gold);
-    color: var(--gold); cursor: pointer; display: flex; justify-content: center; align-items: center;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(20, 20, 22, 0.9); border: 1px solid var(--gold); color: var(--gold);
+    cursor: pointer; display: flex; justify-content: center; align-items: center;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 2010;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 #closeBtn:hover { transform: scale(1.1) rotate(90deg); background: var(--gold); color: #000; box-shadow: 0 12px 30px var(--gold-glow); }
-#closeBtn svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+#closeBtn svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
-/* The actual Card */
+/* Base Card (Desktop Native) */
 .article-wrapper {
     background: var(--card-bg); border: 1px solid var(--card-border);
     box-shadow: var(--card-shadow); border-radius: 20px;
-    width: 100%; max-width: 820px; margin: 6vh auto;
-    padding: clamp(40px, 6vw, 80px) clamp(24px, 5vw, 60px);
+    width: 100%; max-width: 780px; margin: auto;
+    padding: clamp(40px, 6vw, 70px) clamp(24px, 5vw, 50px);
     position: relative; will-change: transform, opacity;
-    transform: translateY(80px) scale(0.97) rotateX(4deg); opacity: 0;
+    transform: translateY(40px) scale(0.98); opacity: 0;
 }
-.article-wrapper::before {
-    content: ""; position: absolute; inset: 0; border-radius: inherit;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.025'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: -1;
-}
-#modal.open .article-wrapper {
-    animation: cardRise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-@keyframes cardRise {
-    0% { transform: translateY(80px) scale(0.97) rotateX(4deg); opacity: 0; }
-    100% { transform: translateY(0) scale(1) rotateX(0deg); opacity: 1; }
-}
+#modal.open .article-wrapper { animation: cardRise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@keyframes cardRise { 0% { transform: translateY(40px) scale(0.98); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 
-/* Mobile specific docking */
+/* Mobile Context (Bottom Sheet UI) */
 @media (max-width: 768px) {
+    #modal { align-items: flex-end; } /* Docks to bottom */
     .article-wrapper {
-        margin: 12vh 0 0 0;
-        border-bottom-left-radius: 0; border-bottom-right-radius: 0;
-        min-height: 88vh; border-bottom: none;
+        margin: 0; width: 100%; max-width: 100%;
+        border-radius: 28px 28px 0 0; min-height: 88vh;
+        border-bottom: none; transform: translateY(100%);
     }
+    #closeBtn {
+        top: 20px; right: 20px;
+        width: 40px; height: 40px;
+        background: var(--card-bg); border-color: var(--border); color: var(--silver);
+    }
+    @keyframes cardRise { 0% { transform: translateY(100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 }
 
 /* ==========================================================================
-   ARTICLE TYPOGRAPHY (Refined & Golden)
+   ARTICLE TYPOGRAPHY (Golden Accents & Condensed Scaling)
    ========================================================================== */
-.article-header { margin-bottom: 3.5rem; text-align: center; }
-.article-header .meta { font-family: var(--font-ui) !important; font-size: 0.75rem; color: var(--silver-dim); letter-spacing: 2px; text-transform: uppercase; display: flex; justify-content: center; gap: 12px; align-items: center; margin-bottom: 1.5rem; }
+.article-header { margin-bottom: 3rem; text-align: center; }
+.article-header .meta { font-family: var(--font-ui) !important; font-size: 0.7rem; color: var(--silver-dim); letter-spacing: 2px; text-transform: uppercase; display: flex; justify-content: center; gap: 12px; align-items: center; margin-bottom: 1.2rem; }
 .article-header .pill { background: var(--gold-glow); color: var(--gold); padding: 4px 12px; border-radius: 20px; font-weight: 800; border: 1px solid rgba(212,175,55,0.3); }
-.article-header h1 { font-size: clamp(2.2rem, 4.5vw, 3.2rem); color: var(--gold); margin: 0; line-height: 1.15; text-align: center; letter-spacing: -0.5px; text-shadow: 0 4px 20px var(--gold-glow); }
+.article-header h1 { font-size: clamp(2rem, 4vw, 2.8rem); color: var(--gold); margin: 0; line-height: 1.15; text-align: center; letter-spacing: -0.5px; text-shadow: 0 4px 20px var(--gold-glow); }
 
-.article-content { font-family: var(--font-main) !important; font-size: 1.08rem; line-height: 1.85; color: color-mix(in oklab, var(--silver) 90%, var(--silver-dim)); text-align: justify; text-justify: inter-word; letter-spacing: 0.2px; }
+.article-content { font-family: var(--font-main) !important; font-size: var(--base-font-size); line-height: 1.75; color: color-mix(in oklab, var(--silver) 90%, var(--silver-dim)); text-align: justify; text-justify: inter-word; letter-spacing: 0.1px; }
 
 /* Golden Main Sections */
-.article-content h1, .article-content h2, .article-content h3, .article-content h4 { font-family: var(--font-main) !important; color: var(--gold); line-height: 1.35; margin: 2.8rem 0 1.2rem; text-align: left; font-weight: normal; }
-.article-content h2 { font-size: 1.8rem; border-bottom: 1px solid var(--gold-glow); padding-bottom: 0.6rem; margin-top: 3.5rem; }
-.article-content h3 { font-size: 1.4rem; font-style: italic; color: var(--gold-soft); }
+.article-content h1, .article-content h2, .article-content h3, .article-content h4 { font-family: var(--font-main) !important; color: var(--gold); line-height: 1.3; margin: 2.5rem 0 1rem; text-align: left; font-weight: normal; }
+.article-content h2 { font-size: 1.6rem; border-bottom: 1px solid var(--gold-glow); padding-bottom: 0.5rem; margin-top: 3rem; }
+.article-content h3 { font-size: 1.25rem; font-style: italic; color: var(--gold-soft); }
 
-.article-content p { margin: 0 0 1.8rem; }
-.article-content p:first-of-type::first-letter { font-size: 3.4rem; line-height: 0.85; float: left; margin-right: 0.6rem; margin-top: 0.25rem; color: var(--gold); font-family: var(--font-main) !important; }
+.article-content p { margin: 0 0 1.5rem; }
+.article-content p:first-of-type::first-letter { font-size: 3.2rem; line-height: 0.85; float: left; margin-right: 0.6rem; margin-top: 0.2rem; color: var(--gold); font-family: var(--font-main) !important; }
 .article-content a { color: var(--gold); text-decoration: underline; text-decoration-color: var(--gold-glow); text-underline-offset: 4px; transition: all 0.3s; }
 .article-content a:hover { color: var(--silver); text-decoration-color: var(--silver); }
-.article-content ul, .article-content ol { margin: 0 0 1.8rem; padding-left: 2rem; }
-.article-content li { margin-bottom: 0.6rem; padding-left: 0.4rem;}
+.article-content ul, .article-content ol { margin: 0 0 1.5rem; padding-left: 2rem; }
+.article-content li { margin-bottom: 0.5rem; padding-left: 0.4rem;}
 .article-content li::marker { color: var(--gold); }
 
-.article-content blockquote { margin: 2.5rem 0; padding: 1.8rem 2rem 1.8rem 3rem; background: rgba(255,255,255,0.02); font-style: italic; border-radius: 10px; position: relative; border: 1px solid var(--card-border); border-left: 4px solid var(--gold); color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim)); }
-.article-content blockquote::before { content: "“"; position: absolute; left: 0.6rem; top: 0.6rem; font-family: var(--font-main) !important; font-size: 3.5rem; color: var(--gold); line-height: 1; opacity: 0.3; }
+.article-content blockquote { margin: 2rem 0; padding: 1.5rem 2rem 1.5rem 3rem; background: rgba(255,255,255,0.02); font-style: italic; border-radius: 8px; position: relative; border: 1px solid var(--card-border); border-left: 4px solid var(--gold); color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim)); }
+.article-content blockquote::before { content: "“"; position: absolute; left: 0.6rem; top: 0.5rem; font-family: var(--font-main) !important; font-size: 3rem; color: var(--gold); line-height: 1; opacity: 0.3; }
 
-.article-content .katex-display { overflow-x: auto; overflow-y: hidden; padding: 1.2rem 0; margin: 2rem 0; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+.article-content .katex-display { overflow-x: auto; overflow-y: hidden; padding: 1rem 0; margin: 1.8rem 0; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
 
 /* Custom Article Components */
-.classical-caption { font-family: var(--font-main) !important; font-size: 1.2rem; font-style: italic; color: var(--gold-soft); text-align: center; margin: 1.5rem auto 2.5rem; padding: 1.2rem; border-top: 1px solid var(--gold-glow); border-bottom: 1px solid var(--gold-glow); background: radial-gradient(ellipse at center, rgba(212,175,55,0.04) 0%, rgba(0,0,0,0) 80%); line-height: 1.6; max-width: 95%; }
+.classical-caption { font-family: var(--font-main) !important; font-size: 1.1rem; font-style: italic; color: var(--gold-soft); text-align: center; margin: 1.5rem auto 2rem; padding: 1rem; border-top: 1px solid var(--gold-glow); border-bottom: 1px solid var(--gold-glow); background: radial-gradient(ellipse at center, rgba(212,175,55,0.04) 0%, rgba(0,0,0,0) 80%); line-height: 1.5; max-width: 95%; }
 
-.abstract-container { position: relative; margin: 2rem 0; padding: 2rem; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px solid var(--card-border); box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
-.abstract-text { font-family: var(--font-ui) !important; font-size: 0.9rem; line-height: 1.6; color: color-mix(in oklab, var(--silver) 85%, transparent); transition: all 0.5s ease; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; mask-image: linear-gradient(to bottom, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); }
+.abstract-container { position: relative; margin: 1.5rem 0; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--card-border); box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
+.abstract-text { font-family: var(--font-ui) !important; font-size: 0.85rem; line-height: 1.5; color: color-mix(in oklab, var(--silver) 85%, transparent); transition: all 0.5s ease; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; mask-image: linear-gradient(to bottom, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); }
 #abs-toggle { display: none; }
 #abs-toggle:checked ~ .abstract-text { -webkit-line-clamp: 100; mask-image: none; -webkit-mask-image: none; }
-.expand-btn-wrapper { display: flex; justify-content: flex-start; margin-top: 15px; position: relative; z-index: 10; }
-.expand-btn { background: rgba(10,10,10,0.8); border: 1px solid var(--gold-glow); border-radius: 20px; color: var(--gold); font-family: var(--font-ui) !important; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; padding: 6px 16px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease; }
+.expand-btn-wrapper { display: flex; justify-content: flex-start; margin-top: 12px; position: relative; z-index: 10; }
+.expand-btn { background: rgba(10,10,10,0.8); border: 1px solid var(--gold-glow); border-radius: 20px; color: var(--gold); font-family: var(--font-ui) !important; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; padding: 5px 14px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease; }
 .expand-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 4px 15px var(--gold-glow); }
-.expand-btn svg { width: 14px; height: 14px; transition: transform 0.4s; stroke: currentColor; }
+.expand-btn svg { width: 12px; height: 12px; transition: transform 0.4s; stroke: currentColor; }
 .btn-text-collapse { display: none; }
 #abs-toggle:checked ~ .expand-btn-wrapper .btn-text-expand { display: none; }
 #abs-toggle:checked ~ .expand-btn-wrapper .btn-text-collapse { display: inline; }
 #abs-toggle:checked ~ .expand-btn-wrapper svg { transform: rotate(180deg); }
 
-.eq { margin: 1.5rem 0; padding: 1.5rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); overflow-x: auto; color: var(--silver); }
-.eq-title { font-family: var(--font-ui) !important; font-size: 0.7rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.eq { margin: 1.2rem 0; padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); overflow-x: auto; color: var(--silver); }
+.eq-title { font-family: var(--font-ui) !important; font-size: 0.65rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
 
 /* Syntax Highlighting Base */
-.article-content pre { background: rgba(10, 10, 12, 0.95); border: 1px solid var(--border); padding: 1.2rem; border-radius: 10px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; font-size: 0.85rem; color: #d1d1d1; margin: 0; line-height: 1.5; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
+.article-content pre { background: rgba(10, 10, 12, 0.95); border: 1px solid var(--border); padding: 1rem; border-radius: 8px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; font-size: 0.8rem; color: #d1d1d1; margin: 0; line-height: 1.5; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
 .article-content code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; }
 .kw { color: #c678dd; } .fu { color: #61afef; } .st { color: #98c379; } .op { color: #56b6c2; } .cm { color: #7f848e; font-style: italic; } .nu { color: #d19a66; }
 
-.code-wrapper { position: relative; margin: 2rem 0; width: 100%; }
-.copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(20, 20, 24, 0.9); border: 1px solid var(--border); color: var(--silver); border-radius: 6px; padding: 5px 12px; font-family: var(--font-ui) !important; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; z-index: 10; }
+.code-wrapper { position: relative; margin: 1.8rem 0; width: 100%; }
+.copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(20, 20, 24, 0.9); border: 1px solid var(--border); color: var(--silver); border-radius: 4px; padding: 4px 10px; font-family: var(--font-ui) !important; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; z-index: 10; }
 .copy-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
-.copy-btn svg { stroke: currentColor; width: 14px; height: 14px; }
+.copy-btn svg { stroke: currentColor; width: 12px; height: 12px; }
 
-#loadingLine { text-align: center; margin: 2rem 0; font-family: var(--font-ui); letter-spacing: 1.5px; text-transform: uppercase; font-size: 0.75rem; color: var(--gold-soft); animation: pulse 1.5s infinite; }
+#loadingLine { text-align: center; margin: 2rem 0; font-family: var(--font-ui); letter-spacing: 1.5px; text-transform: uppercase; font-size: 0.7rem; color: var(--gold-soft); animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
 #err { position: fixed; inset: 0; z-index: 9999; display: none; padding: 40px; background: var(--bg); color: var(--silver); font-family: var(--font-ui); overflow-y: auto; }
 #err h2 { color: var(--gold); margin-top: 0; text-transform: uppercase; }
-#err pre { background: #111; padding: 15px; border-radius: 8px; border: 1px solid var(--border); white-space: pre-wrap; font-size: 0.8rem; }
+#err pre { background: #111; padding: 15px; border-radius: 8px; border: 1px solid var(--border); white-space: pre-wrap; font-size: 0.75rem; }
 </style>
 </head>
 
 <body>
-<!-- Embedded Article Template (Zero external fetch needed for GH Pages) -->
+<!-- Embedded Article Template (Zero external fetch needed) -->
 <template id="tpl-nash">
   <main id="article" data-title="Nash Strategy of Portfolio Managing" data-date="FEB 2026" data-category="Domestic Finance">
     <div class="classical-caption">
@@ -316,7 +303,7 @@ body.modal-open #copyright { opacity: 0; }
       +\frac{\eta}{2}\,\delta^\top \hat{\Sigma}_t^{-1}\delta
       -\tau\|w\|_2^2
       \]
-      <p style="margin:10px 0 0 0; font-size:0.85rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.5;">
+      <p style="margin:10px 0 0 0; font-size:0.8rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
         Here \(\gamma\) is your personal risk aversion parameter which acts as a fundamental active risk penalty. The variable \(\eta\) directly controls the strength of the adversary. A smaller value for \(\eta\) creates a far more aggressive and damaging opponent. The final term uses \(\tau\) to strictly penalize highly concentrated portfolio weights.
       </p>
     </div>
@@ -331,7 +318,7 @@ body.modal-open #copyright { opacity: 0; }
       -\frac{1}{2}\Big(\gamma + \frac{1}{\eta}\Big)\,w^\top\hat{\Sigma}_t w
       -\tau\|w\|_2^2
       \]
-      <p style="margin:10px 0 0 0; font-size:0.85rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.5;">
+      <p style="margin:10px 0 0 0; font-size:0.8rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
         Notice how the inverse of \(\eta\) effectively adds pure extra curvature directly to our risk penalty. This simple but profound mathematical trick forces the optimizer to act substantially more conservatively whenever the underlying market covariance grows dangerously large.
       </p>
     </div>
@@ -451,7 +438,12 @@ body.modal-open #copyright { opacity: 0; }
 <div id="err"><h2>Render error</h2><pre id="errText"></pre></div>
 
 <script>
+// Delay initialization to prioritize FCP/LCP metrics on page load
 window.addEventListener('load', () => {
+    setTimeout(initApp, 50); 
+});
+
+function initApp() {
 "use strict";
 
 const $ = (id)=>document.getElementById(id);
@@ -463,7 +455,7 @@ function showErr(e){
 }
 
 /* ==========================================================================
-   ARTICLE PARSING & MODAL LOGIC (Optimized for GH Pages)
+   ARTICLE PARSING & MODAL LOGIC 
    ========================================================================== */
 function sanitizeHTML(str) {
   if (!str) return "";
@@ -495,7 +487,7 @@ let modalJustOpenedAt = 0;
 function closeModal(){
   modal.classList.remove("open"); document.body.classList.remove("modal-open");
   scrollCtx.scrollTop = 0; $("readProgress").style.width = "0%";
-  if (window.resume3D) window.resume3D(); // Restart rendering loop
+  if (window.resume3D) window.resume3D(); // Restart rendering loop to save battery
 }
 
 // Close events
@@ -509,10 +501,10 @@ scrollCtx.addEventListener("scroll", (e) => {
     $("readProgress").style.width = ((el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)) * 100) + "%"; 
 }, { passive: true });
 
-function openArticle(a){
+window.openArticle = function(a){
   modalJustOpenedAt = performance.now();
   modal.classList.add("open"); document.body.classList.add("modal-open");
-  if (window.pause3D) window.pause3D(); // Halt rendering loop for performance
+  if (window.pause3D) window.pause3D(); // Halt rendering loop for instant UI performance
 
   contentArea.innerHTML = `<header class="article-header"><div class="meta"><span class="pill">${a.category||""}</span><span>•</span><span>${a.date||""}</span></div><h1>${a.title||""}</h1></header><p id="loadingLine">Loading Document...</p>`;
 
@@ -577,12 +569,12 @@ function drawNash(g, size){
 /* ==========================================================================
    THREE.JS 60FPS LOCKED ENGINE
    ========================================================================== */
-if (!window.THREE) { showErr(new Error("Three.js library failed to load.")); return; }
+if (!window.THREE) { showErr(new Error("Three.js library failed to load. Please verify CDN connection.")); return; }
 
 try {
   const canvas = $("gl");
-  // Enforce DPR limit for solid 60fps on mobile
-  const getDPR = ()=>Math.min(window.devicePixelRatio || 1, 1.5); 
+  // Stricter DPR limit: Caps render scale to 1.5x (or 1.25x on mobile) for flawless 60FPS lock
+  const getDPR = ()=>Math.min(window.devicePixelRatio || 1, window.innerWidth < 800 ? 1.25 : 1.5); 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
   renderer.setPixelRatio(getDPR()); renderer.setSize(window.innerWidth, window.innerHeight, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.08;
@@ -597,9 +589,11 @@ try {
 
   const pointer = new THREE.Vector2(0,0); let px=0, py=0, pointerActive=false;
 
-  // Optimized Stars
+  // Optimized Stars: Dynamic particle count based on hardware
   const galaxy = new THREE.Group(); scene.add(galaxy);
-  const starCount = Math.min(20000, Math.round(((navigator.deviceMemory || 4) * (navigator.hardwareConcurrency || 4)) * 800));
+  const isMobile = window.innerWidth < 800;
+  const maxStars = isMobile ? 12000 : 20000;
+  const starCount = Math.min(maxStars, Math.round(((navigator.deviceMemory || 4) * (navigator.hardwareConcurrency || 4)) * 800));
   const starPos = new Float32Array(starCount*3), starCol = new Float32Array(starCount*3), starSize = new Float32Array(starCount);
   const colors = [new THREE.Color(0xe8e8ea), new THREE.Color(0xD4AF37), new THREE.Color(0x001d4a), new THREE.Color(0xff9900)];
   
@@ -621,14 +615,13 @@ try {
   const planets = new THREE.Group(), ringGroup = new THREE.Group(); scene.add(planets); planets.add(ringGroup);
   const ringTiltX = 0.38, ringTiltZ = -0.12; ringGroup.rotation.set(ringTiltX, 0, ringTiltZ);
 
-  // Label Sprites (Smart dynamic scaling to prevent cutoff)
+  // Label Sprites (Smart dynamic scaling to absolutely prevent cutoff)
   function labelSprite(text){
     const w=2048, h=256, c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
     g.shadowColor = "rgba(0,0,0,0.85)"; g.shadowBlur = 15; g.fillStyle = "rgba(255,255,255,0.95)"; 
     g.textAlign = "center"; g.textBaseline = "middle"; 
     
-    // Dynamically shrink font until it fits perfectly inside the canvas
-    let fSize = 80; g.font = `800 ${fSize}px 'Latin Modern Sans',sans-serif`;
+    let fSize = 85; g.font = `800 ${fSize}px 'Latin Modern Sans',sans-serif`;
     while(g.measureText(text).width > w - 80) g.font = `800 ${fSize-=4}px 'Latin Modern Sans',sans-serif`;
     
     g.fillText(text, w/2, h/2); const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
@@ -643,7 +636,7 @@ try {
     for(let i = planets.children.length - 1; i >= 0; i--) if(planets.children[i] !== ringGroup) planets.remove(planets.children[i]);
     entries.length = 0; ringGroup.clear(); ringMeshes = [];
 
-    const isMobile = window.innerWidth < 800;
+    const isMob = window.innerWidth < 800;
     const vH = 2 * 220 * Math.tan((52 * Math.PI / 180) / 2);
     let finalScale = Math.max(Math.min((vH * (window.innerWidth / window.innerHeight)) / 560, vH / 560), 0.22);
     
@@ -658,13 +651,13 @@ try {
 
     // Planets
     ARTICLES.forEach((art, i) => {
-      const radius = (isMobile ? 50 : 25) * finalScale;
+      const radius = (isMob ? 50 : 25) * finalScale;
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 48, 48), new THREE.MeshStandardMaterial({ map: baseTextures.nash, roughness: 0.75, metalness: 0.15 }));
       const atmo = new THREE.Mesh(new THREE.SphereGeometry(radius*1.06, 48, 48), new THREE.ShaderMaterial({ transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, uniforms:{ uColor:{value:new THREE.Color("#d4af37")} }, vertexShader:`varying vec3 vNormal; void main(){ vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`, fragmentShader:`varying vec3 vNormal; uniform vec3 uColor; void main(){ gl_FragColor = vec4(uColor, pow(0.65 - dot(vNormal, vec3(0,0,1)), 2.8)*0.45); }` }));
-      const label = labelSprite(art.title); label.scale.multiplyScalar(finalScale * (isMobile ? 2.0 : 1.0));
+      const label = labelSprite(art.title); label.scale.multiplyScalar(finalScale * (isMob ? 2.0 : 1.0));
       mesh.userData.article = atmo.userData.article = label.userData.article = art;
 
-      entries.push({ mesh, atmo, label, radius, angle: (i/ARTICLES.length)*Math.PI*2 + Math.PI/5, angVel: 0, rMod: 0, zMod: 0, ringR: 142*finalScale, hoverPull: 0, scale: finalScale, labelMult: (isMobile?2.0:1.0) });
+      entries.push({ mesh, atmo, label, radius, angle: (i/ARTICLES.length)*Math.PI*2 + Math.PI/5, angVel: 0, rMod: 0, zMod: 0, ringR: 142*finalScale, hoverPull: 0, scale: finalScale, labelMult: (isMob?2.0:1.0) });
       planets.add(mesh); planets.add(atmo); planets.add(label);
     });
   }
@@ -679,7 +672,7 @@ try {
     px = p.clientX - r.left; py = p.clientY - r.top; pointerActive = true;
   }
   canvas.addEventListener("pointermove", updatePointer, { passive:true });
-  canvas.addEventListener("click", (e)=>{ if(document.body.classList.contains("modal-open")) return; updatePointer(e); raycaster.setFromCamera(pointer, camera); const h = raycaster.intersectObjects(planets.children, true).find(x=>x.object.userData.article); if(h) openArticle(h.object.userData.article); }, { passive:true });
+  canvas.addEventListener("click", (e)=>{ if(document.body.classList.contains("modal-open")) return; updatePointer(e); raycaster.setFromCamera(pointer, camera); const h = raycaster.intersectObjects(planets.children, true).find(x=>x.object.userData.article); if(h) window.openArticle(h.object.userData.article); }, { passive:true });
 
   const clock = new THREE.Clock(), targetScale = new THREE.Vector3();
   let rafId = 0, starAnim = { time: 0, rotY: 0, rotZ: 0 };
@@ -719,7 +712,7 @@ try {
       pos.z += p.zMod;
       p.mesh.position.copy(pos); p.atmo.position.copy(pos); p.label.position.copy(pos);
       
-      // Increased offset multiplier from 40 to 50 to clear the planet cleanly
+      // Extended multiplier completely clears the planet
       p.label.position.addScaledVector(new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(ringTiltX, 0, ringTiltZ, "XYZ")), (p.radius + 50*p.scale*p.labelMult) * (pos.y>=0?1:-1) * 0.6);
       p.label.quaternion.copy(camera.quaternion);
 
@@ -732,10 +725,11 @@ try {
   window.addEventListener("resize", ()=>{ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setPixelRatio(getDPR()); renderer.setSize(window.innerWidth, window.innerHeight, false); buildPlanets(); }, { passive:true });
   $("brand").addEventListener("click", ()=>camera.position.set(0,0,220));
   
-  window.resume3D(); // Start loop
+  canvas.classList.add("ready"); // Fade in 3D scene smoothly
+  window.resume3D();
 } catch(e) { showErr(e); }
 
-});
+} // End initApp
 </script>
 </body>
 </html>
