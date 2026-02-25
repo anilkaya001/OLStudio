@@ -397,6 +397,40 @@ body.modal-open #copyright { opacity: 0; }
   </main>
 </template>
 
+<!-- Embedded TFP Article Template -->
+<template id="tpl-tfp">
+  <main id="article" data-title="Total Factor Productivity" data-date="MAR 2026" data-category="Macroeconomics">
+    <div class="classical-caption">
+        An exploration into the unobserved residual driving long-term economic growth beyond capital and labor inputs.
+    </div>
+
+    <div class="abstract-container">
+        <input type="checkbox" id="abs-toggle">
+        <div class="abstract-text">
+            <strong>Note:</strong> Total Factor Productivity (TFP) represents the portion of output not explained by the amount of inputs used in production. Its level is determined by how efficiently and intensely the inputs are utilized. This article models TFP using a Solow-Swan growth framework, calculating the Solow residual to isolate technological progress and efficiency gains from raw capital accumulation.
+        </div>
+        <div class="expand-btn-wrapper">
+            <label for="abs-toggle" class="expand-btn">
+                <span class="btn-text-expand">Read Full Abstract</span>
+                <span class="btn-text-collapse">Show Less</span>
+                <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+            </label>
+        </div>
+    </div>
+
+    <h2>1. The Solow Residual</h2>
+    <p>In standard macroeconomic accounting, TFP is often called the Solow residual. It accounts for effects in total output growth relative to the growth in traditionally measured inputs of labor and capital.</p>
+    
+    <div class="eq">
+      <div class="eq-title">Equation 1: Cobb-Douglas Production Function</div>
+      \[ Y = A \cdot K^\alpha \cdot L^{1-\alpha} \]
+      <p style="margin:10px 0 0 0; font-size:0.8rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
+        Where \(Y\) is total economic output, \(K\) is capital input, \(L\) is labor input, and \(A\) represents TFP (technological progress and efficiency).
+      </p>
+    </div>
+  </main>
+</template>
+
 <!-- Semantic MAIN element added to secure 100/100 Accessibility Score -->
 <main id="main-content">
     <nav id="nav" aria-label="Primary">
@@ -457,10 +491,16 @@ function sanitizeHTML(str) {
 }
 
 const ARTICLE_CACHE = new Map();
-const ARTICLES = [{
-  id: "nash-minimax-drift", templateId: "tpl-nash", contentSelector: "#article",
-  category: "Domestic Finance", title: "Nash Strategy of Portfolio Managing", date: "FEB 2026"
-}];
+const ARTICLES = [
+  {
+    id: "nash-minimax-drift", templateId: "tpl-nash", contentSelector: "#article",
+    category: "Domestic Finance", title: "Nash Strategy of Portfolio Managing", date: "FEB 2026"
+  },
+  {
+    id: "tfp-analysis", templateId: "tpl-tfp", contentSelector: "#article",
+    category: "Macroeconomics", title: "TFP", date: "MAR 2026"
+  }
+];
 
 async function loadArticle(a){
   if (ARTICLE_CACHE.has(a.id)) return ARTICLE_CACHE.get(a.id);
