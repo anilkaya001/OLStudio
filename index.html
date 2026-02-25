@@ -252,11 +252,17 @@ body.modal-open #copyright { opacity: 0; }
 #err { position: fixed; inset: 0; z-index: 9999; display: none; padding: 40px; background: var(--bg); color: var(--silver); font-family: var(--font-ui); overflow-y: auto; }
 #err h2 { color: var(--gold); margin-top: 0; text-transform: uppercase; }
 #err pre { background: #111; padding: 15px; border-radius: 8px; border: 1px solid var(--border); white-space: pre-wrap; font-size: 0.75rem; }
+
+/* References Formatting */
+.references-list { margin-top: 1.5rem; font-size: 0.85rem; }
+.reference-item { padding-left: 2rem; text-indent: -2rem; margin-bottom: 1rem; line-height: 1.6; color: color-mix(in oklab, var(--silver) 85%, transparent); word-break: break-word; }
 </style>
 </head>
 
 <body>
-<!-- Embedded Article Template -->
+<!-- ==========================================================================
+     TEMPLATE: NASH STRATEGY
+     ========================================================================== -->
 <template id="tpl-nash">
   <main id="article" data-title="Nash Strategy of Portfolio Managing" data-date="FEB 2026" data-category="Domestic Finance">
     <div class="classical-caption">
@@ -397,41 +403,140 @@ body.modal-open #copyright { opacity: 0; }
   </main>
 </template>
 
-<!-- Embedded TFP Article Template -->
+<!-- ==========================================================================
+     TEMPLATE: TOTAL FACTOR PRODUCTIVITY (TFP)
+     ========================================================================== -->
 <template id="tpl-tfp">
   <main id="article" data-title="Total Factor Productivity" data-date="MAR 2026" data-category="Macroeconomics">
     <div class="classical-caption">
-        An exploration into the unobserved residual driving long-term economic growth beyond capital and labor inputs.
+        A critical exposition on the Solow residual, exposing the severe econometric fallacies embedded within standard measures of technological progress.
     </div>
 
     <div class="abstract-container">
-        <input type="checkbox" id="abs-toggle">
-        <div class="abstract-text">
-            <strong>Note:</strong> Total Factor Productivity (TFP) represents the portion of output not explained by the amount of inputs used in production. Its level is determined by how efficiently and intensely the inputs are utilized. This article models TFP using a Solow-Swan growth framework, calculating the Solow residual to isolate technological progress and efficiency gains from raw capital accumulation.
-        </div>
-        <div class="expand-btn-wrapper">
-            <label for="abs-toggle" class="expand-btn">
-                <span class="btn-text-expand">Read Full Abstract</span>
-                <span class="btn-text-collapse">Show Less</span>
-                <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-            </label>
+        <div class="abstract-text" style="-webkit-line-clamp: unset; mask-image: none; -webkit-mask-image: none; display: block;">
+            <strong>Note:</strong> I approach the concept of Total Factor Productivity with a fundamental epistemological skepticism. The mathematical elegance of the Solow growth model obscures a deeply problematic reality regarding how we measure technological progress. When we specify an aggregate production function, we map observable inputs like capital and labor to an observable output, causing Total Factor Productivity to emerge not as a directly measured variable but as the unexplained remainder. Moses Abramovitz famously and correctly labeled this residual as a "measure of our ignorance" rather than a pure reflection of technological advancement. Because it is derived by taking the growth rate of output and subtracting the weighted growth rates of inputs, this residual absorbs every single measurement error, model misspecification, and omitted variable present in the empirical framework.
         </div>
     </div>
 
-    <h2>1. The Solow Residual</h2>
-    <p>In standard macroeconomic accounting, TFP is often called the Solow residual. It accounts for effects in total output growth relative to the growth in traditionally measured inputs of labor and capital.</p>
+    <h2>1. The Ontology of a Residual</h2>
+    <p>The standard growth accounting framework begins by defining a general aggregate production function, where output \(Y_t\) is driven by Capital \(K_t\), Labor \(L_t\), and a Hicks-neutral technology parameter \(A_t\). By taking the natural logarithm and differentiating with respect to time, we obtain the fundamental Solow residual:</p>
+
+    <div class="eq">
+      <div class="eq-title">Equation 1: The Solow Residual</div>
+      \[
+      \frac{\dot{A}}{A} = \frac{\dot{Y}}{Y} - \alpha \frac{\dot{K}}{K} - \beta \frac{\dot{L}}{L}
+      \]
+      <p style="margin:10px 0 0 0; font-size:0.75rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
+        Here, \(\alpha\) and \(\beta\) represent the output elasticities of capital and labor. Any growth in \(Y\) not strictly accounted for by the growth in \(K\) or \(L\) is mechanically forced into the \(\frac{\dot{A}}{A}\) term.
+      </p>
+    </div>
+
+    <p>Because it is an algebraic remainder, it does not strictly measure "technology." It absorbs everything we fail to model. It is the numerical graveyard of unobserved human capital improvements, unmeasured capital depreciation, and fundamentally flawed statistical assumptions.</p>
+
+    <h2>2. Transmission Bias and Endogeneity</h2>
+    <p>The most glaring econometric flaw in estimating this residual stems from the simultaneous determination of inputs and unobserved productivity shocks. Firms observe their own productivity levels (\(\omega_{it}\)) before making input decisions, meaning a positive productivity shock naturally causes them to hire more labor.</p>
     
     <div class="eq">
-      <div class="eq-title">Equation 1: Cobb-Douglas Production Function</div>
-      \[ Y = A \cdot K^\alpha \cdot L^{1-\alpha} \]
-      <p style="margin:10px 0 0 0; font-size:0.8rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
-        Where \(Y\) is total economic output, \(K\) is capital input, \(L\) is labor input, and \(A\) represents TFP (technological progress and efficiency).
+      <div class="eq-title">Equation 2: The Endogenous Production Function</div>
+      \[
+      y_{it} = \beta_0 + \beta_k k_{it} + \beta_l l_{it} + \omega_{it} + \epsilon_{it}
+      \]
+      <p style="margin:10px 0 0 0; font-size:0.75rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
+        Because \(\mathbb{E}[l_{it} \omega_{it}] > 0\), ordinary least squares (OLS) estimates of \(\beta_l\) are severely biased upward, while \(\beta_k\) is typically biased downward.
       </p>
+    </div>
+
+    <p>This behavioral response creates <em>transmission bias</em>. Olley and Pakes (1996) attempted to resolve this by using investment as a proxy variable, while Levinsohn and Petrin (2003) later argued that intermediate inputs serve as a better proxy since investment fails to respond smoothly to immediate shocks. Yet both control function approaches rely on strict monotonicity assumptions that routinely fail in real empirical settings.</p>
+
+<pre><code><span class="cm"># Conceptual proxy approach for addressing transmission bias</span>
+<span class="kw">def</span> <span class="fu">estimate_levinsohn_petrin</span>(df):
+    <span class="cm"># State variable: k (capital)</span>
+    <span class="cm"># Free variable: l (labor)</span>
+    <span class="cm"># Proxy variable: m (intermediate materials)</span>
+    
+    <span class="cm"># 1st Stage: Isolate the contribution of labor</span>
+    <span class="cm"># We approximate the unobserved productivity \omega using a polynomial phi(k, m)</span>
+    df[<span class="st">'k_sq'</span>] = df[<span class="st">'k'</span>]**<span class="nu">2</span>
+    df[<span class="st">'m_sq'</span>] = df[<span class="st">'m'</span>]**<span class="nu">2</span>
+    df[<span class="st">'k_m'</span>] = df[<span class="st">'k'</span>] * df[<span class="st">'m'</span>]
+    
+    X_stage1 = df[[<span class="st">'l'</span>, <span class="st">'k'</span>, <span class="st">'m'</span>, <span class="st">'k_sq'</span>, <span class="st">'m_sq'</span>, <span class="st">'k_m'</span>]]
+    stage1_model = sm.OLS(df[<span class="st">'y'</span>], sm.add_constant(X_stage1)).fit()
+    
+    <span class="cm"># The coefficient on labor is now consistent and purged of endogeneity</span>
+    beta_l_consistent = stage1_model.params[<span class="st">'l'</span>]
+    <span class="kw">return</span> beta_l_consistent</code></pre>
+
+    <h2>3. Capacity Utilization and Cyclical Artifacts</h2>
+    <p>The assumption of constant capacity utilization represents another fatal flaw in the standard estimation paradigm. During economic downturns, aggregate demand falls and firms optimally reduce the utilization rate of their capital (\(U_t\)) alongside the unobserved effort level of their workers.</p>
+    
+    <p>However, standard national accounting metrics continue to report the <em>total installed capital</em>. Let effective capital be \(K^{eff}_t = U_t K_t\). Because the measured inputs do not fall proportionately with output, the arithmetic of the Solow residual mathematically forces measured productivity to plummet. Adjusting for variable capacity utilization demonstrates that a massive portion of the variance in this residual is simply a cyclical artifact rather than genuine technological regress.</p>
+
+    <h2>4. Market Power and Perfect Competition</h2>
+    <p>The derivation of the residual relies entirely on the mathematically convenient but empirically indefensible assumption that markets are perfectly competitive. Under these rigid assumptions, the output elasticities of capital and labor are exactly equal to their observable factor shares in national income. Robert Hall (1988) demonstrated conclusively that when firms possess market power, they charge prices that exceed marginal costs, creating a significant markup \(\mu > 1\).</p>
+
+    <div class="eq">
+      <div class="eq-title">Equation 3: Hall's Markup Distortion</div>
+      \[
+      \Delta \ln A_{measured} = \Delta \ln A_{true} + (\mu - 1) \big[ s_L \Delta \ln L + s_K \Delta \ln K \big]
+      \]
+      <p style="margin:10px 0 0 0; font-size:0.75rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
+        If we fail to account for markups, the traditional productivity residual will mechanically overstate technological growth during economic booms and understate it during busts. It captures variations in market power instead of pure shifts in the production possibility frontier.
+      </p>
+    </div>
+
+    <h2>5. Structural Aggregation Fallacies</h2>
+    <p>Beyond the firm level, aggregating individual production functions into a single macroeconomic measure introduces severe theoretical contradictions. The entire framework assumes that heterogeneous capital goods, ranging from blast furnaces to cloud computing servers, can be seamlessly aggregated into a single continuous scalar metric. Furthermore, treating the entire economy as if it operates under a single common technological parameter ignores the profound differences in technology adoption across various sectors. When resources are reallocated from low productivity sectors to high productivity sectors, aggregate output increases even if no underlying technological innovation has occurred at the microeconomic level.</p>
+
+    <h2>6. Misspecification of the Functional Form</h2>
+    <p>The reliance on the Cobb-Douglas production function introduces arbitrary mathematical constraints that further distort the error-prone nature of its estimation. The standard specification imposes a strictly unitary elasticity of substitution between capital and labor. If the true elasticity of substitution deviates from one, the calculated residual will simply absorb the specification error.</p>
+
+    <p>While researchers sometimes employ more flexible functional forms like the Translog production function—which includes squared terms and cross products to approximate any arbitrary production surface—these models require estimating significantly more parameters. The increased parametric burden often leads to severe multicollinearity.</p>
+
+<pre><code><span class="cm"># Constructing a Translog Production Function to relax unit elasticity</span>
+<span class="kw">def</span> <span class="fu">estimate_translog</span>(df):
+    <span class="cm"># df contains log values: 'ln_Y', 'ln_K', 'ln_L'</span>
+    
+    <span class="cm"># Generate flexible squared and interaction terms</span>
+    df[<span class="st">'ln_K_sq'</span>] = <span class="nu">0.5</span> * (df[<span class="st">'ln_K'</span>] ** <span class="nu">2</span>)
+    df[<span class="st">'ln_L_sq'</span>] = <span class="nu">0.5</span> * (df[<span class="st">'ln_L'</span>] ** <span class="nu">2</span>)
+    df[<span class="st">'ln_K_L'</span>]  = df[<span class="st">'ln_K'</span>] * df[<span class="st">'ln_L'</span>]
+
+    X = df[[<span class="st">'ln_K'</span>, <span class="st">'ln_L'</span>, <span class="st">'ln_K_sq'</span>, <span class="st">'ln_L_sq'</span>, <span class="st">'ln_K_L'</span>]]
+    X = sm.add_constant(X)
+    y = df[<span class="st">'ln_Y'</span>]
+
+    <span class="cm"># Fit the flexible structural model</span>
+    model = sm.OLS(y, X).fit()
+    <span class="kw">return</span> model</code></pre>
+
+    <h2>7. The Illusion of Exogenous Shocks</h2>
+    <p>The final intellectual failing of the productivity residual lies in its frequent treatment as an exogenous shock in modern macroeconomic models. Real Business Cycle theory takes this contaminated residual and feeds it back into dynamic stochastic general equilibrium (DSGE) models as a pure exogenous technological impulse (\(\omega_t = \rho \omega_{t-1} + \xi_t\)).</p>
+    
+    <p>I view this as a circular and deeply unscientific modeling practice. By taking a measure that we already know is polluted by variable capacity utilization, non-competitive markups, and input mismeasurement, economists build their most sophisticated models on a foundation of statistical noise. The residual is not an external force acting upon the economy; it is an endogenous reflection of the economy itself, deeply intertwined with demand dynamics and structural frictions.</p>
+
+    <hr style="border: 0; border-top: 1px solid var(--border); margin: 3rem 0;">
+
+    <h2>References</h2>
+    <div class="references-list">
+        <div class="reference-item">Abramovitz, M. (1956). Resource and output trends in the United States since 1870. <em>American Economic Review, 46</em>(2), 5–23.</div>
+        <div class="reference-item">Bailey, A., Irz, X., & Balcombe, K. (2004). Measuring productivity growth when technological change is biased. <em>Agricultural Economics, 31</em>(2–3), 285–295. <a href="https://doi.org/10.1016/j.agecon.2004.09.011" target="_blank" rel="noopener noreferrer">https://doi.org/10.1016/j.agecon.2004.09.011</a></div>
+        <div class="reference-item">Felipe, J., & McCombie, J. S. L. (2013). <em>The aggregate production function and the measurement of technical change: "Not even wrong."</em> Edward Elgar. <a href="https://www.landecon.cam.ac.uk/sites/default/files/2023-03/aggregateproductionfunctions.wp1014.pdf" target="_blank" rel="noopener noreferrer">[landecon.cam.ac]</a></div>
+        <div class="reference-item">Hall, R. E. (1988). The relation between price and marginal cost in U.S. industry. <em>Journal of Political Economy, 96</em>(5), 921–947. <a href="https://doi.org/10.1086/261570" target="_blank" rel="noopener noreferrer">https://doi.org/10.1086/261570</a> <a href="https://www.sciencedirect.com/science/article/abs/pii/S0164070411000668" target="_blank" rel="noopener noreferrer">[sciencedirect]</a></div>
+        <div class="reference-item">Hsieh, C.-T., & Klenow, P. J. (2009). Misallocation and manufacturing TFP in China and India. <em>Quarterly Journal of Economics, 124</em>(4), 1403–1448. <a href="https://doi.org/10.1162/qjec.2009.124.4.1403" target="_blank" rel="noopener noreferrer">https://doi.org/10.1162/qjec.2009.124.4.1403</a></div>
+        <div class="reference-item">Hulten, C. R. (2000). <em>Total factor productivity: A short biography</em> (NBER Working Paper No. 7471). National Bureau of Economic Research. <a href="https://doi.org/10.3386/w7471" target="_blank" rel="noopener noreferrer">https://doi.org/10.3386/w7471</a> <a href="https://www.nber.org/system/files/working_papers/w7471/w7471.pdf" target="_blank" rel="noopener noreferrer">[nber]</a></div>
+        <div class="reference-item">Jorgenson, D. W., & Griliches, Z. (1967). The explanation of productivity change. <em>Review of Economic Studies, 34</em>(3), 249–283. <a href="https://doi.org/10.2307/2296675" target="_blank" rel="noopener noreferrer">https://doi.org/10.2307/2296675</a> <a href="https://eml.berkeley.edu/~webfac/emiguel/e271_s07/jeong.pdf" target="_blank" rel="noopener noreferrer">[eml.berkeley]</a></div>
+        <div class="reference-item">Levinsohn, J., & Petrin, A. (2003). Estimating production functions using inputs to control for unobservables. <em>Review of Economic Studies, 70</em>(2), 317–341. <a href="https://doi.org/10.1111/1467-937X.00246" target="_blank" rel="noopener noreferrer">https://doi.org/10.1111/1467-937X.00246</a> <a href="https://www.theigc.org/sites/default/files/2016/06/READINGS-Levinsohn-Petrin.pdf" target="_blank" rel="noopener noreferrer">[theigc]</a></div>
+        <div class="reference-item">Olley, G. S., & Pakes, A. (1996). The dynamics of productivity in the telecommunications equipment industry. <em>Econometrica, 64</em>(6), 1263–1297. <a href="https://doi.org/10.2307/2171831" target="_blank" rel="noopener noreferrer">https://doi.org/10.2307/2171831</a></div>
+        <div class="reference-item">Romer, P. M. (1990). Endogenous technological change. <em>Journal of Political Economy, 98</em>(5, Part 2), S71–S102. <a href="https://doi.org/10.1086/261725" target="_blank" rel="noopener noreferrer">https://doi.org/10.1086/261725</a></div>
+        <div class="reference-item">Solow, R. M. (1957). Technical change and the aggregate production function. <em>Review of Economics and Statistics, 39</em>(3), 312–320. <a href="https://doi.org/10.2307/1926047" target="_blank" rel="noopener noreferrer">https://doi.org/10.2307/1926047</a> <a href="https://www.investopedia.com/terms/s/solow-residual.asp" target="_blank" rel="noopener noreferrer">[investopedia]</a></div>
+        <div class="reference-item">Van Beveren, I. (2012). Total factor productivity estimation: A practical review. <em>Journal of Economic Surveys, 26</em>(1), 98–128. <a href="https://doi.org/10.1111/j.1467-6419.2010.00631.x" target="_blank" rel="noopener noreferrer">https://doi.org/10.1111/j.1467-6419.2010.00631.x</a> <a href="https://www.econstor.eu/bitstream/10419/75015/1/dp182.pdf" target="_blank" rel="noopener noreferrer">[econstor]</a></div>
+        <div class="reference-item">Zymek, R. (2024, September). <em>Back to basics: Total factor productivity</em>. Finance & Development, IMF. <a href="https://www.imf.org/en/publications/fandd/issues/2024/09/back-to-basics-total-factor-productivity-robert-zymek" target="_blank" rel="noopener noreferrer">https://www.imf.org/en/publications/fandd/issues/2024/09/back-to-basics-total-factor-productivity-robert-zymek</a></div>
     </div>
   </main>
 </template>
 
-<!-- Semantic MAIN element added to secure 100/100 Accessibility Score -->
+<!-- Primary UI wrapped in a MAIN tag for 100/100 Accessibility -->
 <main id="main-content">
     <nav id="nav" aria-label="Primary">
       <button id="brand" type="button" aria-label="Reset View">Anıl Kaya</button>
@@ -491,14 +596,15 @@ function sanitizeHTML(str) {
 }
 
 const ARTICLE_CACHE = new Map();
+// BOTH ARTICLES REGISTERED HERE
 const ARTICLES = [
   {
     id: "nash-minimax-drift", templateId: "tpl-nash", contentSelector: "#article",
-    category: "Domestic Finance", title: "Nash Strategy of Portfolio Managing", date: "FEB 2026"
+    category: "Domestic Finance", title: "Nash Strategy", date: "FEB 2026"
   },
   {
     id: "tfp-analysis", templateId: "tpl-tfp", contentSelector: "#article",
-    category: "Macroeconomics", title: "TFP", date: "MAR 2026"
+    category: "Macroeconomics", title: "Total Factor Productivity", date: "MAR 2026"
   }
 ];
 
@@ -645,21 +751,20 @@ try {
   const planets = new THREE.Group(), ringGroup = new THREE.Group(); scene.add(planets); planets.add(ringGroup);
   const ringTiltX = 0.38, ringTiltZ = -0.12; ringGroup.rotation.set(ringTiltX, 0, ringTiltZ);
 
-  // PERFORMANCE FIX: Dropped canvas footprint to 1024x128 to save memory & processing time while preserving crispness
+  // Label Sprites (Smart dynamic scaling)
   function labelSprite(text){
-    const w=1024, h=128, c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
-    g.shadowColor = "rgba(0,0,0,0.85)"; g.shadowBlur = 8; g.fillStyle = "rgba(255,255,255,0.95)"; 
+    const w=2048, h=256, c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
+    g.shadowColor = "rgba(0,0,0,0.85)"; g.shadowBlur = 15; g.fillStyle = "rgba(255,255,255,0.95)"; 
     g.textAlign = "center"; g.textBaseline = "middle"; 
     
-    let fSize = 44; g.font = `800 ${fSize}px 'Latin Modern Sans',sans-serif`;
-    while(g.measureText(text).width > w - 40) g.font = `800 ${fSize-=2}px 'Latin Modern Sans',sans-serif`;
+    let fSize = 85; g.font = `800 ${fSize}px 'Latin Modern Sans',sans-serif`;
+    while(g.measureText(text).width > w - 80) g.font = `800 ${fSize-=4}px 'Latin Modern Sans',sans-serif`;
     
     g.fillText(text, w/2, h/2); const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
     const spr=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false })); 
     spr.scale.set(160, 20, 1); spr.userData._labelText = text; return spr;
   }
 
-  // Uses the highly optimized 128x128 texture
   const baseTextures = { nash: makeCanvasTexture(drawNash, 128) };
   let ringMeshes = [], entries = [];
   
@@ -671,6 +776,7 @@ try {
     const vH = 2 * 220 * Math.tan((52 * Math.PI / 180) / 2);
     let finalScale = Math.max(Math.min((vH * (window.innerWidth / window.innerHeight)) / 560, vH / 560), 0.22);
     
+    // Rings
     const gold = new THREE.Color(cssVar("--gold") || "#D4AF37"), silv = new THREE.Color(cssVar("--silver") || "#e8e8ea");
     const makeRing = (r0, r1, op, z, t)=>{
       const m = new THREE.Mesh(new THREE.RingGeometry(r0, r1, 128, 1), new THREE.ShaderMaterial({ transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, uniforms:{ uTime:{value:0}, uGold:{value:gold}, uSilv:{value:silv}, uOpacity:{value:op}, uTint:{value:t} }, vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix * viewMatrix * modelMatrix * vec4(position,1.0); }`, fragmentShader: `varying vec2 vUv; uniform float uTime; uniform vec3 uGold; uniform vec3 uSilv; uniform float uOpacity; uniform float uTint; float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); float h=fract(sin(dot(i,vec2(127.1,311.7)))*43758.545); return mix(h, fract(sin(dot(i+vec2(1,0),vec2(127.1,311.7)))*43758.545), f.x); } void main(){ float r=length(vUv-0.5)*2.0, g=noise((vUv-0.5)*vec2(120.0,20.0)+uTime*0.02), edge=smoothstep(0.98,0.65,r)*smoothstep(0.02,0.18,r); gl_FragColor=vec4(mix(uSilv,uGold,uTint+0.15*sin(vUv.x*20.0)), (0.55+0.45*g)*edge*uOpacity); }` }));
@@ -679,6 +785,7 @@ try {
     makeRing(142*finalScale*0.78, 142*finalScale*1.12, 0.22, 0.0, 0.55);
     makeRing(142*finalScale*0.78*1.02, 142*finalScale*1.12*0.985, 0.16, 0.06, 0.35);
 
+    // Dynamic Spacing for 2 Planets
     ARTICLES.forEach((art, i) => {
       const radius = (isMob ? 50 : 25) * finalScale;
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 48, 48), new THREE.MeshStandardMaterial({ map: baseTextures.nash, roughness: 0.75, metalness: 0.15 }));
@@ -733,7 +840,12 @@ try {
       p.mesh.rotation.y += dt*(0.65+i*0.03); p.mesh.rotation.x += dt*0.008;
       p.hoverPull += ( (isHover?1:0) - p.hoverPull ) * 0.12;
       p.angVel += ( (0.012 + (pointerActive?nx*0.015:0) + p.hoverPull*nx*0.004) - p.angVel ) * 0.05;
-      p.angle = (p.angle + (p.angVel + Math.sin(t*0.7+i*1.7)*0.0009)*dt) % (Math.PI*2);
+      
+      // Ensures planets spread out dynamically
+      const targetBaseAngle = (i/entries.length)*Math.PI*2 + Math.PI/5;
+      const angleOffset = Math.sin(t*0.7+i*1.7)*0.0009*dt;
+      p.angle = (p.angle + p.angVel*dt + angleOffset) % (Math.PI*2);
+      
       p.rMod += ( (isHover?0.03:0) - p.rMod ) * 0.09; p.zMod += ( (isHover?24.0:0) - p.zMod ) * 0.10;
 
       const r = p.ringR*(1.0+p.rMod), pos = new THREE.Vector3(Math.cos(p.angle)*r, Math.sin(p.angle)*r, 0).applyEuler(new THREE.Euler(ringTiltX, 0, ringTiltZ, "XYZ"));
