@@ -2,11 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<!-- Accessibility 100/100: Removed user-scalable restrictions -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#050505"/>
-
-<!-- Strict CSP explicitly allowing Cloudflare Analytics, CDN assets, and inline styles/blobs -->
 <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://static.cloudflareinsights.com;
@@ -16,14 +13,9 @@
     connect-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com;
     object-src 'none';
 ">
-
 <title>Anıl Kaya | Research and Articles</title>
 <meta name="description" content="Academic articles and research by Anıl Kaya">
-
-<!-- Procedurally generated Inline SVG Favicon -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><ellipse cx='50' cy='50' rx='42' ry='12' fill='none' stroke='%23e8e8ea' stroke-width='4' transform='rotate(-20 50 50)' opacity='0.5'/><circle cx='50' cy='50' r='26' fill='%23D4AF37'/><path d='M 12 50 A 42 12 0 0 0 88 50' fill='none' stroke='%23e8e8ea' stroke-width='4' transform='rotate(-20 50 50)'/></svg>">
-
-<!-- Inlined Fonts for Zero Render-Blocking -->
 <style>
     @font-face {
         font-family: 'Latin Modern Roman';
@@ -36,21 +28,13 @@
         font-weight: bold; font-style: normal; font-display: swap;
     }
 </style>
-
-<!-- Async Loading for Non-Critical Math CSS -->
 <link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" crossorigin="anonymous">
 <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous"></noscript>
-
-<!-- PERFORMANCE FIX: DEFER attribute completely removes JS from the critical render path (Fixes FCP & LCP) -->
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
-
 <style>
-/* ==========================================================================
-   CSS CUSTOM PROPERTIES & RESET
-   ========================================================================== */
 :root {
     color-scheme: dark;
     --font-main: "Latin Modern Roman", serif;
@@ -58,7 +42,6 @@
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --nav-h: 60px;
-
     --bg: #050505;
     --border: rgba(255, 255, 255, 0.08);
     --silver: #e8e8ea;
@@ -66,21 +49,16 @@
     --gold: #D4AF37;
     --gold-soft: #F7E7CE;
     --gold-glow: color-mix(in oklab, var(--gold) 20%, transparent);
-
     --card-bg: rgba(14, 14, 16, 0.98);
     --card-border: rgba(212, 175, 55, 0.20);
     --card-shadow: 0 30px 80px rgba(0,0,0,0.95), 0 0 0 1px var(--card-border) inset;
-    
-    --base-font-size: 0.9rem; /* Slightly smaller global baseline */
+    --base-font-size: 0.9rem;
 }
-
 html, body { height: 100%; margin: 0; padding: 0; }
 body {
     background: var(--bg); color: var(--silver); font-family: var(--font-main);
     overflow: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
-
-/* 3D Scene Fade-in */
 #gl {
     position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; 
     touch-action: none; user-select: none; opacity: 0;
@@ -89,15 +67,10 @@ body {
 #gl.ready { opacity: 1; }
 body.modal-open #gl { transform: scale(1.02); opacity: 0.3; }
 body.modal-open #depthName, body.modal-open #orbitHint { opacity: 0 !important; }
-
 * { box-sizing: border-box; }
 a { color: var(--gold-soft); text-decoration: none; }
 a:hover { opacity: 0.9; }
 :focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 3px; border-radius: 8px; }
-
-/* ==========================================================================
-   USER INTERFACE (NAV & BRANDING)
-   ========================================================================== */
 #nav {
     position: fixed; top: 0; left: 0; right: 0; height: calc(var(--nav-h) + var(--safe-top));
     padding-top: var(--safe-top); padding-left: clamp(20px, 5vw, 48px); padding-right: clamp(20px, 5vw, 48px);
@@ -109,7 +82,6 @@ a:hover { opacity: 0.9; }
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 body.modal-open #nav { transform: translateY(-100%); }
-
 #brand {
     appearance: none; border: none; background: transparent; font-family: var(--font-ui);
     font-size: 0.75rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
@@ -117,7 +89,6 @@ body.modal-open #nav { transform: translateY(-100%); }
     transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
 }
 #brand:hover { transform: translateY(-1px); color: var(--gold); text-shadow: 0 4px 15px rgba(212,175,55,0.3); }
-
 .btn {
     font-family: var(--font-ui); font-size: 0.6rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
     padding: 8px 18px; border-radius: 30px; border: 1px solid var(--border);
@@ -126,7 +97,6 @@ body.modal-open #nav { transform: translateY(-100%); }
     display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 .btn:hover { background: var(--gold); border-color: var(--gold); color: #000; transform: translateY(-2px); box-shadow: 0 8px 20px var(--gold-glow); }
-
 #copyright {
     position: fixed; bottom: clamp(12px, 3vw, 24px); left: 50%; transform: translateX(-50%);
     font-family: var(--font-ui); font-size: 0.55rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
@@ -134,7 +104,6 @@ body.modal-open #nav { transform: translateY(-100%); }
     transition: opacity 0.4s ease;
 }
 body.modal-open #copyright { opacity: 0; }
-
 @keyframes breath { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; } 50% { transform: translate(-50%, -50%) scale(1.02); opacity: 1; } }
 #depthName {
     position: fixed; left: 50%; top: 50%; z-index: 650; pointer-events: none;
@@ -148,25 +117,19 @@ body.modal-open #copyright { opacity: 0; }
     background: radial-gradient(circle at 50% 50%, rgba(212,175,55,0.06) 0%, rgba(232,232,234,0.02) 20%, rgba(0,0,0,0.0) 50%);
     transition: opacity 0.5s ease;
 }
-
-/* ==========================================================================
-   INTELLIGENT CARD-READER UI (Uniform Across All Devices)
-   ========================================================================== */
 #modal {
     position: fixed; inset: 0; z-index: 2000;
     display: flex; flex-direction: column;
     background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
     overflow-y: auto; -webkit-overflow-scrolling: touch; perspective: 1200px;
     opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: clamp(16px, 4vh, 40px) 0; /* Safe vertical breathing room */
+    padding: clamp(16px, 4vh, 40px) 0;
 }
 #modal.open { opacity: 1; pointer-events: auto; }
-
 #readProgress {
     position: fixed; top: 0; left: 0; height: 3px; background: var(--gold);
     width: 0%; z-index: 2100; transition: width 0.15s ease-out; box-shadow: 0 0 12px var(--gold);
 }
-
 #closeBtn {
     position: fixed; top: clamp(16px, 3vw, 32px); right: clamp(16px, 3vw, 32px);
     width: clamp(38px, 8vw, 44px); height: clamp(38px, 8vw, 44px); border-radius: 50%;
@@ -177,7 +140,6 @@ body.modal-open #copyright { opacity: 0; }
 }
 #closeBtn:hover { transform: scale(1.1) rotate(90deg); background: var(--gold); color: #000; box-shadow: 0 12px 30px var(--gold-glow); }
 #closeBtn svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-
 .article-wrapper {
     background: var(--card-bg); border: 1px solid var(--card-border);
     box-shadow: var(--card-shadow); border-radius: 20px;
@@ -188,22 +150,14 @@ body.modal-open #copyright { opacity: 0; }
 }
 #modal.open .article-wrapper { animation: cardRise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 @keyframes cardRise { 0% { transform: translateY(40px) scale(0.98); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
-
-/* ==========================================================================
-   ARTICLE TYPOGRAPHY (Golden Accents & Condensed Scaling)
-   ========================================================================== */
 .article-header { margin-bottom: 2.5rem; text-align: center; }
 .article-header .meta { font-family: var(--font-ui) !important; font-size: 0.65rem; color: var(--silver-dim); letter-spacing: 2px; text-transform: uppercase; display: flex; justify-content: center; gap: 12px; align-items: center; margin-bottom: 1.2rem; }
 .article-header .pill { background: var(--gold-glow); color: var(--gold); padding: 4px 12px; border-radius: 20px; font-weight: 800; border: 1px solid rgba(212,175,55,0.3); }
 .article-header h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--gold); margin: 0; line-height: 1.15; text-align: center; letter-spacing: -0.5px; text-shadow: 0 4px 20px var(--gold-glow); }
-
 .article-content { font-family: var(--font-main) !important; font-size: var(--base-font-size); line-height: 1.75; color: color-mix(in oklab, var(--silver) 90%, var(--silver-dim)); text-align: justify; text-justify: inter-word; letter-spacing: 0.1px; }
-
-/* Golden Main Sections */
 .article-content h1, .article-content h2, .article-content h3, .article-content h4 { font-family: var(--font-main) !important; color: var(--gold); line-height: 1.3; margin: 2.5rem 0 1rem; text-align: left; font-weight: normal; }
 .article-content h2 { font-size: 1.5rem; border-bottom: 1px solid var(--gold-glow); padding-bottom: 0.5rem; margin-top: 3rem; }
 .article-content h3 { font-size: 1.2rem; font-style: italic; color: var(--gold-soft); }
-
 .article-content p { margin: 0 0 1.5rem; }
 .article-content p:first-of-type::first-letter { font-size: 3rem; line-height: 0.85; float: left; margin-right: 0.6rem; margin-top: 0.2rem; color: var(--gold); font-family: var(--font-main) !important; }
 .article-content a { color: var(--gold); text-decoration: underline; text-decoration-color: var(--gold-glow); text-underline-offset: 4px; transition: all 0.3s; }
@@ -211,15 +165,10 @@ body.modal-open #copyright { opacity: 0; }
 .article-content ul, .article-content ol { margin: 0 0 1.5rem; padding-left: 2rem; }
 .article-content li { margin-bottom: 0.5rem; padding-left: 0.4rem;}
 .article-content li::marker { color: var(--gold); }
-
 .article-content blockquote { margin: 2rem 0; padding: 1.5rem 2rem 1.5rem 3rem; background: rgba(255,255,255,0.02); font-style: italic; border-radius: 8px; position: relative; border: 1px solid var(--card-border); border-left: 4px solid var(--gold); color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim)); }
 .article-content blockquote::before { content: "“"; position: absolute; left: 0.6rem; top: 0.5rem; font-family: var(--font-main) !important; font-size: 3rem; color: var(--gold); line-height: 1; opacity: 0.3; }
-
 .article-content .katex-display { overflow-x: auto; overflow-y: hidden; padding: 1rem 0; margin: 1.8rem 0; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
-
-/* Custom Article Components */
 .classical-caption { font-family: var(--font-main) !important; font-size: 1.05rem; font-style: italic; color: var(--gold-soft); text-align: center; margin: 1.5rem auto 2rem; padding: 1rem; border-top: 1px solid var(--gold-glow); border-bottom: 1px solid var(--gold-glow); background: radial-gradient(ellipse at center, rgba(212,175,55,0.04) 0%, rgba(0,0,0,0) 80%); line-height: 1.5; max-width: 95%; }
-
 .abstract-container { position: relative; margin: 1.5rem 0; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--card-border); box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
 .abstract-text { font-family: var(--font-ui) !important; font-size: 0.8rem; line-height: 1.5; color: color-mix(in oklab, var(--silver) 85%, transparent); transition: all 0.5s ease; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; mask-image: linear-gradient(to bottom, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); }
 #abs-toggle { display: none; }
@@ -232,311 +181,25 @@ body.modal-open #copyright { opacity: 0; }
 #abs-toggle:checked ~ .expand-btn-wrapper .btn-text-expand { display: none; }
 #abs-toggle:checked ~ .expand-btn-wrapper .btn-text-collapse { display: inline; }
 #abs-toggle:checked ~ .expand-btn-wrapper svg { transform: rotate(180deg); }
-
 .eq { margin: 1.2rem 0; padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); overflow-x: auto; color: var(--silver); }
 .eq-title { font-family: var(--font-ui) !important; font-size: 0.6rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
-
-/* Syntax Highlighting */
 .article-content pre { background: rgba(10, 10, 12, 0.95); border: 1px solid var(--border); padding: 1rem; border-radius: 8px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; font-size: 0.75rem; color: #d1d1d1; margin: 0; line-height: 1.5; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
 .article-content code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; }
 .kw { color: #c678dd; } .fu { color: #61afef; } .st { color: #98c379; } .op { color: #56b6c2; } .cm { color: #7f848e; font-style: italic; } .nu { color: #d19a66; }
-
 .code-wrapper { position: relative; margin: 1.8rem 0; width: 100%; }
 .copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(20, 20, 24, 0.9); border: 1px solid var(--border); color: var(--silver); border-radius: 4px; padding: 4px 10px; font-family: var(--font-ui) !important; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; z-index: 10; }
 .copy-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
 .copy-btn svg { stroke: currentColor; width: 12px; height: 12px; }
-
 #loadingLine { text-align: center; margin: 2rem 0; font-family: var(--font-ui); letter-spacing: 1.5px; text-transform: uppercase; font-size: 0.65rem; color: var(--gold-soft); animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-
 #err { position: fixed; inset: 0; z-index: 9999; display: none; padding: 40px; background: var(--bg); color: var(--silver); font-family: var(--font-ui); overflow-y: auto; }
 #err h2 { color: var(--gold); margin-top: 0; text-transform: uppercase; }
 #err pre { background: #111; padding: 15px; border-radius: 8px; border: 1px solid var(--border); white-space: pre-wrap; font-size: 0.75rem; }
-
-/* References Formatting */
 .references-list { margin-top: 1.5rem; font-size: 0.85rem; }
 .reference-item { padding-left: 2rem; text-indent: -2rem; margin-bottom: 1rem; line-height: 1.6; color: color-mix(in oklab, var(--silver) 85%, transparent); word-break: break-word; }
 </style>
 </head>
-
 <body>
-<!-- ==========================================================================
-     TEMPLATE: NASH STRATEGY
-     ========================================================================== -->
-<template id="tpl-nash">
-  <main id="article" data-title="Nash Strategy of Portfolio Managing" data-date="FEB 2026" data-category="Domestic Finance">
-    <div class="classical-caption">
-        A robust portfolio allocation framework designed to survive out of sample testing by assuming your return estimates are actively trying to destroy you.
-    </div>
-
-    <div class="abstract-container">
-        <input type="checkbox" id="abs-toggle">
-        <div class="abstract-text">
-            <strong>Note:</strong> Here is a portfolio optimization setup I have been experimenting with recently. Instead of just blindly maximizing the Information Ratio I decided to structure the whole thing as a zero sum game. Maximizing a pure ratio is usually a terrible idea anyway since it lacks convexity and loves to chase noise. This new setup is basically you against a market adversary. You try to pick the best weights and the adversary actively tries to ruin your expected returns. If you solve for the saddle point you end up with a surprisingly stable Nash equilibrium. Better yet the math simplifies down into a basic quadratic program every month. I feed it exponentially weighted moments and shrink the covariance matrix to keep things grounded. To keep myself honest the backtest uses a strict walk forward loop with an embargo day to stop data leakage. It also applies proper turnover costs and uses some heavy duty statistical checks like the Deflated Sharpe Ratio.
-        </div>
-        <div class="expand-btn-wrapper">
-            <label for="abs-toggle" class="expand-btn">
-                <span class="btn-text-expand">Read Full Abstract</span>
-                <span class="btn-text-collapse">Show Less</span>
-                <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-            </label>
-        </div>
-    </div>
-
-    <h2>1. The Mathematical Foundation</h2>
-    <p>Note that none of this is investment advice. Let us dig deeply into the actual mathematics driving this setup. Standard mean variance optimization essentially operates as a ruthless error maximization machine. It aggressively overallocates capital to the specific assets that show the highest estimated returns combined with the lowest estimated variances. Naturally those extreme statistical estimates almost always contain the highest amounts of invisible market noise. You inevitably end up with massive concentrated positions in the exact areas where your historical data is the most hopelessly flawed. I built my framework to flip this entire destructive dynamic completely upside down. We begin by acknowledging our ignorance. We define our expected returns as a baseline historical estimate plus some unknown and highly hostile perturbation vector \(\delta\).</p>
-
-    <div class="eq">
-      <div class="eq-title">Equation 1: Zero Sum Game Formulation</div>
-      \[
-      \max_{w\in\mathcal{W}}\,\min_{\delta\in\mathbb{R}^N}\;
-      (\hat{\mu}_t+\delta)^\top w
-      -\frac{\gamma}{2}\,w^\top \hat{\Sigma}_t w
-      +\frac{\eta}{2}\,\delta^\top \hat{\Sigma}_t^{-1}\delta
-      -\tau\|w\|_2^2
-      \]
-      <p style="margin:10px 0 0 0; font-size:0.75rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
-        Here \(\gamma\) is your personal risk aversion parameter which acts as a fundamental active risk penalty. The variable \(\eta\) directly controls the strength of the adversary. A smaller value for \(\eta\) creates a far more aggressive and damaging opponent. The final term uses \(\tau\) to strictly penalize highly concentrated portfolio weights.
-      </p>
-    </div>
-
-    <p>You essentially select your portfolio weights trying to get the absolute best risk adjusted return possible. At the exact same time your theoretical adversary is doing everything in their mathematical power to wreck those expected returns. The genius part is that the adversary is forced to use the local covariance structure as their weapon. Because the penalty against the adversary is purely quadratic we can actually find an exact closed form solution for their ultimate best response. You take the derivative of the inner minimization problem with respect to \(\delta\) and set it to zero. The math works out perfectly because our filtered covariance matrix is guaranteed to be positive definite. Plugging that optimal adversarial response back into your original equation simplifies the landscape beautifully. The intimidating minimax problem completely dissolves into a straightforward concave maximization formula.</p>
-
-    <div class="eq">
-      <div class="eq-title">Equation 2: The Reduced Saddle Point</div>
-      \[
-      w_t^\star=\arg\max_{w\in\mathcal{W}}\;
-      \hat{\mu}_t^\top w
-      -\frac{1}{2}\Big(\gamma + \frac{1}{\eta}\Big)\,w^\top\hat{\Sigma}_t w
-      -\tau\|w\|_2^2
-      \]
-      <p style="margin:10px 0 0 0; font-size:0.75rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
-        Notice how the inverse of \(\eta\) effectively adds pure extra curvature directly to our risk penalty. This simple but profound mathematical trick forces the optimizer to act substantially more conservatively whenever the underlying market covariance grows dangerously large.
-      </p>
-    </div>
-
-    <h2>2. Fetching Market Data Reliably</h2>
-    <p>Grabbing historical price data from external web sources can turn into a massive nightmare during live execution. Open source APIs change their endpoint structures constantly and sometimes the adjusted close column simply disappears from the payload without any warning. I specifically wrote the primary fetch function to handle those exact edge cases gracefully. The code attempts to request the modern automatic adjustment feature first. If the local version of the library lacks that capability the script automatically catches the type error and instantly falls back to parsing the raw standard closing prices. This rigorous defensive logic ensures the data pipeline never snaps and ruins your automated monthly execution sequences.</p>
-
-<pre><code><span class="kw">def</span> <span class="fu">fetch_prices</span>(tickers, benchmark, start_date=<span class="st">"2023-01-01"</span>, auto_adjust=<span class="kw">True</span>):
-    symbols = <span class="fu">list</span>(<span class="fu">dict.fromkeys</span>(<span class="fu">list</span>(tickers) + [benchmark]))
-
-    <span class="kw">try</span>:
-        data = yf.download(
-            symbols, start=start_date, progress=<span class="kw">False</span>,
-            auto_adjust=auto_adjust, actions=<span class="kw">False</span>,
-            group_by=<span class="st">"column"</span>, threads=<span class="kw">True</span>,
-        )
-        auto_adjust_effective = auto_adjust
-    <span class="kw">except</span> <span class="fu">TypeError</span>:
-        data = yf.download(
-            symbols, start=start_date, progress=<span class="kw">False</span>,
-            actions=<span class="kw">False</span>, group_by=<span class="st">"column"</span>, threads=<span class="kw">True</span>,
-        )
-        auto_adjust_effective = <span class="kw">False</span>
-
-    <span class="kw">def</span> <span class="fu">_extract_field</span>(df, field):
-        <span class="kw">if</span> <span class="fu">isinstance</span>(df.columns, pd.MultiIndex):
-            <span class="kw">if</span> field <span class="kw">in</span> df.columns.get_level_values(<span class="nu">0</span>):
-                <span class="kw">return</span> df[field].copy()
-            <span class="kw">return None</span>
-        <span class="kw">return</span> df[field].copy() <span class="kw">if</span> field <span class="kw">in</span> df.columns <span class="kw">else None</span>
-
-    prices = _extract_field(data, <span class="st">"Close"</span>) <span class="kw">if</span> auto_adjust_effective <span class="kw">else</span> _extract_field(data, <span class="st">"Adj Close"</span>)
-    <span class="kw">if</span> prices <span class="kw">is None</span>: prices = _extract_field(data, <span class="st">"Close"</span>)
-    <span class="kw">if</span> prices <span class="kw">is None</span>: <span class="kw">raise</span> <span class="fu">ValueError</span>(<span class="st">"Could not extract prices."</span>)
-
-    prices.index = pd.to_datetime(prices.index)
-    prices = prices[~prices.index.duplicated(keep=<span class="st">"last"</span>)].sort_index().replace([np.inf, -np.inf], np.nan)
-    
-    <span class="kw">return</span> prices[[t <span class="kw">for</span> t <span class="kw">in</span> tickers <span class="kw">if</span> t <span class="kw">in</span> prices.columns]].copy(), prices[benchmark].dropna()</code></pre>
-
-    <h2>3. Dynamic Moments & Covariance Shrinkage</h2>
-    <p>Financial data structures never sit still for very long in the real world. A simple static average from five years ago tells you absolutely nothing about the complex market dynamics today. I choose to use an exponentially weighted moving average to calculate our vector inputs. You take your raw return matrix and apply a mathematically derived decay factor based on your desired span. This mechanism forces the internal model to care exponentially more about recent market regimes than ancient history. Dealing with the covariance matrix itself requires an entirely different layer of protection.</p>
-    <p>Unfiltered sample covariance matrices act notoriously unstable when the number of assets begins to approach the number of time observations. The matrix frequently becomes poorly conditioned which makes reliable inversion practically impossible and destroys the optimizer. I apply a proven diagonal shrinkage technique directly to the raw covariance values. You take the noisy sample matrix and gently pull it toward a perfectly structured diagonal matrix. This vital stabilization step fundamentally stops the optimization engine from making extreme bets based on totally spurious historical correlations.</p>
-
-<pre><code><span class="kw">def</span> <span class="fu">ewma_mean_cov</span>(X: np.ndarray, span: <span class="fu">int</span>):
-    T, N = X.shape
-    <span class="kw">if</span> T < <span class="nu">2</span>: <span class="kw">raise</span> <span class="fu">ValueError</span>(<span class="st">"Need >= 2 obs for covariance."</span>)
-
-    alpha = <span class="nu">2.0</span> / (span + <span class="nu">1.0</span>)
-    w = (<span class="nu">1.0</span> - alpha) ** np.arange(T - <span class="nu">1</span>, -<span class="nu">1</span>, -<span class="nu">1</span>)
-    w /= w.sum()
-
-    mu = w @ X
-    Xm = X - mu
-    cov = (Xm.T * w) @ Xm
-    <span class="kw">return</span> mu, <span class="nu">0.5</span> * (cov + cov.T)
-
-<span class="kw">def</span> <span class="fu">shrink_cov</span>(cov: np.ndarray, shrink: <span class="fu">float</span>):
-    s = <span class="fu">float</span>(np.clip(shrink, <span class="nu">0.0</span>, <span class="nu">1.0</span>))
-    <span class="kw">return</span> (<span class="nu">1.0</span> - s) * cov + s * np.diag(np.diag(cov))</code></pre>
-
-    <h2>4. Implementing the Nash Solver Algorithm</h2>
-    <p>Now we finally arrive at the core execution logic of the solver function. Because we brilliantly reduced the complex minimax problem down to a single equation earlier the implementation code becomes incredibly clean. You just need to define the objective function combining the expected returns with our artificially inflated risk penalty. I decided to pass that function directly into the SciPy library using the Sequential Least Squares Programming algorithm. I specifically chose the SLSQP method because it handles strict equality constraints exceptionally well. We desperately need our final output weights to sum exactly to one hundred percent. We also need to enforce hard boundary conditions so no single stock accidentally dominates the entire portfolio allocation. The algorithm rapidly descends to find the exact saddle point where neither the investor nor the adversary can profitably alter their strategy.</p>
-
-<pre><code><span class="kw">def</span> <span class="fu">solve_nash_weights</span>(mu, cov, cap=<span class="nu">0.15</span>, l2=<span class="nu">1e-3</span>, risk_aversion=<span class="nu">8.0</span>, robustness_eta=<span class="nu">4.0</span>):
-    mu, cov = np.asarray(mu, <span class="fu">float</span>), np.asarray(cov, <span class="fu">float</span>)
-    N = <span class="fu">len</span>(mu)
-    cov = <span class="nu">0.5</span> * (cov + cov.T) + np.eye(N) * <span class="nu">1e-10</span>
-
-    lam_eff = <span class="fu">float</span>(risk_aversion + <span class="nu">1.0</span> / robustness_eta)
-
-    <span class="kw">def</span> <span class="fu">obj</span>(w):
-        w = np.asarray(w, <span class="fu">float</span>)
-        <span class="kw">return</span> -(mu @ w - <span class="nu">0.5</span> * lam_eff * (w @ cov @ w) - l2 * (w @ w))
-
-    cons = [{<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> w: np.sum(w) - <span class="nu">1.0</span>}]
-    bnds = <span class="fu">tuple</span>((<span class="nu">0.0</span>, <span class="fu">float</span>(cap)) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fu">range</span>(N))
-    w0 = np.full(N, <span class="nu">1.0</span> / N)
-
-    res = sco.minimize(obj, w0, method=<span class="st">"SLSQP"</span>, bounds=bnds, constraints=cons, tol=<span class="nu">1e-12</span>)
-
-    w = res.x <span class="kw">if</span> res.success <span class="kw">else</span> w0.copy()
-    w = np.clip(w, <span class="nu">0.0</span>, cap)
-    s = w.sum()
-    <span class="kw">return</span> (w / s) <span class="kw">if</span> s > <span class="nu">0</span> <span class="kw">else</span> w0.copy(), res</code></pre>
-
-    <h2>5. A Hostile Testing Engine</h2>
-    <p>You can invent the most mathematically elegant optimization model in human history but if your backtest lies to you it means absolutely nothing. That is exactly why the testing environment must remain completely ruthless. Standard open source backtesting frameworks almost always leak future data into the past eventually. I actively chose to build a custom execution loop from scratch to enforce a brutally strict walk forward testing process. The code manages an index of pure trading dates and only executes logical steps at the absolute end of the month.</p>
-    <p>I also implement a deliberate gap logic known as an embargo. The engine intentionally lops off the final closing day of the training set before letting the optimizer see anything. Doing this permanently stops the final closing prices from magically bleeding across the validation boundary and inflating our theoretical returns. The loop then calculates portfolio turnover precisely by computing the absolute difference between the exact newly generated weights against the old active weights. It immediately subtracts a realistic basis point trading cost on the exact day the transition occurs. There is absolutely no hidden magic happening here. It just utilizes very careful chronological accounting and highly defensive logic.</p>
-  </main>
-</template>
-
-<!-- ==========================================================================
-     TEMPLATE: TOTAL FACTOR PRODUCTIVITY (TFP)
-     ========================================================================== -->
-<template id="tpl-tfp">
-  <main id="article" data-title="Total Factor Productivity" data-date="MAR 2026" data-category="Macroeconomics">
-    <div class="classical-caption">
-        A critical exposition on the Solow residual, exposing the severe econometric fallacies embedded within standard measures of technological progress.
-    </div>
-
-    <div class="abstract-container">
-        <div class="abstract-text" style="-webkit-line-clamp: unset; mask-image: none; -webkit-mask-image: none; display: block;">
-            <strong>Note:</strong> I approach the concept of Total Factor Productivity with a fundamental epistemological skepticism. The mathematical elegance of the Solow growth model obscures a deeply problematic reality regarding how we measure technological progress. When we specify an aggregate production function, we map observable inputs like capital and labor to an observable output, causing Total Factor Productivity to emerge not as a directly measured variable but as the unexplained remainder. Moses Abramovitz famously and correctly labeled this residual as a "measure of our ignorance" rather than a pure reflection of technological advancement. Because it is derived by taking the growth rate of output and subtracting the weighted growth rates of inputs, this residual absorbs every single measurement error, model misspecification, and omitted variable present in the empirical framework.
-        </div>
-    </div>
-
-    <h2>1. The Ontology of a Residual</h2>
-    <p>The standard growth accounting framework begins by defining a general aggregate production function, where output \(Y_t\) is driven by Capital \(K_t\), Labor \(L_t\), and a Hicks-neutral technology parameter \(A_t\). By taking the natural logarithm and differentiating with respect to time, we obtain the fundamental Solow residual:</p>
-
-    <div class="eq">
-      <div class="eq-title">Equation 1: The Solow Residual</div>
-      \[
-      \frac{\dot{A}}{A} = \frac{\dot{Y}}{Y} - \alpha \frac{\dot{K}}{K} - \beta \frac{\dot{L}}{L}
-      \]
-      <p style="margin:10px 0 0 0; font-size:0.75rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
-        Here, \(\alpha\) and \(\beta\) represent the output elasticities of capital and labor. Any growth in \(Y\) not strictly accounted for by the growth in \(K\) or \(L\) is mechanically forced into the \(\frac{\dot{A}}{A}\) term.
-      </p>
-    </div>
-
-    <p>Because it is an algebraic remainder, it does not strictly measure "technology." It absorbs everything we fail to model. It is the numerical graveyard of unobserved human capital improvements, unmeasured capital depreciation, and fundamentally flawed statistical assumptions.</p>
-
-    <h2>2. Transmission Bias and Endogeneity</h2>
-    <p>The most glaring econometric flaw in estimating this residual stems from the simultaneous determination of inputs and unobserved productivity shocks. Firms observe their own productivity levels (\(\omega_{it}\)) before making input decisions, meaning a positive productivity shock naturally causes them to hire more labor.</p>
-    
-    <div class="eq">
-      <div class="eq-title">Equation 2: The Endogenous Production Function</div>
-      \[
-      y_{it} = \beta_0 + \beta_k k_{it} + \beta_l l_{it} + \omega_{it} + \epsilon_{it}
-      \]
-      <p style="margin:10px 0 0 0; font-size:0.75rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
-        Because \(\mathbb{E}[l_{it} \omega_{it}] > 0\), ordinary least squares (OLS) estimates of \(\beta_l\) are severely biased upward, while \(\beta_k\) is typically biased downward.
-      </p>
-    </div>
-
-    <p>This behavioral response creates <em>transmission bias</em>. Olley and Pakes (1996) attempted to resolve this by using investment as a proxy variable, while Levinsohn and Petrin (2003) later argued that intermediate inputs serve as a better proxy since investment fails to respond smoothly to immediate shocks. Yet both control function approaches rely on strict monotonicity assumptions that routinely fail in real empirical settings.</p>
-
-<pre><code><span class="cm"># Conceptual proxy approach for addressing transmission bias</span>
-<span class="kw">def</span> <span class="fu">estimate_levinsohn_petrin</span>(df):
-    <span class="cm"># State variable: k (capital)</span>
-    <span class="cm"># Free variable: l (labor)</span>
-    <span class="cm"># Proxy variable: m (intermediate materials)</span>
-    
-    <span class="cm"># 1st Stage: Isolate the contribution of labor</span>
-    <span class="cm"># We approximate the unobserved productivity \omega using a polynomial phi(k, m)</span>
-    df[<span class="st">'k_sq'</span>] = df[<span class="st">'k'</span>]**<span class="nu">2</span>
-    df[<span class="st">'m_sq'</span>] = df[<span class="st">'m'</span>]**<span class="nu">2</span>
-    df[<span class="st">'k_m'</span>] = df[<span class="st">'k'</span>] * df[<span class="st">'m'</span>]
-    
-    X_stage1 = df[[<span class="st">'l'</span>, <span class="st">'k'</span>, <span class="st">'m'</span>, <span class="st">'k_sq'</span>, <span class="st">'m_sq'</span>, <span class="st">'k_m'</span>]]
-    stage1_model = sm.OLS(df[<span class="st">'y'</span>], sm.add_constant(X_stage1)).fit()
-    
-    <span class="cm"># The coefficient on labor is now consistent and purged of endogeneity</span>
-    beta_l_consistent = stage1_model.params[<span class="st">'l'</span>]
-    <span class="kw">return</span> beta_l_consistent</code></pre>
-
-    <h2>3. Capacity Utilization and Cyclical Artifacts</h2>
-    <p>The assumption of constant capacity utilization represents another fatal flaw in the standard estimation paradigm. During economic downturns, aggregate demand falls and firms optimally reduce the utilization rate of their capital (\(U_t\)) alongside the unobserved effort level of their workers.</p>
-    
-    <p>However, standard national accounting metrics continue to report the <em>total installed capital</em>. Let effective capital be \(K^{eff}_t = U_t K_t\). Because the measured inputs do not fall proportionately with output, the arithmetic of the Solow residual mathematically forces measured productivity to plummet. Adjusting for variable capacity utilization demonstrates that a massive portion of the variance in this residual is simply a cyclical artifact rather than genuine technological regress.</p>
-
-    <h2>4. Market Power and Perfect Competition</h2>
-    <p>The derivation of the residual relies entirely on the mathematically convenient but empirically indefensible assumption that markets are perfectly competitive. Under these rigid assumptions, the output elasticities of capital and labor are exactly equal to their observable factor shares in national income. Robert Hall (1988) demonstrated conclusively that when firms possess market power, they charge prices that exceed marginal costs, creating a significant markup \(\mu > 1\).</p>
-
-    <div class="eq">
-      <div class="eq-title">Equation 3: Hall's Markup Distortion</div>
-      \[
-      \Delta \ln A_{measured} = \Delta \ln A_{true} + (\mu - 1) \big[ s_L \Delta \ln L + s_K \Delta \ln K \big]
-      \]
-      <p style="margin:10px 0 0 0; font-size:0.75rem; opacity:0.8; font-family: var(--font-ui) !important; line-height: 1.4;">
-        If we fail to account for markups, the traditional productivity residual will mechanically overstate technological growth during economic booms and understate it during busts. It captures variations in market power instead of pure shifts in the production possibility frontier.
-      </p>
-    </div>
-
-    <h2>5. Structural Aggregation Fallacies</h2>
-    <p>Beyond the firm level, aggregating individual production functions into a single macroeconomic measure introduces severe theoretical contradictions. The entire framework assumes that heterogeneous capital goods, ranging from blast furnaces to cloud computing servers, can be seamlessly aggregated into a single continuous scalar metric. Furthermore, treating the entire economy as if it operates under a single common technological parameter ignores the profound differences in technology adoption across various sectors. When resources are reallocated from low productivity sectors to high productivity sectors, aggregate output increases even if no underlying technological innovation has occurred at the microeconomic level.</p>
-
-    <h2>6. Misspecification of the Functional Form</h2>
-    <p>The reliance on the Cobb-Douglas production function introduces arbitrary mathematical constraints that further distort the error-prone nature of its estimation. The standard specification imposes a strictly unitary elasticity of substitution between capital and labor. If the true elasticity of substitution deviates from one, the calculated residual will simply absorb the specification error.</p>
-
-    <p>While researchers sometimes employ more flexible functional forms like the Translog production function—which includes squared terms and cross products to approximate any arbitrary production surface—these models require estimating significantly more parameters. The increased parametric burden often leads to severe multicollinearity.</p>
-
-<pre><code><span class="cm"># Constructing a Translog Production Function to relax unit elasticity</span>
-<span class="kw">def</span> <span class="fu">estimate_translog</span>(df):
-    <span class="cm"># df contains log values: 'ln_Y', 'ln_K', 'ln_L'</span>
-    
-    <span class="cm"># Generate flexible squared and interaction terms</span>
-    df[<span class="st">'ln_K_sq'</span>] = <span class="nu">0.5</span> * (df[<span class="st">'ln_K'</span>] ** <span class="nu">2</span>)
-    df[<span class="st">'ln_L_sq'</span>] = <span class="nu">0.5</span> * (df[<span class="st">'ln_L'</span>] ** <span class="nu">2</span>)
-    df[<span class="st">'ln_K_L'</span>]  = df[<span class="st">'ln_K'</span>] * df[<span class="st">'ln_L'</span>]
-
-    X = df[[<span class="st">'ln_K'</span>, <span class="st">'ln_L'</span>, <span class="st">'ln_K_sq'</span>, <span class="st">'ln_L_sq'</span>, <span class="st">'ln_K_L'</span>]]
-    X = sm.add_constant(X)
-    y = df[<span class="st">'ln_Y'</span>]
-
-    <span class="cm"># Fit the flexible structural model</span>
-    model = sm.OLS(y, X).fit()
-    <span class="kw">return</span> model</code></pre>
-
-    <h2>7. The Illusion of Exogenous Shocks</h2>
-    <p>The final intellectual failing of the productivity residual lies in its frequent treatment as an exogenous shock in modern macroeconomic models. Real Business Cycle theory takes this contaminated residual and feeds it back into dynamic stochastic general equilibrium (DSGE) models as a pure exogenous technological impulse (\(\omega_t = \rho \omega_{t-1} + \xi_t\)).</p>
-    
-    <p>I view this as a circular and deeply unscientific modeling practice. By taking a measure that we already know is polluted by variable capacity utilization, non-competitive markups, and input mismeasurement, economists build their most sophisticated models on a foundation of statistical noise. The residual is not an external force acting upon the economy; it is an endogenous reflection of the economy itself, deeply intertwined with demand dynamics and structural frictions.</p>
-
-    <hr style="border: 0; border-top: 1px solid var(--border); margin: 3rem 0;">
-
-    <h2>References</h2>
-    <div class="references-list">
-        <div class="reference-item">Abramovitz, M. (1956). Resource and output trends in the United States since 1870. <em>American Economic Review, 46</em>(2), 5–23.</div>
-        <div class="reference-item">Bailey, A., Irz, X., & Balcombe, K. (2004). Measuring productivity growth when technological change is biased. <em>Agricultural Economics, 31</em>(2–3), 285–295. <a href="https://doi.org/10.1016/j.agecon.2004.09.011" target="_blank" rel="noopener noreferrer">https://doi.org/10.1016/j.agecon.2004.09.011</a></div>
-        <div class="reference-item">Felipe, J., & McCombie, J. S. L. (2013). <em>The aggregate production function and the measurement of technical change: "Not even wrong."</em> Edward Elgar. <a href="https://www.landecon.cam.ac.uk/sites/default/files/2023-03/aggregateproductionfunctions.wp1014.pdf" target="_blank" rel="noopener noreferrer">[landecon.cam.ac]</a></div>
-        <div class="reference-item">Hall, R. E. (1988). The relation between price and marginal cost in U.S. industry. <em>Journal of Political Economy, 96</em>(5), 921–947. <a href="https://doi.org/10.1086/261570" target="_blank" rel="noopener noreferrer">https://doi.org/10.1086/261570</a> <a href="https://www.sciencedirect.com/science/article/abs/pii/S0164070411000668" target="_blank" rel="noopener noreferrer">[sciencedirect]</a></div>
-        <div class="reference-item">Hsieh, C.-T., & Klenow, P. J. (2009). Misallocation and manufacturing TFP in China and India. <em>Quarterly Journal of Economics, 124</em>(4), 1403–1448. <a href="https://doi.org/10.1162/qjec.2009.124.4.1403" target="_blank" rel="noopener noreferrer">https://doi.org/10.1162/qjec.2009.124.4.1403</a></div>
-        <div class="reference-item">Hulten, C. R. (2000). <em>Total factor productivity: A short biography</em> (NBER Working Paper No. 7471). National Bureau of Economic Research. <a href="https://doi.org/10.3386/w7471" target="_blank" rel="noopener noreferrer">https://doi.org/10.3386/w7471</a> <a href="https://www.nber.org/system/files/working_papers/w7471/w7471.pdf" target="_blank" rel="noopener noreferrer">[nber]</a></div>
-        <div class="reference-item">Jorgenson, D. W., & Griliches, Z. (1967). The explanation of productivity change. <em>Review of Economic Studies, 34</em>(3), 249–283. <a href="https://doi.org/10.2307/2296675" target="_blank" rel="noopener noreferrer">https://doi.org/10.2307/2296675</a> <a href="https://eml.berkeley.edu/~webfac/emiguel/e271_s07/jeong.pdf" target="_blank" rel="noopener noreferrer">[eml.berkeley]</a></div>
-        <div class="reference-item">Levinsohn, J., & Petrin, A. (2003). Estimating production functions using inputs to control for unobservables. <em>Review of Economic Studies, 70</em>(2), 317–341. <a href="https://doi.org/10.1111/1467-937X.00246" target="_blank" rel="noopener noreferrer">https://doi.org/10.1111/1467-937X.00246</a> <a href="https://www.theigc.org/sites/default/files/2016/06/READINGS-Levinsohn-Petrin.pdf" target="_blank" rel="noopener noreferrer">[theigc]</a></div>
-        <div class="reference-item">Olley, G. S., & Pakes, A. (1996). The dynamics of productivity in the telecommunications equipment industry. <em>Econometrica, 64</em>(6), 1263–1297. <a href="https://doi.org/10.2307/2171831" target="_blank" rel="noopener noreferrer">https://doi.org/10.2307/2171831</a></div>
-        <div class="reference-item">Romer, P. M. (1990). Endogenous technological change. <em>Journal of Political Economy, 98</em>(5, Part 2), S71–S102. <a href="https://doi.org/10.1086/261725" target="_blank" rel="noopener noreferrer">https://doi.org/10.1086/261725</a></div>
-        <div class="reference-item">Solow, R. M. (1957). Technical change and the aggregate production function. <em>Review of Economics and Statistics, 39</em>(3), 312–320. <a href="https://doi.org/10.2307/1926047" target="_blank" rel="noopener noreferrer">https://doi.org/10.2307/1926047</a> <a href="https://www.investopedia.com/terms/s/solow-residual.asp" target="_blank" rel="noopener noreferrer">[investopedia]</a></div>
-        <div class="reference-item">Van Beveren, I. (2012). Total factor productivity estimation: A practical review. <em>Journal of Economic Surveys, 26</em>(1), 98–128. <a href="https://doi.org/10.1111/j.1467-6419.2010.00631.x" target="_blank" rel="noopener noreferrer">https://doi.org/10.1111/j.1467-6419.2010.00631.x</a> <a href="https://www.econstor.eu/bitstream/10419/75015/1/dp182.pdf" target="_blank" rel="noopener noreferrer">[econstor]</a></div>
-        <div class="reference-item">Zymek, R. (2024, September). <em>Back to basics: Total factor productivity</em>. Finance & Development, IMF. <a href="https://www.imf.org/en/publications/fandd/issues/2024/09/back-to-basics-total-factor-productivity-robert-zymek" target="_blank" rel="noopener noreferrer">https://www.imf.org/en/publications/fandd/issues/2024/09/back-to-basics-total-factor-productivity-robert-zymek</a></div>
-    </div>
-  </main>
-</template>
-
-<!-- Primary UI wrapped in a MAIN tag for 100/100 Accessibility -->
 <main id="main-content">
     <nav id="nav" aria-label="Primary">
       <button id="brand" type="button" aria-label="Reset View">Anıl Kaya</button>
@@ -544,14 +207,11 @@ body.modal-open #copyright { opacity: 0; }
         <a class="btn" href="https://www.linkedin.com/in/anillkaya" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       </div>
     </nav>
-
     <canvas id="gl" aria-hidden="true"></canvas>
     <div id="orbitHint" aria-hidden="true"></div>
     <div id="depthName" aria-hidden="true">In Econometrics We Trust</div>
     <div id="copyright" aria-hidden="true">© 2026 Anıl Kaya</div>
 </main>
-
-<!-- Card Reader Overlay -->
 <div id="readProgress" aria-hidden="true"></div>
 <div id="modal" role="dialog" aria-modal="true" aria-label="Article Reader">
   <button id="closeBtn" aria-label="Close Article">
@@ -561,12 +221,8 @@ body.modal-open #copyright { opacity: 0; }
       <div class="article-content" id="articleContentArea"></div>
   </div>
 </div>
-
 <div id="err"><h2>Render error</h2><pre id="errText"></pre></div>
-
 <script>
-// PERFORMANCE FIX: Decouple massive 3D parsing/evaluation completely from the FCP/LCP paint cycle.
-// Ensures TBT (Total Blocking Time) stays extremely low.
 window.addEventListener('load', () => {
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -586,9 +242,6 @@ function showErr(e){
   $("err").style.display = "block";
 }
 
-/* ==========================================================================
-   ARTICLE PARSING & MODAL LOGIC 
-   ========================================================================== */
 function sanitizeHTML(str) {
   if (!str) return "";
   if (window.DOMPurify) return window.DOMPurify.sanitize(str, { USE_PROFILES: { html: true }, FORBID_TAGS: ["style","script","iframe","object","embed","form"] });
@@ -596,17 +249,7 @@ function sanitizeHTML(str) {
 }
 
 const ARTICLE_CACHE = new Map();
-// BOTH ARTICLES REGISTERED HERE
-const ARTICLES = [
-  {
-    id: "nash-minimax-drift", templateId: "tpl-nash", contentSelector: "#article",
-    category: "Domestic Finance", title: "Nash Strategy", date: "FEB 2026"
-  },
-  {
-    id: "tfp-analysis", templateId: "tpl-tfp", contentSelector: "#article",
-    category: "Macroeconomics", title: "Total Factor Productivity", date: "MAR 2026"
-  }
-];
+const ARTICLES = [];
 
 async function loadArticle(a){
   if (ARTICLE_CACHE.has(a.id)) return ARTICLE_CACHE.get(a.id);
@@ -671,15 +314,11 @@ window.openArticle = function(a){
   }).catch(err=>showErr(err));
 }
 
-/* ==========================================================================
-   CPU-BASED PROCEDURAL TEXTURES (Optimized for Main Thread Yielding)
-   ========================================================================== */
 function makeCanvasTexture(drawFn, size){
   const c = document.createElement("canvas"); c.width = c.height = size; drawFn(c.getContext("2d", {willReadFrequently:true}), size);
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; return tex;
 }
 
-// PERFORMANCE FIX: Dropped texture resolution from 256 to 128 (4x less CPU math overhead = massive TBT drop)
 function drawNash(g, size){
   const img = g.createImageData(size,size); const d = img.data;
   const clamp = (x,a,b)=>Math.max(a,Math.min(b,x)), fract = x => x - Math.floor(x), hash2 = (x,y,s) => fract(Math.sin(x*127.1 + y*311.7 + s*74.7) * 43758.545), mix = (a,b,t) => a+(b-a)*t, smoothstep = (a,b,x) => { let t = clamp((x-a)/(b-a), 0, 1); return t*t*(3-2*t); };
@@ -700,23 +339,20 @@ function drawNash(g, size){
   g.putImageData(img,0,0);
 }
 
-/* ==========================================================================
-   THREE.JS 60FPS LOCKED ENGINE
-   ========================================================================== */
 if (!window.THREE) { showErr(new Error("Three.js library failed to load. Please verify CDN connection.")); return; }
 
 try {
   const canvas = $("gl");
+  const winW = window.innerWidth || 1, winH = window.innerHeight || 1;
   
-  // PERFORMANCE FIX: Cap Mobile DPR strictly to 1.0. Prevents thermal throttling & solidifies 60fps
-  const getDPR = ()=>Math.min(window.devicePixelRatio || 1, window.innerWidth < 800 ? 1.0 : 1.5); 
+  const getDPR = ()=>Math.min(window.devicePixelRatio || 1, (window.innerWidth || 1) < 800 ? 1.0 : 1.5); 
   
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
-  renderer.setPixelRatio(getDPR()); renderer.setSize(window.innerWidth, window.innerHeight, false);
+  renderer.setPixelRatio(getDPR()); renderer.setSize(winW, winH, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.08;
 
   const scene = new THREE.Scene(); scene.background = new THREE.Color(cssVar("--bg") || "#050505");
-  const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 5000); camera.position.set(0, 0, 220);
+  const camera = new THREE.PerspectiveCamera(52, winW/winH, 0.1, 5000); camera.position.set(0, 0, 220);
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
   const key = new THREE.DirectionalLight(0xffffff, 1.85); key.position.set(160, 190, 130); scene.add(key);
@@ -725,9 +361,8 @@ try {
 
   const pointer = new THREE.Vector2(0,0); let px=0, py=0, pointerActive=false;
 
-  // Optimized Stars
   const galaxy = new THREE.Group(); scene.add(galaxy);
-  const isMobile = window.innerWidth < 800;
+  const isMobile = winW < 800;
   const maxStars = isMobile ? 8000 : 18000;
   const starCount = Math.min(maxStars, Math.round(((navigator.deviceMemory || 4) * (navigator.hardwareConcurrency || 4)) * 800));
   const starPos = new Float32Array(starCount*3), starCol = new Float32Array(starCount*3), starSize = new Float32Array(starCount);
@@ -744,14 +379,12 @@ try {
   const stars = new THREE.Points(starGeom, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uTime: { value: 0 }, uDpr: { value: getDPR() } }, vertexShader: `attribute float aSize; attribute vec3 color; varying vec3 vColor; uniform float uTime; uniform float uDpr; void main(){ vColor = color; vec3 p = position; p.y += sin(uTime*0.18 + p.x*0.01 + p.z*0.01)*0.3; vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = clamp(aSize * (300.0 / -mv.z) * uDpr, 1.0, 10.0); }`, fragmentShader: `varying vec3 vColor; void main(){ vec2 uv = gl_PointCoord.xy - 0.5; float d = dot(uv, uv); float a = smoothstep(0.25, 0.0, d); float halo = smoothstep(0.48, 0.10, d) * 0.55; gl_FragColor = vec4(vColor * (1.2*a + 0.9*halo), (a + halo) * 0.85); }` }));
   stars.rotation.x = -0.34; galaxy.add(stars);
 
-  // Fast Nebula
   const nebula = new THREE.Mesh(new THREE.SphereGeometry(1900, 48, 48), new THREE.ShaderMaterial({ side: THREE.BackSide, uniforms: { uTime:{value:0}, uPointer:{value:new THREE.Vector2(0,0)}, uGold:{value:new THREE.Color(cssVar("--gold")||"#D4AF37")}, uSilver:{value:new THREE.Color(cssVar("--silver")||"#e8e8ea")}, uBg:{value:new THREE.Color(cssVar("--bg")||"#050505")} }, vertexShader: `varying vec3 vP; uniform float uTime; uniform vec2 uPointer; void main(){ vec3 p = position; float band = exp(-abs(p.y)/240.0); float swirl = sin(uTime*0.08 + p.x*0.002 + p.z*0.002) * 22.0 * band; p.x += swirl + uPointer.x * 12.0 * band; p.z -= swirl * 0.55; p.y += uPointer.y * 6.0 * band; vP = p; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }`, fragmentShader: `varying vec3 vP; uniform float uTime; uniform vec3 uGold; uniform vec3 uSilver; uniform vec3 uBg; float hash(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); float n00=mix(fract(sin(dot(i,vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,0,0),vec3(1.0,57.0,113.0)))*43758.5453), f.x), n01=mix(fract(sin(dot(i+vec3(0,0,1),vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,0,1),vec3(1.0,57.0,113.0)))*43758.5453), f.x), n10=mix(fract(sin(dot(i+vec3(0,1,0),vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,1,0),vec3(1.0,57.0,113.0)))*43758.5453), f.x), n11=mix(fract(sin(dot(i+vec3(0,1,1),vec3(1.0,57.0,113.0)))*43758.5453), fract(sin(dot(i+vec3(1,1,1),vec3(1.0,57.0,113.0)))*43758.5453), f.x); return mix(mix(n00, n10, f.y), mix(n01, n11, f.y), f.z); } void main(){ float band = exp(-abs(vP.y) / 170.0); vec3 q = vP * 0.0018 + vec3(0.0, 0.0, uTime*0.015); float n = hash(q*3.0)*0.5 + hash(q*6.0)*0.25 + hash(q*12.0)*0.125; float cloud = smoothstep(0.35, 0.92, n) * band; float dust = smoothstep(0.20, 0.85, fract(n * 2.5 + vP.x*0.001)) * band; vec3 mixc = mix(uSilver, uGold, clamp(0.5 + 0.5*sin(vP.x*0.002 + uTime*0.06), 0.0, 1.0)); gl_FragColor = vec4(clamp(uBg + mixc*(0.18*cloud + 0.12*dust) + uGold*(0.06*band), 0.0, 1.0), 1.0); }` }));
   scene.add(nebula);
 
   const planets = new THREE.Group(), ringGroup = new THREE.Group(); scene.add(planets); planets.add(ringGroup);
   const ringTiltX = 0.38, ringTiltZ = -0.12; ringGroup.rotation.set(ringTiltX, 0, ringTiltZ);
 
-  // Label Sprites (Smart dynamic scaling)
   function labelSprite(text){
     const w=2048, h=256, c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
     g.shadowColor = "rgba(0,0,0,0.85)"; g.shadowBlur = 15; g.fillStyle = "rgba(255,255,255,0.95)"; 
@@ -772,11 +405,12 @@ try {
     for(let i = planets.children.length - 1; i >= 0; i--) if(planets.children[i] !== ringGroup) planets.remove(planets.children[i]);
     entries.length = 0; ringGroup.clear(); ringMeshes = [];
 
-    const isMob = window.innerWidth < 800;
+    const w = window.innerWidth || 1, h = window.innerHeight || 1;
+    const isMob = w < 800;
     const vH = 2 * 220 * Math.tan((52 * Math.PI / 180) / 2);
-    let finalScale = Math.max(Math.min((vH * (window.innerWidth / window.innerHeight)) / 560, vH / 560), 0.22);
+    let finalScale = Math.max(Math.min((vH * (w / h)) / 560, vH / 560), 0.22);
+    if (isNaN(finalScale) || !isFinite(finalScale)) finalScale = 0.22;
     
-    // Rings
     const gold = new THREE.Color(cssVar("--gold") || "#D4AF37"), silv = new THREE.Color(cssVar("--silver") || "#e8e8ea");
     const makeRing = (r0, r1, op, z, t)=>{
       const m = new THREE.Mesh(new THREE.RingGeometry(r0, r1, 128, 1), new THREE.ShaderMaterial({ transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, uniforms:{ uTime:{value:0}, uGold:{value:gold}, uSilv:{value:silv}, uOpacity:{value:op}, uTint:{value:t} }, vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix * viewMatrix * modelMatrix * vec4(position,1.0); }`, fragmentShader: `varying vec2 vUv; uniform float uTime; uniform vec3 uGold; uniform vec3 uSilv; uniform float uOpacity; uniform float uTint; float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); float h=fract(sin(dot(i,vec2(127.1,311.7)))*43758.545); return mix(h, fract(sin(dot(i+vec2(1,0),vec2(127.1,311.7)))*43758.545), f.x); } void main(){ float r=length(vUv-0.5)*2.0, g=noise((vUv-0.5)*vec2(120.0,20.0)+uTime*0.02), edge=smoothstep(0.98,0.65,r)*smoothstep(0.02,0.18,r); gl_FragColor=vec4(mix(uSilv,uGold,uTint+0.15*sin(vUv.x*20.0)), (0.55+0.45*g)*edge*uOpacity); }` }));
@@ -785,7 +419,6 @@ try {
     makeRing(142*finalScale*0.78, 142*finalScale*1.12, 0.22, 0.0, 0.55);
     makeRing(142*finalScale*0.78*1.02, 142*finalScale*1.12*0.985, 0.16, 0.06, 0.35);
 
-    // Dynamic Spacing for 2 Planets
     ARTICLES.forEach((art, i) => {
       const radius = (isMob ? 50 : 25) * finalScale;
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 48, 48), new THREE.MeshStandardMaterial({ map: baseTextures.nash, roughness: 0.75, metalness: 0.15 }));
@@ -841,7 +474,6 @@ try {
       p.hoverPull += ( (isHover?1:0) - p.hoverPull ) * 0.12;
       p.angVel += ( (0.012 + (pointerActive?nx*0.015:0) + p.hoverPull*nx*0.004) - p.angVel ) * 0.05;
       
-      // Ensures planets spread out dynamically
       const targetBaseAngle = (i/entries.length)*Math.PI*2 + Math.PI/5;
       const angleOffset = Math.sin(t*0.7+i*1.7)*0.0009*dt;
       p.angle = (p.angle + p.angVel*dt + angleOffset) % (Math.PI*2);
@@ -860,14 +492,14 @@ try {
     renderer.render(scene, camera);
   }
 
-  window.addEventListener("resize", ()=>{ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setPixelRatio(getDPR()); renderer.setSize(window.innerWidth, window.innerHeight, false); buildPlanets(); }, { passive:true });
+  window.addEventListener("resize", ()=>{ const w = window.innerWidth || 1, h = window.innerHeight || 1; camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setPixelRatio(getDPR()); renderer.setSize(w, h, false); buildPlanets(); }, { passive:true });
   $("brand").addEventListener("click", ()=>camera.position.set(0,0,220));
   
-  canvas.classList.add("ready"); // Fade in 3D scene smoothly
+  canvas.classList.add("ready");
   window.resume3D();
 } catch(e) { showErr(e); }
 
-} // End initApp
+}
 </script>
 </body>
 </html>
