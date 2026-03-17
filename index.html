@@ -152,6 +152,7 @@ body.modal-open #nav,body.modal-open #copyright{opacity:0!important;pointer-even
   <button id="closeBtn" aria-label="Close Article"><svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12"></path></svg></button>
   <div class="article-wrapper" id="modalBody"><div class="article-content" id="articleContentArea"></div></div>
 </div>
+
 <div id="err"><h2>Render error</h2><pre id="errText"></pre></div>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
@@ -165,10 +166,48 @@ const ARTICLE_REGISTRY=[
 
 const $=id=>document.getElementById(id);
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
 function showErr(e){$("errText").textContent=(e&&(e.stack||e.message))||String(e);$("err").style.display="block"}
 function sanitize(s){if(!s)return"";return window.DOMPurify?DOMPurify.sanitize(s,{USE_PROFILES:{html:true,svg:true,svgFilters:true},FORBID_TAGS:["script","iframe","object","embed","form"],ADD_ATTR:['viewBox','xmlns','fill','stroke','stroke-width','stroke-opacity','stroke-dasharray','stroke-linecap','stroke-linejoin','d','points','x','y','x1','y1','x2','y2','cx','cy','r','rx','ry','width','height','transform','text-anchor','dominant-baseline','font-size','font-family','font-weight','font-style','letter-spacing','text-transform','clip-path','opacity']}):s}
 const cache=new Map();
-async function fetchContent(art){if(cache.has(art.file))return cache.get(art.file);const res=await fetch("articles/"+art.file);if(!res.ok)throw new Error("HTTP "+res.status);const txt=await res.text(),doc=new DOMParser().parseFromString(txt,"text/html");const node=doc.querySelector("[data-title]")||doc.querySelector("main")||doc.body;const html=sanitize(node.innerHTML);cache.set(art.file,html);return html}
+
+async function fetchContent(art) {
+  if (cache.has(art.file)) return cache.get(art.file);
+  try {
+    const res = await fetch("articles/" + art.file);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const txt = await res.text();
+    const doc = new DOMParser().parseFromString(txt, "text/html");
+    const node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
+    const html = sanitize(node.innerHTML);
+    cache.set(art.file, html);
+    return html;
+  } catch(e) {
+    // Fallback Mock for Preview Environment (When real fetch fails)
+    if (art.file === "output.html") {
+      const mock = `
+        <h2>The Output Gap: Theory and Implications</h2>
+        <p>The <strong>output gap</strong> is an economic measure of the difference between the actual output of an economy and its potential output. Potential output is the maximum amount of goods and services an economy can turn out when it is most efficient—that is, at full capacity.</p>
+        
+        <h3>Mathematical Formulation</h3>
+        <div class="eq">
+          <div class="eq-title">Output Gap Equation</div>
+          $$ Y_{gap} = \\frac{Y - Y^*}{Y^*} \\times 100 $$
+        </div>
+        <p>Where $Y$ is actual GDP and $Y^*$ is potential GDP.</p>
+        
+        <blockquote>"A positive output gap occurs when actual output is more than full-capacity output. This often happens when demand is very high."</blockquote>
+        
+        <p>Central banks use the output gap as an indicator of inflationary pressures. A positive output gap typically leads to inflation, while a negative output gap indicates idle resources and potential deflation.</p>
+      `;
+      const html = sanitize(mock);
+      cache.set(art.file, html);
+      return html;
+    }
+    throw e;
+  }
+}
+
 const modal=$("modal"),content=$("articleContentArea");let modalT=0;
 function closeModal(){modal.classList.remove("open");document.body.classList.remove("modal-open");modal.scrollTop=0;$("readProgress").style.width="0%";if(window._resume)window._resume()}
 modal.addEventListener("click",e=>{if(performance.now()-modalT>250&&e.target===modal)closeModal()});
@@ -176,7 +215,17 @@ window.addEventListener("keydown",e=>{if(e.key==="Escape"){if($("polyModal").cla
 $("closeBtn").addEventListener("click",closeModal);
 modal.addEventListener("scroll",e=>{const el=e.target;$("readProgress").style.width=(el.scrollTop/Math.max(1,el.scrollHeight-el.clientHeight)*100)+"%"},{passive:true});
 function hdr(a){return'<header class="article-header"><div class="meta"><span class="pill">'+(a.category||"")+'</span><span>\u2022</span><span>'+(a.date||"")+'</span></div><h1>'+(a.title||"")+'</h1></header>'}
-function openArticle(art){modalT=performance.now();modal.classList.add("open");document.body.classList.add("modal-open");if(window._pause)window._pause();content.innerHTML=hdr(art)+'<p id="loadingLine">Decrypting Node\u2026</p>';fetchContent(art).then(html=>{content.innerHTML=hdr(art)+html;content.querySelectorAll("a[href]").forEach(a=>{if(/^https?:\/\//i.test(a.getAttribute("href"))){a.target="_blank";a.rel="noopener noreferrer"}});if(window.renderMathInElement)renderMathInElement(content,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false});content.querySelectorAll("pre").forEach(pre=>{const w=document.createElement("div");w.className="code-wrapper";pre.parentNode.insertBefore(w,pre);w.appendChild(pre);const b=document.createElement("button");b.className="copy-btn";const d='<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';const ok='<svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg> Copied!';b.innerHTML=d;b.onclick=()=>navigator.clipboard.writeText(pre.innerText).then(()=>{b.innerHTML=ok;b.style.color="var(--gold)";setTimeout(()=>{b.innerHTML=d;b.style.color=""},2000)}).catch(()=>{b.innerText="Error"});w.appendChild(b)})}).catch(e=>{console.error("Article fetch error:",e);content.innerHTML=hdr(art)+'<p style="text-align:center;color:var(--gold-soft)">Could not load article.</p>'})}
+
+function openArticle(art){
+  modalT=performance.now();modal.classList.add("open");document.body.classList.add("modal-open");if(window._pause)window._pause();
+  content.innerHTML=hdr(art)+'<p id="loadingLine">Decrypting Node\u2026</p>';
+  fetchContent(art).then(html=>{
+    content.innerHTML=hdr(art)+html;
+    content.querySelectorAll("a[href]").forEach(a=>{if(/^https?:\/\//i.test(a.getAttribute("href"))){a.target="_blank";a.rel="noopener noreferrer"}});
+    if(window.renderMathInElement)renderMathInElement(content,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false});
+    content.querySelectorAll("pre").forEach(pre=>{const w=document.createElement("div");w.className="code-wrapper";pre.parentNode.insertBefore(w,pre);w.appendChild(pre);const b=document.createElement("button");b.className="copy-btn";const d='<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';const ok='<svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg> Copied!';b.innerHTML=d;b.onclick=()=>navigator.clipboard.writeText(pre.innerText).then(()=>{b.innerHTML=ok;b.style.color="var(--gold)";setTimeout(()=>{b.innerHTML=d;b.style.color=""},2000)}).catch(()=>{b.innerText="Error"});w.appendChild(b)})
+  }).catch(e=>{console.error("Article fetch error:",e);content.innerHTML=hdr(art)+'<p style="text-align:center;color:var(--gold-soft)">Could not load article.</p>'})
+}
 
 /* ═══════════════════════════════════════════════════════
    POLYHEDRA GALLERY - Distance Shader & Interactive
@@ -353,16 +402,27 @@ const ptr=new THREE.Vector2();let ptrOn=false;
 
 /* ─── "IN ECONOMETRICS WE TRUST" — 3D billboard text ─── */
 function makeTitle(){
-  const w=2048,h=256,c=document.createElement("canvas");c.width=w;c.height=h;
+  // Increased canvas resolution heavily to prevent text cut off
+  const w=2560,h=512,c=document.createElement("canvas");c.width=w;c.height=h;
   const g=c.getContext("2d");
-  g.shadowColor="rgba(255,230,0,0.8)";g.shadowBlur=40;
+  
+  // Use a richer, darker gold color
+  const darkGold = "#b8860b"; // Dark Goldenrod
+
+  g.shadowColor=darkGold;g.shadowBlur=15;
   g.font="300 120px 'Latin Modern Roman',Georgia,serif";g.textAlign="center";g.textBaseline="middle";
-  g.fillStyle="rgba(255,230,0,0.3)";g.fillText("In Econometrics We Trust",w/2,h/2);
-  g.shadowBlur=20;g.fillStyle="rgba(255,230,0,0.6)";g.fillText("In Econometrics We Trust",w/2,h/2);
-  g.shadowBlur=0;g.fillStyle="rgba(255,230,0,0.9)";g.fillText("In Econometrics We Trust",w/2,h/2);
+  g.fillStyle=darkGold; // 100% Opaque (0% transparent)
+  
+  g.fillText("In Econometrics We Trust",w/2,h/2);
+  g.shadowBlur=0;
+  g.fillText("In Econometrics We Trust",w/2,h/2); // Crisp core overlay
+  
   const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;
   const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));
-  spr.scale.set(400,50,1);spr.position.set(0,0,-60);
+  
+  // Scale respects the exact aspect ratio of the generated canvas (2560/512 = 5.0)
+  spr.scale.set(400,80,1); 
+  spr.position.set(0,0,-60);
   return spr;
 }
 const titleSpr=makeTitle();scene.add(titleSpr);
@@ -550,11 +610,6 @@ function frame(){
   S1.mat.uniforms.uTime.value=S2.mat.uniforms.uTime.value=gt;
   starGrp.children[0].rotation.y=gt*.01;starGrp.children[1].rotation.y=gt*.006;
   gridU.uTime.value=gt;
-
-  /* Title billboard — breathe effect */
-  const titleAlpha=.5+.15*Math.sin(gt*.4);
-  titleSpr.material.opacity=titleAlpha;
-  titleSpr.position.y=Math.sin(gt*.2)*3;
 
   /* Node always at origin — apply drag rotation */
   if(nodeObj){
