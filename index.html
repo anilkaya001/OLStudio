@@ -34,7 +34,6 @@ body.modal-open #nav,body.modal-open #copyright{opacity:0!important;pointer-even
 #brand:hover{color:var(--gold);text-shadow:0 0 20px rgba(255,230,0,.5)}
 .nav-btns{display:flex;gap:8px}
 
-/* Glassmorphism buttons */
 .gbtn{font-family:var(--font);font-size:.56rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;padding:7px 16px;border-radius:6px;
   border:1px solid var(--glass-border);background:var(--glass);color:rgba(232,232,234,.7);
   cursor:pointer;backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
@@ -44,29 +43,30 @@ body.modal-open #nav,body.modal-open #copyright{opacity:0!important;pointer-even
 
 #copyright{position:fixed;bottom:clamp(10px,2.5vw,20px);left:50%;transform:translateX(-50%);font-family:var(--font);font-size:.5rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:rgba(232,232,234,.12);z-index:500;pointer-events:none;transition:opacity .4s}
 
-/* ── Drag hint ── */
 #dragHint{position:fixed;bottom:clamp(30px,5vw,60px);left:50%;transform:translateX(-50%);font-family:var(--font);font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,230,0,.2);z-index:600;pointer-events:none;transition:opacity 1s;animation:fadeHint 6s forwards}
 @keyframes fadeHint{0%,60%{opacity:1}100%{opacity:0}}
 @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
 
 /* ── Polyhedron Gallery Modal ── */
 #polyModal{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;
-  background:rgba(1,1,8,.7);backdrop-filter:blur(12px);
+  background:rgba(1,1,8,.85);backdrop-filter:blur(16px);
   opacity:0;pointer-events:none;transition:opacity .35s}
 #polyModal.open{opacity:1;pointer-events:auto}
 #polyCard{background:rgba(10,10,20,.85);border:1px solid var(--glass-border);backdrop-filter:var(--glass-blur);
-  border-radius:14px;width:min(90vw,560px);height:min(80vh,520px);position:relative;overflow:hidden;
+  border-radius:14px;width:min(90vw,600px);height:min(80vh,600px);position:relative;overflow:hidden;
   box-shadow:0 40px 100px rgba(0,0,0,.8),0 0 1px rgba(255,230,0,.2) inset}
-#polyCanvas{width:100%;height:100%;display:block}
-#polyClose{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;transition:all .2s}
+#polyCanvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#polyCanvas:active{cursor:grabbing}
+#polyClose{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;transition:all .2s}
 #polyClose:hover{background:var(--gold);color:#000;transform:scale(1.1)}
-#polyClose svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
-#polyNav{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10}
-.pnav{font-family:var(--font);font-size:.55rem;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass);backdrop-filter:blur(10px);color:rgba(232,232,234,.6);cursor:pointer;transition:all .2s}
+#polyClose svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+#polyNav{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:8px;z-index:10;width:90%}
+.pnav{font-family:var(--font);font-size:.55rem;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass);backdrop-filter:blur(10px);color:rgba(232,232,234,.6);cursor:pointer;transition:all .2s}
 .pnav:hover,.pnav.active{border-color:rgba(255,230,0,.4);color:var(--gold);background:rgba(255,230,0,.08)}
-#polyName{position:absolute;top:16px;left:50%;transform:translateX(-50%);font-family:var(--font);font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,230,0,.6);z-index:10}
+#polyName{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-family:var(--font);font-size:.8rem;letter-spacing:3px;text-transform:uppercase;color:rgba(255,230,0,.8);text-shadow:0 0 20px rgba(255,230,0,.4);z-index:10}
+#polyHint{position:absolute;top:50px;left:50%;transform:translateX(-50%);font-family:var(--font);font-size:.5rem;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.3);z-index:10;pointer-events:none}
 
-/* ── Article Modal (preserved) ── */
+/* ── Article Modal ── */
 #modal{position:fixed;inset:0;z-index:2000;display:flex;flex-direction:column;background:rgba(1,1,8,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow-y:auto;-webkit-overflow-scrolling:touch;opacity:0;pointer-events:none;transition:opacity .4s cubic-bezier(.16,1,.3,1);padding:clamp(16px,4vh,40px) 0}
 #modal.open{opacity:1;pointer-events:auto}
 #readProgress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--gold),#fff,var(--gold));width:0%;z-index:2100;transition:width .15s ease-out;box-shadow:0 0 20px var(--gold)}
@@ -140,6 +140,7 @@ body.modal-open #nav,body.modal-open #copyright{opacity:0!important;pointer-even
   <div id="polyCard">
     <button id="polyClose"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     <div id="polyName">Cuboctahedron</div>
+    <div id="polyHint">Drag to inspect</div>
     <canvas id="polyCanvas"></canvas>
     <div id="polyNav"></div>
   </div>
@@ -178,11 +179,10 @@ function hdr(a){return'<header class="article-header"><div class="meta"><span cl
 function openArticle(art){modalT=performance.now();modal.classList.add("open");document.body.classList.add("modal-open");if(window._pause)window._pause();content.innerHTML=hdr(art)+'<p id="loadingLine">Decrypting Node\u2026</p>';fetchContent(art).then(html=>{content.innerHTML=hdr(art)+html;content.querySelectorAll("a[href]").forEach(a=>{if(/^https?:\/\//i.test(a.getAttribute("href"))){a.target="_blank";a.rel="noopener noreferrer"}});if(window.renderMathInElement)renderMathInElement(content,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false});content.querySelectorAll("pre").forEach(pre=>{const w=document.createElement("div");w.className="code-wrapper";pre.parentNode.insertBefore(w,pre);w.appendChild(pre);const b=document.createElement("button");b.className="copy-btn";const d='<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';const ok='<svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg> Copied!';b.innerHTML=d;b.onclick=()=>navigator.clipboard.writeText(pre.innerText).then(()=>{b.innerHTML=ok;b.style.color="var(--gold)";setTimeout(()=>{b.innerHTML=d;b.style.color=""},2000)}).catch(()=>{b.innerText="Error"});w.appendChild(b)})}).catch(e=>{console.error("Article fetch error:",e);content.innerHTML=hdr(art)+'<p style="text-align:center;color:var(--gold-soft)">Could not load article.</p>'})}
 
 /* ═══════════════════════════════════════════════════════
-   POLYHEDRA GALLERY
+   POLYHEDRA GALLERY - Distance Shader & Interactive
    ═══════════════════════════════════════════════════════ */
 const POLYHEDRA=[
   {name:"Cuboctahedron",fn:()=>{
-    /* 12 vertices of a cuboctahedron at unit distance */
     const s=1,v=[[s,s,0],[-s,s,0],[-s,-s,0],[s,-s,0],[s,0,s],[-s,0,s],[-s,0,-s],[s,0,-s],[0,s,s],[0,-s,s],[0,-s,-s],[0,s,-s]];
     const f=[[0,8,1,11],[1,5,2,6],[2,9,3,10],[0,7,3,4],[8,4,9,5],[11,6,10,7],[0,4,8],[1,8,5],[2,5,9],[3,9,4],[0,11,7],[1,6,11],[2,10,6],[3,7,10]];
     return buildPoly(v,f)}},
@@ -191,6 +191,7 @@ const POLYHEDRA=[
   {name:"Octahedron",fn:()=>new THREE.OctahedronGeometry(1.4,0)},
   {name:"Tetrahedron",fn:()=>new THREE.TetrahedronGeometry(1.6,0)},
 ];
+
 function buildPoly(verts,faces){
   const geo=new THREE.BufferGeometry();const positions=[],indices=[];
   verts.forEach(v=>positions.push(...v));
@@ -198,39 +199,133 @@ function buildPoly(verts,faces){
   geo.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
   geo.setIndex(indices);geo.computeVertexNormals();return geo;
 }
+
 let polyScene,polyCam,polyRen,polyMesh,polyWire,polyRaf=0,polyActive=-1;
+let pDrag=false, pLast=new THREE.Vector2(), pRot=new THREE.Vector2();
+
 function initPolyGallery(){
   const c=$("polyCanvas");
   polyRen=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
   polyRen.setPixelRatio(Math.min(devicePixelRatio,2));
   polyScene=new THREE.Scene();
-  polyCam=new THREE.PerspectiveCamera(40,1,.1,100);polyCam.position.set(0,0,5);
-  polyScene.add(new THREE.AmbientLight(0xffffff,.6));
-  const dl=new THREE.DirectionalLight(0xffeedd,2);dl.position.set(3,4,5);polyScene.add(dl);
-  const dl2=new THREE.DirectionalLight(0x4466ff,1);dl2.position.set(-3,-2,3);polyScene.add(dl2);
+  
+  polyCam=new THREE.PerspectiveCamera(40,1,.1,100);
+  
+  // Interaction Logic
+  c.addEventListener("pointerdown",e=>{pDrag=true;pLast.set(e.clientX,e.clientY);c.setPointerCapture(e.pointerId)});
+  c.addEventListener("pointermove",e=>{
+      if(!pDrag)return;
+      pRot.y+=(e.clientX-pLast.x)*0.008;
+      pRot.x+=(e.clientY-pLast.y)*0.008;
+      pLast.set(e.clientX,e.clientY);
+  },{passive:true});
+  c.addEventListener("pointerup",e=>{pDrag=false;c.releasePointerCapture(e.pointerId)});
+
   /* nav buttons */
   const nav=$("polyNav");
   POLYHEDRA.forEach((p,i)=>{const b=document.createElement("button");b.className="pnav";b.textContent=p.name;b.onclick=()=>showPoly(i);nav.appendChild(b)});
   showPoly(0);
 }
+
 function showPoly(idx){
   polyActive=idx;$("polyName").textContent=POLYHEDRA[idx].name;
   document.querySelectorAll(".pnav").forEach((b,i)=>b.classList.toggle("active",i===idx));
   if(polyMesh){polyScene.remove(polyMesh);polyScene.remove(polyWire)}
+  
   const geo=POLYHEDRA[idx].fn();
-  /* Glass material */
-  polyMesh=new THREE.Mesh(geo,new THREE.MeshPhysicalMaterial({color:0x222244,metalness:.1,roughness:.05,transmission:.85,thickness:1.5,ior:1.5,clearcoat:1,clearcoatRoughness:.05,envMapIntensity:1}));
-  polyWire=new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xffe600,transparent:true,opacity:.6}));
-  polyScene.add(polyMesh);polyScene.add(polyWire);
+  geo.computeBoundingSphere();
+  const r = geo.boundingSphere.radius;
+
+  // Perfect fit based on camera FOV
+  const fovRad = polyCam.fov * Math.PI / 180;
+  const dist = (r * 1.5) / Math.sin(fovRad / 2); 
+  polyCam.position.set(0, 0, dist);
+
+  // Distance-based Surface Shader: Dark Blue -> Golden -> Bronze
+  const mat = new THREE.ShaderMaterial({
+      uniforms: {
+          colorGold: { value: new THREE.Color("#ffe600") },
+          colorBronze: { value: new THREE.Color("#cd7f32") },
+          colorBlue: { value: new THREE.Color("#080820") },
+          camDist: { value: dist },
+          radius: { value: r }
+      },
+      vertexShader: `
+          varying vec3 vViewPos;
+          varying vec3 vNormal;
+          void main() {
+              vNormal = normalize(normalMatrix * normal);
+              vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+              vViewPos = mvPos.xyz;
+              gl_Position = projectionMatrix * mvPos;
+          }
+      `,
+      fragmentShader: `
+          uniform vec3 colorGold;
+          uniform vec3 colorBronze;
+          uniform vec3 colorBlue;
+          uniform float camDist;
+          uniform float radius;
+
+          varying vec3 vViewPos;
+          varying vec3 vNormal;
+
+          void main() {
+              float d = length(vViewPos); // Distance from camera
+              
+              // Normalize distance across the object's depth
+              float depthRange = radius * 2.0;
+              float depth = (d - (camDist - radius)) / depthRange;
+              depth = clamp(depth, 0.0, 1.0);
+
+              vec3 color;
+              // Front (closest) -> Gold, Middle -> Bronze, Back (farthest) -> Dark Blue
+              if (depth < 0.5) {
+                  color = mix(colorGold, colorBronze, depth * 2.0);
+              } else {
+                  color = mix(colorBronze, colorBlue, (depth - 0.5) * 2.0);
+              }
+
+              vec3 normal = normalize(vNormal);
+              vec3 viewDir = normalize(-vViewPos);
+              
+              // Lighting
+              vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+              float diff = max(dot(normal, lightDir), 0.0);
+              float ambient = 0.2;
+              float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
+
+              vec3 finalColor = color * (diff * 0.8 + ambient) + (colorGold * fresnel * 0.6);
+              gl_FragColor = vec4(finalColor, 1.0);
+          }
+      `,
+      side: THREE.DoubleSide
+  });
+
+  polyMesh=new THREE.Mesh(geo,mat);
+  polyWire=new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xffe600,transparent:true,opacity:.2}));
+  polyScene.add(polyMesh);
+  polyScene.add(polyWire);
+  pRot.set(0,0); // reset rotation on switch
 }
+
 function polyFrame(){
   if(!$("polyModal").classList.contains("open")){polyRaf=0;return}
   polyRaf=requestAnimationFrame(polyFrame);
+  
   const r=$("polyCard").getBoundingClientRect();
-  polyRen.setSize(r.width,r.height,false);polyCam.aspect=r.width/r.height;polyCam.updateProjectionMatrix();
-  if(polyMesh){polyMesh.rotation.x+=.005;polyMesh.rotation.y+=.008;polyWire.rotation.copy(polyMesh.rotation)}
+  polyRen.setSize(r.width,r.height,false);
+  polyCam.aspect=r.width/r.height;
+  polyCam.updateProjectionMatrix();
+  
+  if(polyMesh){
+      if (!pDrag) { pRot.y += 0.005; pRot.x += 0.002; } // Auto idle rotation
+      polyMesh.rotation.set(pRot.x, pRot.y, 0);
+      polyWire.rotation.copy(polyMesh.rotation);
+  }
   polyRen.render(polyScene,polyCam);
 }
+
 $("polyBtn").addEventListener("click",()=>{if(!polyScene)initPolyGallery();$("polyModal").classList.add("open");if(!polyRaf)polyRaf=requestAnimationFrame(polyFrame)});
 $("polyClose").addEventListener("click",()=>$("polyModal").classList.remove("open"));
 $("polyModal").addEventListener("click",e=>{if(e.target===$("polyModal"))$("polyModal").classList.remove("open")});
@@ -260,7 +355,6 @@ const ptr=new THREE.Vector2();let ptrOn=false;
 function makeTitle(){
   const w=2048,h=256,c=document.createElement("canvas");c.width=w;c.height=h;
   const g=c.getContext("2d");
-  /* Glow layers */
   g.shadowColor="rgba(255,230,0,0.8)";g.shadowBlur=40;
   g.font="300 120px 'Latin Modern Roman',Georgia,serif";g.textAlign="center";g.textBaseline="middle";
   g.fillStyle="rgba(255,230,0,0.3)";g.fillText("In Econometrics We Trust",w/2,h/2);
@@ -274,7 +368,6 @@ function makeTitle(){
 const titleSpr=makeTitle();scene.add(titleSpr);
 
 /* ─── MANIFOLD STAR FIELD ─── */
-/* Stars are constrained to a trefoil knot tube with controlled radius */
 const mob=W()<800;
 function manifoldStars(count,R,tubeR,sizeMin,sizeMax){
   const COLS=[[.6,.7,1],[.7,.8,1],[.9,.92,1],[1,.98,.9],[1,.95,.7],[1,.8,.5],[1,.6,.4]];
@@ -282,11 +375,9 @@ function manifoldStars(count,R,tubeR,sizeMin,sizeMax){
   for(let i=0;i<count;i++){
     const u=Math.random()*Math.PI*2,v=Math.random()*Math.PI*2;
     const r=tubeR*Math.sqrt(Math.random());
-    /* Trefoil knot parametric curve */
     const cx=R*(Math.sin(u)+2*Math.sin(2*u));
     const cy=R*(Math.cos(u)-2*Math.cos(2*u));
     const cz=R*(-Math.sin(3*u));
-    /* Frenet frame for tube extrusion */
     const dx=R*(Math.cos(u)+4*Math.cos(2*u)),dy=R*(-Math.sin(u)+4*Math.sin(2*u)),dz=R*(-3*Math.cos(3*u));
     const T=new THREE.Vector3(dx,dy,dz).normalize();
     const N=new THREE.Vector3().crossVectors(T,new THREE.Vector3(0,1,0)).normalize();
@@ -341,11 +432,10 @@ const gridMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blendi
 const gridFloor=new THREE.Mesh(new THREE.PlaneGeometry(8000,8000,64,64),gridMat);
 gridFloor.rotation.x=-Math.PI/2;gridFloor.position.y=-200;scene.add(gridFloor);
 
-/* ─── CUBOCTAHEDRON ARTICLE NODE (always centered) ─── */
+/* ─── CUBOCTAHEDRON ARTICLE NODE (Simplified & Auto-scaled) ─── */
 const gGrp=new THREE.Group();scene.add(gGrp);
 let nodeObj=null;
 
-/* Cuboctahedron geometry */
 function makeCuboctahedron(s){
   const v=[[s,s,0],[-s,s,0],[-s,-s,0],[s,-s,0],[s,0,s],[-s,0,s],[-s,0,-s],[s,0,-s],[0,s,s],[0,-s,s],[0,-s,-s],[0,s,-s]];
   const f=[[0,8,1,11],[1,5,2,6],[2,9,3,10],[0,7,3,4],[8,4,9,5],[11,6,10,7],[0,4,8],[1,8,5],[2,5,9],[3,9,4],[0,11,7],[1,6,11],[2,10,6],[3,7,10]];
@@ -354,12 +444,17 @@ function makeCuboctahedron(s){
 
 function buildNode(){
   if(nodeObj)gGrp.remove(nodeObj.group);
-  const sc=Math.max(Math.min((W()/H())*.8,1.2),.5);
-  const rad=(mob?22:16)*sc;
+  
+  // Automatic scaling function strictly tied to minimum screen dimension
+  const minDim = Math.min(W(), H());
+  const sc = Math.max(0.35, Math.min(minDim / 800, 1.2));
+  
+  // Base radius heavily scaled down
+  const rad = 12 * sc; 
   const group=new THREE.Group();
   const art=ARTICLE_REGISTRY[0];
 
-  /* Core cuboctahedron — dark glass */
+  /* Core cuboctahedron only — dark glass */
   const cGeo=makeCuboctahedron(rad);
   const core=new THREE.Mesh(cGeo,new THREE.MeshPhysicalMaterial({color:0x080818,metalness:.2,roughness:.05,transmission:.6,thickness:2,ior:1.8,clearcoat:1,clearcoatRoughness:.02,emissive:0x0a0a20,emissiveIntensity:1}));
   group.add(core);
@@ -368,35 +463,13 @@ function buildNode(){
   const wire=new THREE.LineSegments(new THREE.EdgesGeometry(cGeo),new THREE.LineBasicMaterial({color:0xffe600,transparent:true,opacity:.85}));
   group.add(wire);
 
-  /* Orbiting torus knot */
-  const tk=new THREE.Mesh(new THREE.TorusKnotGeometry(rad*1.6,rad*.08,80,10,2,3),
-    new THREE.MeshBasicMaterial({color:0xffe600,wireframe:true,transparent:true,opacity:.5,blending:THREE.AdditiveBlending}));
-  group.add(tk);
-
-  /* Accretion rings */
-  const ring1=new THREE.Mesh(new THREE.TorusGeometry(rad*2.5,rad*.06,8,80),
-    new THREE.MeshBasicMaterial({color:0xffe600,transparent:true,opacity:.25,blending:THREE.AdditiveBlending}));
-  ring1.rotation.x=Math.PI*.4;group.add(ring1);
-  const ring2=new THREE.Mesh(new THREE.TorusGeometry(rad*2,rad*.04,8,64),
-    new THREE.MeshBasicMaterial({color:0x4488ff,transparent:true,opacity:.15,blending:THREE.AdditiveBlending}));
-  ring2.rotation.x=Math.PI*.5;ring2.rotation.z=Math.PI*.3;group.add(ring2);
-
-  /* Halo */
-  const haloC=document.createElement("canvas");haloC.width=haloC.height=256;const hG=haloC.getContext("2d");
-  const hGr=hG.createRadialGradient(128,128,0,128,128,128);
-  hGr.addColorStop(0,"rgba(255,255,200,.7)");hGr.addColorStop(.2,"rgba(255,230,0,.35)");hGr.addColorStop(.5,"rgba(255,200,50,.08)");hGr.addColorStop(1,"rgba(0,0,0,0)");
-  hG.fillStyle=hGr;hG.fillRect(0,0,256,256);
-  const haloTex=new THREE.CanvasTexture(haloC);haloTex.colorSpace=THREE.SRGBColorSpace;
-  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:haloTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
-  halo.scale.set(rad*12,rad*12,1);group.add(halo);
-
   /* Label */
   const lc=document.createElement("canvas");lc.width=1024;lc.height=128;const lg=lc.getContext("2d");
   lg.fillStyle="rgba(255,255,255,1)";lg.textAlign="center";lg.textBaseline="middle";
   lg.font="800 60px 'Latin Modern Roman',Georgia,serif";lg.fillText(art.title,512,64);
   const lTex=new THREE.CanvasTexture(lc);lTex.colorSpace=THREE.SRGBColorSpace;
   const lbl=new THREE.Sprite(new THREE.SpriteMaterial({map:lTex,transparent:true,depthWrite:false}));
-  lbl.scale.set(120*sc,15*sc,1);lbl.position.y=-(rad+24*sc);
+  lbl.scale.set(120*sc,15*sc,1);lbl.position.y=-(rad+14*sc);
   group.add(lbl);
 
   /* Category label */
@@ -405,16 +478,15 @@ function buildNode(){
   cg.font="600 28px 'Latin Modern Roman',Georgia,serif";cg.fillText(art.category+" \u2022 "+art.date,256,32);
   const cTex=new THREE.CanvasTexture(cc);cTex.colorSpace=THREE.SRGBColorSpace;
   const catLbl=new THREE.Sprite(new THREE.SpriteMaterial({map:cTex,transparent:true,depthWrite:false}));
-  catLbl.scale.set(80*sc,10*sc,1);catLbl.position.y=-(rad+40*sc);
+  catLbl.scale.set(80*sc,10*sc,1);catLbl.position.y=-(rad+26*sc);
   group.add(catLbl);
 
   group.userData.article=art;
-  core.userData.article=art;wire.userData.article=art;tk.userData.article=art;
-  ring1.userData.article=art;ring2.userData.article=art;halo.userData.article=art;
+  core.userData.article=art;wire.userData.article=art;
   lbl.userData.article=art;catLbl.userData.article=art;
   gGrp.add(group);
 
-  nodeObj={group,core,wire,tk,ring1,ring2,halo,lbl,catLbl,rad,
+  nodeObj={group,core,wire,lbl,catLbl,rad,
     rotVel:new THREE.Vector2(0,0) /* for drag */};
 }
 buildNode();
@@ -491,16 +563,16 @@ function frame(){
     if(!isDragging){n.rotVel.multiplyScalar(.96)}
     n.group.rotation.x+=n.rotVel.x*dt*2;
     n.group.rotation.y+=n.rotVel.y*dt*2;
+    
     /* Idle rotation when not dragged */
     if(Math.abs(n.rotVel.x)<.01&&Math.abs(n.rotVel.y)<.01){
       n.group.rotation.x+=dt*.15;n.group.rotation.y+=dt*.25;
     }
-    /* Animate sub-elements */
-    n.tk.rotation.x-=dt*1.2;n.tk.rotation.y+=dt*1.5;
-    n.ring1.rotation.z+=dt*.8;n.ring2.rotation.y+=dt*.6;
+    
     /* Hover scale */
     const ts=hovN?1.15:1;
     n.group.scale.lerp(new THREE.Vector3(ts,ts,ts),.06);
+    
     /* Float */
     n.group.position.y=Math.sin(gt*1.2)*3+Math.cos(gt*.7)*2;
   }
@@ -508,7 +580,14 @@ function frame(){
   ren.render(scene,cam);
 }
 
-window.addEventListener("resize",()=>{cam.aspect=W()/H();cam.updateProjectionMatrix();ren.setPixelRatio(dpr());ren.setSize(W(),H(),false);buildNode()},{passive:true});
+window.addEventListener("resize",()=>{
+    cam.aspect=W()/H();
+    cam.updateProjectionMatrix();
+    ren.setPixelRatio(dpr());
+    ren.setSize(W(),H(),false);
+    buildNode(); // Automatically recalculates responsive scale factor!
+},{passive:true});
+
 $("brand").addEventListener("click",()=>{cam.position.set(0,40,320);if(nodeObj){nodeObj.rotVel.set(0,0);nodeObj.group.rotation.set(0,0,0)}});
 
 canvas.classList.add("ready");
