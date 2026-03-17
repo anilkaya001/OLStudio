@@ -170,7 +170,7 @@ body.modal-open #copyright { opacity: 0; }
 .article-content li { margin-bottom: 0.5rem; padding-left: 0.4rem;}
 .article-content li::marker { color: var(--gold); }
 .article-content blockquote { margin: 2rem 0; padding: 1.5rem 2rem 1.5rem 3rem; background: rgba(255,255,255,0.02); font-style: italic; border-radius: 4px; position: relative; border: 1px solid var(--card-border); border-left: 4px solid var(--gold); color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim)); }
-.article-content blockquote::before { content: "“"; position: absolute; left: 0.6rem; top: 0.5rem; font-family: var(--font-main) !important; font-size: 3rem; color: var(--gold); line-height: 1; opacity: 0.3; }
+.article-content blockquote::before { content: "\201C"; position: absolute; left: 0.6rem; top: 0.5rem; font-family: var(--font-main) !important; font-size: 3rem; color: var(--gold); line-height: 1; opacity: 0.3; }
 .article-content .katex-display { overflow-x: auto; overflow-y: hidden; padding: 1rem 0; margin: 1.8rem 0; background: rgba(0,0,0,0.3); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
 .classical-caption { font-family: var(--font-main) !important; font-size: 1.05rem; font-style: italic; color: var(--gold-soft); text-align: center; margin: 1.5rem auto 2rem; padding: 1rem; border-top: 1px solid var(--gold-glow); border-bottom: 1px solid var(--gold-glow); background: radial-gradient(ellipse at center, rgba(255,230,0,0.04) 0%, rgba(0,0,0,0) 80%); line-height: 1.5; max-width: 95%; }
 .abstract-container { position: relative; margin: 1.5rem 0; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid var(--card-border); box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
@@ -214,7 +214,7 @@ body.modal-open #copyright { opacity: 0; }
     <canvas id="gl" aria-hidden="true"></canvas>
     <div id="orbitHint" aria-hidden="true"></div>
     <div id="depthName" aria-hidden="true">In Econometrics We Trust</div>
-    <div id="copyright" aria-hidden="true">© 2026 Anıl Kaya</div>
+    <div id="copyright" aria-hidden="true">&copy; 2026 Anıl Kaya</div>
 </main>
 <div id="readProgress" aria-hidden="true"></div>
 <div id="modal" role="dialog" aria-modal="true" aria-label="Article Reader">
@@ -227,9 +227,9 @@ body.modal-open #copyright { opacity: 0; }
 </div>
 <div id="err"><h2>Render error</h2><pre id="errText"></pre></div>
 <script>
-window.addEventListener('load', () => {
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+window.addEventListener('load', function() {
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
             setTimeout(initApp, 100); 
         });
     });
@@ -238,10 +238,10 @@ window.addEventListener('load', () => {
 function initApp() {
 "use strict";
 
-const $ = (id)=>document.getElementById(id);
+var $ = function(id){ return document.getElementById(id); };
 function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 function showErr(e){
-  const txt = $("errText");
+  var txt = $("errText");
   if(txt) txt.textContent = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
   $("err").style.display = "block";
 }
@@ -252,38 +252,38 @@ function sanitizeHTML(str) {
   return str.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "").replace(/<(iframe|object|embed|form|style)\b[^>]*>([\s\S]*?)<\/\1>/gim, "");
 }
 
-const CONFIG = {
+var CONFIG = {
   githubUser: "anilkaya001",
   githubRepo: "OLStudio",
   articlesFolder: "articles"
 };
 
-const ARTICLE_CACHE = new Map();
-let ARTICLES = [];
+var ARTICLE_CACHE = new Map();
+var ARTICLES = [];
 
 async function loadArticle(a){
   if (ARTICLE_CACHE.has(a.id)) return ARTICLE_CACHE.get(a.id);
-  let rawHTML = a.rawHTML || "";
+  var rawHTML = a.rawHTML || "";
   if (!rawHTML && a.downloadUrl) {
     try {
-      const r = await fetch(a.downloadUrl);
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const txt = await r.text();
-      const doc = new DOMParser().parseFromString(txt, "text/html");
-      const node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
+      var r = await fetch(a.downloadUrl);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      var txt = await r.text();
+      var doc = new DOMParser().parseFromString(txt, "text/html");
+      var node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
       rawHTML = node.innerHTML;
     } catch(e) {
-      rawHTML = `<p style="text-align:center;color:var(--gold-soft)">Could not load article. Please try again.</p>`;
+      rawHTML = '<p style="text-align:center;color:var(--gold-soft)">Could not load article. Please try again.</p>';
     }
   }
-  const meta = { title: a.title, date: a.date, category: a.category };
-  const payload = { meta, safeHTML: sanitizeHTML(rawHTML) };
+  var meta = { title: a.title, date: a.date, category: a.category };
+  var payload = { meta: meta, safeHTML: sanitizeHTML(rawHTML) };
   ARTICLE_CACHE.set(a.id, payload);
   return payload;
 }
 
-const modal = $("modal"), contentArea = $("articleContentArea"), scrollCtx = modal;
-let modalJustOpenedAt = 0;
+var modal = $("modal"), contentArea = $("articleContentArea"), scrollCtx = modal;
+var modalJustOpenedAt = 0;
 
 function closeModal(){
   modal.classList.remove("open"); document.body.classList.remove("modal-open");
@@ -291,131 +291,126 @@ function closeModal(){
   if (window.resume3D) window.resume3D();
 }
 
-modal.addEventListener("click", (e)=>{ if (performance.now() - modalJustOpenedAt > 250 && e.target === modal) closeModal(); });
-window.addEventListener("keydown", (e)=>{ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
+modal.addEventListener("click", function(e){ if (performance.now() - modalJustOpenedAt > 250 && e.target === modal) closeModal(); });
+window.addEventListener("keydown", function(e){ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
 $("closeBtn").addEventListener("click", closeModal);
 
-scrollCtx.addEventListener("scroll", (e) => { 
-    const el = e.target;
+scrollCtx.addEventListener("scroll", function(e) { 
+    var el = e.target;
     $("readProgress").style.width = ((el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)) * 100) + "%"; 
 }, { passive: true });
 
+/* ─── FIX 2: gate on rawHTML OR downloadUrl so fetched articles render ─── */
 window.openArticle = function(a){
   modalJustOpenedAt = performance.now();
   modal.classList.add("open"); document.body.classList.add("modal-open");
   if (window.pause3D) window.pause3D();
 
-  contentArea.innerHTML = `<header class="article-header"><div class="meta"><span class="pill">${a.category||""}</span><span>•</span><span>${a.date||""}</span></div><h1>${a.title||""}</h1></header><p id="loadingLine">Decrypting Node...</p>`;
+  contentArea.innerHTML = '<header class="article-header"><div class="meta"><span class="pill">' + (a.category||"") + '</span><span>&bull;</span><span>' + (a.date||"") + '</span></div><h1>' + (a.title||"") + '</h1></header><p id="loadingLine">Decrypting Node...</p>';
 
-  if (a.rawHTML) {
-      loadArticle(a).then(({ meta, safeHTML })=>{
-        contentArea.innerHTML = `<header class="article-header"><div class="meta"><span class="pill">${meta.category||""}</span><span>•</span><span>${meta.date||""}</span></div><h1>${meta.title||""}</h1></header>` + safeHTML;
+  if (a.rawHTML || a.downloadUrl) {
+      loadArticle(a).then(function(result){
+        var meta = result.meta, safeHTML = result.safeHTML;
+        contentArea.innerHTML = '<header class="article-header"><div class="meta"><span class="pill">' + (meta.category||"") + '</span><span>&bull;</span><span>' + (meta.date||"") + '</span></div><h1>' + (meta.title||"") + '</h1></header>' + safeHTML;
         
-        contentArea.querySelectorAll('a[href]').forEach(link=>{
+        contentArea.querySelectorAll('a[href]').forEach(function(link){
           if (/^https?:\/\//i.test(link.getAttribute("href"))) { link.setAttribute("target","_blank"); link.setAttribute("rel","noopener noreferrer"); }
         });
     
         if (window.renderMathInElement) window.renderMathInElement(contentArea, { delimiters: [{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false}], throwOnError: false });
         
-        contentArea.querySelectorAll('pre').forEach(pre => {
-            const wrapper = document.createElement('div'); wrapper.className = 'code-wrapper';
+        contentArea.querySelectorAll('pre').forEach(function(pre) {
+            var wrapper = document.createElement('div'); wrapper.className = 'code-wrapper';
             pre.parentNode.insertBefore(wrapper, pre); wrapper.appendChild(pre);
-            const btn = document.createElement('button'); btn.className = 'copy-btn';
-            const defaultHTML = `<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy`;
-            const successHTML = `<svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
+            var btn = document.createElement('button'); btn.className = 'copy-btn';
+            var defaultHTML = '<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy';
+            var successHTML = '<svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
             btn.innerHTML = defaultHTML;
-            btn.onclick = () => {
-                const ta = document.createElement("textarea"); ta.value = pre.innerText; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
-                try { document.execCommand('copy'); btn.innerHTML = successHTML; btn.style.color = "var(--gold)"; btn.style.borderColor = "var(--gold)"; setTimeout(() => { btn.innerHTML = defaultHTML; btn.style.color = ""; btn.style.borderColor = ""; }, 2000); } 
+            btn.onclick = function() {
+                var ta = document.createElement("textarea"); ta.value = pre.innerText; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); btn.innerHTML = successHTML; btn.style.color = "var(--gold)"; btn.style.borderColor = "var(--gold)"; setTimeout(function() { btn.innerHTML = defaultHTML; btn.style.color = ""; btn.style.borderColor = ""; }, 2000); } 
                 catch (err) { btn.innerText = "Error"; } finally { document.body.removeChild(ta); }
             };
             wrapper.appendChild(btn);
         });
-      }).catch(err=>showErr(err));
+      }).catch(function(err){ showErr(err); });
   } else {
-      contentArea.innerHTML = `<header class="article-header"><div class="meta"><span class="pill">System</span></div><h1>${a.title}</h1></header><p style="text-align:center; color: var(--gold-soft);">This is an automated system node. Please upload HTML files to your GitHub <b>articles</b> folder to populate the network.</p>`;
+      contentArea.innerHTML = '<header class="article-header"><div class="meta"><span class="pill">System</span></div><h1>' + a.title + '</h1></header><p style="text-align:center; color: var(--gold-soft);">This is an automated system node. Please upload HTML files to your GitHub <b>articles</b> folder to populate the network.</p>';
   }
-}
+};
 
 if (!window.THREE) { showErr(new Error("Three.js library failed to load. Please verify CDN connection.")); return; }
 
 try {
-  const canvas = $("gl");
-  const winW = window.innerWidth || 1, winH = window.innerHeight || 1;
-  const getDPR = ()=>Math.min(window.devicePixelRatio || 1, (window.innerWidth || 1) < 800 ? 1.0 : 1.5); 
+  var canvas = $("gl");
+  var winW = window.innerWidth || 1, winH = window.innerHeight || 1;
+  var getDPR = function(){ return Math.min(window.devicePixelRatio || 1, (window.innerWidth || 1) < 800 ? 1.0 : 1.5); };
   
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
   renderer.setPixelRatio(getDPR()); renderer.setSize(winW, winH, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.3;
 
-  const scene = new THREE.Scene(); scene.background = new THREE.Color(cssVar("--bg") || "#020203");
-  const camera = new THREE.PerspectiveCamera(50, winW/winH, 0.1, 10000); camera.position.set(0, 60, 450);
+  var scene = new THREE.Scene(); scene.background = new THREE.Color(cssVar("--bg") || "#020203");
+  var camera = new THREE.PerspectiveCamera(50, winW/winH, 0.1, 10000); camera.position.set(0, 60, 450);
 
   scene.add(new THREE.AmbientLight(0xffffff, 1.2));
-  const key = new THREE.DirectionalLight(0xffffff, 3.5); key.position.set(160, 190, 130); scene.add(key);
-  const fill = new THREE.DirectionalLight(0x4488ff, 2.0); fill.position.set(-210, 70, 160); scene.add(fill);
-  const rim = new THREE.PointLight(0xd4af37, 5.0, 1500, 1.5); rim.position.set(0, -100, -320); scene.add(rim);
+  var key = new THREE.DirectionalLight(0xffffff, 3.5); key.position.set(160, 190, 130); scene.add(key);
+  var fill = new THREE.DirectionalLight(0x4488ff, 2.0); fill.position.set(-210, 70, 160); scene.add(fill);
+  var rim = new THREE.PointLight(0xd4af37, 5.0, 1500, 1.5); rim.position.set(0, -100, -320); scene.add(rim);
 
-  const pointer = new THREE.Vector2(0,0); let px=0, py=0, pointerActive=false;
+  var pointer = new THREE.Vector2(0,0); var px=0, py=0, pointerActive=false;
 
-  const floorGeo = new THREE.PlaneGeometry(6000, 6000);
-  const floorMat = new THREE.ShaderMaterial({
+  var floorGeo = new THREE.PlaneGeometry(6000, 6000);
+  var floorMat = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color(cssVar("--gold") || "#D4AF37") } },
-    vertexShader: `varying vec2 vUv; varying vec3 vPos; void main(){ vUv = uv; vPos = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * vec4(vPos, 1.0); }`,
-    fragmentShader: `varying vec2 vUv; varying vec3 vPos; uniform float uTime; uniform vec3 uColor; void main(){
-        float dist = length(vPos.xz);
-        vec2 grid = fract(vUv * 160.0 - vec2(0.0, uTime * 0.04) + sin(dist*0.005 - uTime*0.8)*0.05);
-        float line = min(grid.x, grid.y);
-        float alpha = smoothstep(0.06, 0.0, line);
-        float fade = exp(-dist * 0.0008);
-        gl_FragColor = vec4(uColor, alpha * fade * 0.25);
-    }`
+    vertexShader: "varying vec2 vUv; varying vec3 vPos; void main(){ vUv = uv; vPos = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * vec4(vPos, 1.0); }",
+    fragmentShader: "varying vec2 vUv; varying vec3 vPos; uniform float uTime; uniform vec3 uColor; void main(){ float dist = length(vPos.xz); vec2 grid = fract(vUv * 160.0 - vec2(0.0, uTime * 0.04) + sin(dist*0.005 - uTime*0.8)*0.05); float line = min(grid.x, grid.y); float alpha = smoothstep(0.06, 0.0, line); float fade = exp(-dist * 0.0008); gl_FragColor = vec4(uColor, alpha * fade * 0.25); }"
   });
-  const floor = new THREE.Mesh(floorGeo, floorMat);
+  var floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2; floor.position.y = -220;
   scene.add(floor);
 
-  const galaxy = new THREE.Group(); scene.add(galaxy);
-  const isMobile = winW < 800;
-  const maxStars = isMobile ? 12000 : 35000;
+  var galaxy = new THREE.Group(); scene.add(galaxy);
+  var isMobile = winW < 800;
+  var maxStars = isMobile ? 12000 : 35000;
   
-  const starPos = new Float32Array(maxStars*3);
-  const starSize = new Float32Array(maxStars);
+  var starPos = new Float32Array(maxStars*3);
+  var starSize = new Float32Array(maxStars);
 
-  for (let i=0; i<maxStars; i++){
+  for (var i=0; i<maxStars; i++){
     if (i < maxStars * 0.70) {
-        const u = Math.random() * Math.PI * 2;
-        const v = Math.random() * Math.PI * 2;
-        const R = 220; 
-        const r = 90 * (Math.random() * 0.7 + 0.3); 
+        var u = Math.random() * Math.PI * 2;
+        var v = Math.random() * Math.PI * 2;
+        var R = 220; 
+        var r = 90 * (Math.random() * 0.7 + 0.3); 
 
-        const cx = R * (Math.sin(u) + 2 * Math.sin(2 * u));
-        const cy = R * (Math.cos(u) - 2 * Math.cos(2 * u));
-        const cz = R * (-Math.sin(3 * u));
+        var cx = R * (Math.sin(u) + 2 * Math.sin(2 * u));
+        var cy = R * (Math.cos(u) - 2 * Math.cos(2 * u));
+        var cz = R * (-Math.sin(3 * u));
 
-        const dx = R * (Math.cos(u) + 4 * Math.cos(2 * u));
-        const dy = R * (-Math.sin(u) + 4 * Math.sin(2 * u));
-        const dz = R * (-3 * Math.cos(3 * u));
+        var dx = R * (Math.cos(u) + 4 * Math.cos(2 * u));
+        var dy = R * (-Math.sin(u) + 4 * Math.sin(2 * u));
+        var dz = R * (-3 * Math.cos(3 * u));
         
-        const tangent = new THREE.Vector3(dx, dy, dz).normalize();
-        const upVec = new THREE.Vector3(0, 1, 0); 
-        const normal = new THREE.Vector3().crossVectors(tangent, upVec).normalize();
-        const binormal = new THREE.Vector3().crossVectors(tangent, normal).normalize();
+        var tangent = new THREE.Vector3(dx, dy, dz).normalize();
+        var upVec = new THREE.Vector3(0, 1, 0); 
+        var normal = new THREE.Vector3().crossVectors(tangent, upVec).normalize();
+        var binormal = new THREE.Vector3().crossVectors(tangent, normal).normalize();
 
-        const px = cx + r * Math.cos(v) * normal.x + r * Math.sin(v) * binormal.x;
-        const py = cy + r * Math.cos(v) * normal.y + r * Math.sin(v) * binormal.y;
-        const pz = cz + r * Math.cos(v) * normal.z + r * Math.sin(v) * binormal.z;
+        var spx = cx + r * Math.cos(v) * normal.x + r * Math.sin(v) * binormal.x;
+        var spy = cy + r * Math.cos(v) * normal.y + r * Math.sin(v) * binormal.y;
+        var spz = cz + r * Math.cos(v) * normal.z + r * Math.sin(v) * binormal.z;
 
-        starPos[i*3] = px * 1.2; 
-        starPos[i*3+1] = pz * 1.2; 
-        starPos[i*3+2] = py * 1.2 - 200;
+        starPos[i*3] = spx * 1.2; 
+        starPos[i*3+1] = spz * 1.2; 
+        starPos[i*3+2] = spy * 1.2 - 200;
 
         starSize[i] = Math.random() * 2.5 + 1.0;
     } else {
-        const rd = Math.pow(Math.random(), 0.5) * 3500;
-        const th = Math.random() * Math.PI*2;
-        const ph = Math.acos(2 * Math.random() - 1);
+        var rd = Math.pow(Math.random(), 0.5) * 3500;
+        var th = Math.random() * Math.PI*2;
+        var ph = Math.acos(2 * Math.random() - 1);
         starPos[i*3] = rd * Math.sin(ph) * Math.cos(th); 
         starPos[i*3+1] = rd * Math.sin(ph) * Math.sin(th); 
         starPos[i*3+2] = rd * Math.cos(ph);
@@ -424,74 +419,74 @@ try {
     }
   }
   
-  const starGeom = new THREE.BufferGeometry(); 
+  var starGeom = new THREE.BufferGeometry(); 
   starGeom.setAttribute("position", new THREE.BufferAttribute(starPos, 3)); 
   starGeom.setAttribute("aSize", new THREE.BufferAttribute(starSize, 1));
   
-  const stars = new THREE.Points(starGeom, new THREE.ShaderMaterial({ 
+  var stars = new THREE.Points(starGeom, new THREE.ShaderMaterial({ 
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, 
       uniforms: { uTime: { value: 0 } }, 
-      vertexShader: `attribute float aSize; varying vec3 vColor; varying float vAlpha; uniform float uTime; void main(){ vec3 p = position; p.y += sin(uTime*0.5 + p.x*0.005)*5.0; vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = aSize * (800.0 / -mv.z); vAlpha = smoothstep(3500.0, 200.0, length(p)); float d = length(mv.xyz); float t = uTime * 0.5; vColor = vec3(0.5 + 0.5 * cos(t + d * 0.003), 0.5 + 0.5 * cos(t + d * 0.003 + 2.094), 0.5 + 0.5 * cos(t + d * 0.003 + 4.188)); }`, 
-      fragmentShader: `varying vec3 vColor; varying float vAlpha; void main(){ vec2 uv = gl_PointCoord.xy - 0.5; float d = dot(uv, uv); gl_FragColor = vec4(vColor, smoothstep(0.25, 0.0, d) * vAlpha * 0.8); }` 
+      vertexShader: "attribute float aSize; varying vec3 vColor; varying float vAlpha; uniform float uTime; void main(){ vec3 p = position; p.y += sin(uTime*0.5 + p.x*0.005)*5.0; vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = aSize * (800.0 / -mv.z); vAlpha = smoothstep(3500.0, 200.0, length(p)); float d = length(mv.xyz); float t = uTime * 0.5; vColor = vec3(0.5 + 0.5 * cos(t + d * 0.003), 0.5 + 0.5 * cos(t + d * 0.003 + 2.094), 0.5 + 0.5 * cos(t + d * 0.003 + 4.188)); }", 
+      fragmentShader: "varying vec3 vColor; varying float vAlpha; void main(){ vec2 uv = gl_PointCoord.xy - 0.5; float d = dot(uv, uv); gl_FragColor = vec4(vColor, smoothstep(0.25, 0.0, d) * vAlpha * 0.8); }" 
   }));
   galaxy.add(stars);
 
   function labelSprite(text){
-    const w=1024, h=128, c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
+    var w=1024, h=128, c=document.createElement("canvas"); c.width=w; c.height=h; var g=c.getContext("2d");
     g.fillStyle = "rgba(255,255,255,1.0)"; g.textAlign = "center"; g.textBaseline = "middle"; 
-    let fSize = 65; g.font = `800 ${fSize}px 'Latin Modern Sans',sans-serif`;
-    while(g.measureText(text).width > w - 40) g.font = `800 ${fSize-=2}px 'Latin Modern Sans',sans-serif`;
-    g.fillText(text, w/2, h/2); const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
-    const spr=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false })); 
+    var fSize = 65; g.font = "800 " + fSize + "px 'Latin Modern Sans',sans-serif";
+    while(g.measureText(text).width > w - 40) { fSize -= 2; g.font = "800 " + fSize + "px 'Latin Modern Sans',sans-serif"; }
+    g.fillText(text, w/2, h/2); var tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
+    var spr=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false })); 
     spr.scale.set(100, 12.5, 1); return spr;
   }
 
-  const graphGroup = new THREE.Group(); scene.add(graphGroup);
-  let nodes = [], edges = [];
+  var graphGroup = new THREE.Group(); scene.add(graphGroup);
+  var nodes = [], edges = [];
   
-  const MAX_EDGES = 500;
-  const edgeGeo = new THREE.BufferGeometry();
-  const edgePos = new Float32Array(MAX_EDGES * 6);
-  const edgeCol = new Float32Array(MAX_EDGES * 6);
+  var MAX_EDGES = 500;
+  var edgeGeo = new THREE.BufferGeometry();
+  var edgePos = new Float32Array(MAX_EDGES * 6);
+  var edgeCol = new Float32Array(MAX_EDGES * 6);
   edgeGeo.setAttribute('position', new THREE.BufferAttribute(edgePos, 3));
   edgeGeo.setAttribute('color', new THREE.BufferAttribute(edgeCol, 3));
   
-  const edgeMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending });
-  const networkLines = new THREE.LineSegments(edgeGeo, edgeMat);
+  var edgeMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending });
+  var networkLines = new THREE.LineSegments(edgeGeo, edgeMat);
   graphGroup.add(networkLines);
 
   function createGlowTexture() {
-      const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
-      const ctx = canvas.getContext('2d');
-      const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      var canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
+      var ctx = canvas.getContext('2d');
+      var grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
       grad.addColorStop(0, 'rgba(255, 255, 255, 1)'); grad.addColorStop(0.3, 'rgba(255, 230, 0, 0.9)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = grad; ctx.fillRect(0, 0, 128, 128);
-      const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; return tex;
+      var tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; return tex;
   }
   function createNodeHalo() {
-      const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
-      const ctx = canvas.getContext('2d');
-      const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      var canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
+      var ctx = canvas.getContext('2d');
+      var grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
       grad.addColorStop(0, 'rgba(255, 255, 0, 0.9)'); grad.addColorStop(0.4, 'rgba(255, 220, 0, 0.3)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = grad; ctx.fillRect(0, 0, 128, 128);
-      const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; return tex;
+      var tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; return tex;
   }
 
-  const MAX_PACKETS = 300;
-  const packetGeo = new THREE.BufferGeometry();
-  const packetPos = new Float32Array(MAX_PACKETS * 3);
+  var MAX_PACKETS = 300;
+  var packetGeo = new THREE.BufferGeometry();
+  var packetPos = new Float32Array(MAX_PACKETS * 3);
   packetGeo.setAttribute('position', new THREE.BufferAttribute(packetPos, 3));
-  const packetMat = new THREE.PointsMaterial({ color: new THREE.Color(cssVar("--gold")), size: 10, map: createGlowTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-  const packetsMesh = new THREE.Points(packetGeo, packetMat);
-  let packetsData = [];
+  var packetMat = new THREE.PointsMaterial({ color: new THREE.Color(cssVar("--gold")), size: 10, map: createGlowTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+  var packetsMesh = new THREE.Points(packetGeo, packetMat);
+  var packetsData = [];
   graphGroup.add(packetsMesh);
 
-  const goldColor = new THREE.Color(cssVar("--gold") || "#ffe600");
-  const activeColor = new THREE.Color("#ffffff");
-  const dimColor = new THREE.Color(0.08, 0.08, 0.08); 
+  var goldColor = new THREE.Color(cssVar("--gold") || "#ffe600");
+  var activeColor = new THREE.Color("#ffffff");
+  var dimColor = new THREE.Color(0.08, 0.08, 0.08); 
 
   function buildGraph(){
-    for(let i = graphGroup.children.length - 1; i >= 0; i--) {
+    for(var i = graphGroup.children.length - 1; i >= 0; i--) {
         if(graphGroup.children[i] !== networkLines && graphGroup.children[i] !== packetsMesh) graphGroup.remove(graphGroup.children[i]);
     }
     nodes = []; edges = []; packetsData = [];
@@ -504,55 +499,55 @@ try {
         ];
     }
 
-    const w = window.innerWidth || 1, h = window.innerHeight || 1;
-    const isMob = w < 800;
-    let finalScale = Math.max(Math.min((w / h) * 0.8, 1.2), 0.5);
+    var w = window.innerWidth || 1, h = window.innerHeight || 1;
+    var isMob = w < 800;
+    var finalScale = Math.max(Math.min((w / h) * 0.8, 1.2), 0.5);
     if (isNaN(finalScale) || !isFinite(finalScale)) finalScale = 0.8;
-    const haloTex = createNodeHalo();
+    var haloTex = createNodeHalo();
 
-    ARTICLES.forEach((art, i) => {
-      const radius = (isMob ? 18 : 12) * finalScale;
+    ARTICLES.forEach(function(art, idx) {
+      var radius = (isMob ? 18 : 12) * finalScale;
       
-      const coreMat = new THREE.MeshStandardMaterial({ color: 0x111115, emissive: 0x111115, roughness: 0.2, metalness: 0.8 });
-      const core = new THREE.Mesh(new THREE.IcosahedronGeometry(radius, 1), coreMat);
+      var coreMat = new THREE.MeshStandardMaterial({ color: 0x111115, emissive: 0x111115, roughness: 0.2, metalness: 0.8 });
+      var core = new THREE.Mesh(new THREE.IcosahedronGeometry(radius, 1), coreMat);
       
-      const wireGeo = new THREE.TorusKnotGeometry(radius * 1.3, radius * 0.15, 64, 8, 2, 3);
-      const wireMat = new THREE.MeshBasicMaterial({ color: goldColor, wireframe: true, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending });
-      const wire = new THREE.Mesh(wireGeo, wireMat);
+      var wireGeo = new THREE.TorusKnotGeometry(radius * 1.3, radius * 0.15, 64, 8, 2, 3);
+      var wireMat = new THREE.MeshBasicMaterial({ color: goldColor, wireframe: true, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending });
+      var wire = new THREE.Mesh(wireGeo, wireMat);
       core.add(wire);
 
-      const haloMat = new THREE.SpriteMaterial({ map: haloTex, color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-      const halo = new THREE.Sprite(haloMat);
+      var haloMat = new THREE.SpriteMaterial({ map: haloTex, color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+      var halo = new THREE.Sprite(haloMat);
       halo.scale.set(radius * 9, radius * 9, 1);
       core.add(halo);
       
-      const label = labelSprite(art.title); label.scale.multiplyScalar(finalScale * (isMob ? 1.8 : 1.2));
+      var label = labelSprite(art.title); label.scale.multiplyScalar(finalScale * (isMob ? 1.8 : 1.2));
       core.userData.article = label.userData.article = art;
 
-      const pos = new THREE.Vector3().randomDirection().multiplyScalar(Math.random() * 150 + 50);
+      var pos = new THREE.Vector3().randomDirection().multiplyScalar(Math.random() * 150 + 50);
       
-      nodes.push({ id: i, mesh: core, label: label, halo: halo, pos: pos, vel: new THREE.Vector3(), radius: radius, active: false, labelMult: (isMob?1.8:1.2) });
+      nodes.push({ id: idx, mesh: core, label: label, halo: halo, pos: pos, vel: new THREE.Vector3(), radius: radius, active: false, labelMult: (isMob?1.8:1.2) });
       graphGroup.add(core); graphGroup.add(label);
     });
 
     if (nodes.length > 1) {
-        nodes.forEach((n1, i) => {
-            const connections = Math.floor(Math.random() * 2) + 1;
-            for(let c=0; c<connections; c++) {
-                let n2 = nodes[Math.floor(Math.random() * nodes.length)];
-                if (n1.id !== n2.id && !edges.find(e => (e.source===n1 && e.target===n2) || (e.source===n2 && e.target===n1))) {
+        nodes.forEach(function(n1, i) {
+            var connections = Math.floor(Math.random() * 2) + 1;
+            for(var c=0; c<connections; c++) {
+                var n2 = nodes[Math.floor(Math.random() * nodes.length)];
+                if (n1.id !== n2.id && !edges.find(function(e){ return (e.source===n1 && e.target===n2) || (e.source===n2 && e.target===n1); })) {
                     edges.push({ source: n1, target: n2 });
                 }
             }
         });
-        for(let i=0; i<nodes.length-1; i++) {
-             if (!edges.find(e => (e.source===nodes[i] && e.target===nodes[i+1]) || (e.source===nodes[i+1] && e.target===nodes[i]))) {
+        for(var i=0; i<nodes.length-1; i++) {
+             if (!edges.find(function(e){ return (e.source===nodes[i] && e.target===nodes[i+1]) || (e.source===nodes[i+1] && e.target===nodes[i]); })) {
                   edges.push({ source: nodes[i], target: nodes[i+1] });
              }
         }
     }
 
-    for(let i=0; i<Math.min(edges.length * 3, MAX_PACKETS); i++) {
+    for(var i=0; i<Math.min(edges.length * 3, MAX_PACKETS); i++) {
         if(edges.length === 0) break;
         packetsData.push({ edge: edges[Math.floor(Math.random() * edges.length)], progress: Math.random(), speed: Math.random() * 0.4 + 0.2, dir: Math.random() > 0.5 ? 1 : -1 });
     }
@@ -560,40 +555,40 @@ try {
 
   buildGraph();
 
-  const raycaster = new THREE.Raycaster(); let hoveredNode = null;
+  var raycaster = new THREE.Raycaster(); var hoveredNode = null;
   function updatePointer(ev){
-    const r = canvas.getBoundingClientRect(), p = ev.touches ? ev.touches[0] : (ev.changedTouches ? ev.changedTouches[0] : ev);
+    var r = canvas.getBoundingClientRect(), p = ev.touches ? ev.touches[0] : (ev.changedTouches ? ev.changedTouches[0] : ev);
     if (!p) return;
     pointer.x = ((p.clientX - r.left)/Math.max(1, r.width))*2 - 1; pointer.y = -((p.clientY - r.top)/Math.max(1, r.height))*2 + 1;
     px = p.clientX - r.left; py = p.clientY - r.top; pointerActive = true;
   }
   canvas.addEventListener("pointermove", updatePointer, { passive:true });
-  canvas.addEventListener("click", (e)=>{ if(document.body.classList.contains("modal-open")) return; updatePointer(e); raycaster.setFromCamera(pointer, camera); const h = raycaster.intersectObjects(graphGroup.children, true).find(x=>x.object.userData.article); if(h) window.openArticle(h.object.userData.article); }, { passive:true });
+  canvas.addEventListener("click", function(e){ if(document.body.classList.contains("modal-open")) return; updatePointer(e); raycaster.setFromCamera(pointer, camera); var h = raycaster.intersectObjects(graphGroup.children, true).find(function(x){ return x.object.userData.article; }); if(h) window.openArticle(h.object.userData.article); }, { passive:true });
 
-  const clock = new THREE.Clock();
-  let rafId = 0, globalTime = 0;
+  var clock = new THREE.Clock();
+  var rafId = 0, globalTime = 0;
   
-  window.pause3D = () => { if(rafId) { cancelAnimationFrame(rafId); rafId = 0; } };
-  window.resume3D = () => { if(!rafId){ clock.getDelta(); rafId = requestAnimationFrame(frame); } };
+  window.pause3D = function() { if(rafId) { cancelAnimationFrame(rafId); rafId = 0; } };
+  window.resume3D = function() { if(!rafId){ clock.getDelta(); rafId = requestAnimationFrame(frame); } };
 
   function frame(){
     rafId = requestAnimationFrame(frame);
     if (document.body.classList.contains("modal-open")) return;
     
-    const dt = Math.min(0.033, clock.getDelta());
+    var dt = Math.min(0.033, clock.getDelta());
     globalTime += dt;
     
-    const nx = pointerActive ? pointer.x : 0.0, ny = pointerActive ? -pointer.y : 0.0;
-    const targetCamX = nx * 120;
-    const targetCamY = 60 - ny * 80;
+    var nx = pointerActive ? pointer.x : 0.0, ny = pointerActive ? -pointer.y : 0.0;
+    var targetCamX = nx * 120;
+    var targetCamY = 60 - ny * 80;
     camera.position.x += (targetCamX - camera.position.x) * 0.05; 
     camera.position.y += (targetCamY - camera.position.y) * 0.05;
     camera.lookAt(0,0,0);
     
     if (pointerActive){
       raycaster.setFromCamera(pointer, camera);
-      const h = raycaster.intersectObjects(graphGroup.children, true).find(x=>x.object.userData.article);
-      hoveredNode = h ? nodes.find(n => n.mesh.userData.article === h.object.userData.article) : null; 
+      var h = raycaster.intersectObjects(graphGroup.children, true).find(function(x){ return x.object.userData.article; });
+      hoveredNode = h ? nodes.find(function(n){ return n.mesh.userData.article === h.object.userData.article; }) : null; 
       document.body.style.cursor = hoveredNode ? "pointer" : "default";
     }
 
@@ -601,45 +596,45 @@ try {
     galaxy.rotation.y = globalTime * 0.015;
     floor.material.uniforms.uTime.value = globalTime;
 
-    const repulseForce = 18000;
-    const springLen = 130;
-    const springK = 0.05;
-    const centerPull = 0.006;
-    const damping = 0.85;
+    var repulseForce = 18000;
+    var springLen = 130;
+    var springK = 0.05;
+    var centerPull = 0.006;
+    var damping = 0.85;
 
-    for(let i=0; i<nodes.length; i++){
-        let n1 = nodes[i];
+    for(var i=0; i<nodes.length; i++){
+        var n1 = nodes[i];
         n1.vel.add(n1.pos.clone().multiplyScalar(-centerPull));
-        for(let j=i+1; j<nodes.length; j++){
-            let n2 = nodes[j];
-            let diff = n1.pos.clone().sub(n2.pos);
-            let distSq = diff.lengthSq();
+        for(var j=i+1; j<nodes.length; j++){
+            var n2 = nodes[j];
+            var diff = n1.pos.clone().sub(n2.pos);
+            var distSq = diff.lengthSq();
             if(distSq > 0.1 && distSq < 80000) {
-                let f = diff.normalize().multiplyScalar(repulseForce / distSq);
+                var f = diff.normalize().multiplyScalar(repulseForce / distSq);
                 n1.vel.add(f); n2.vel.sub(f);
             }
         }
     }
-    edges.forEach(e => {
-        let diff = e.target.pos.clone().sub(e.source.pos);
-        let dist = diff.length();
-        let f = diff.normalize().multiplyScalar((dist - springLen) * springK);
+    edges.forEach(function(e) {
+        var diff = e.target.pos.clone().sub(e.source.pos);
+        var dist = diff.length();
+        var f = diff.normalize().multiplyScalar((dist - springLen) * springK);
         e.source.vel.add(f); e.target.vel.sub(f);
     });
 
-    nodes.forEach((n) => {
+    nodes.forEach(function(n) {
       n.vel.multiplyScalar(damping);
       n.pos.add(n.vel.clone().multiplyScalar(dt * 10));
       
-      let floatOffset = new THREE.Vector3(0, Math.sin(globalTime * 2.0 + n.id) * 4.0, 0);
-      let targetPos = n.pos.clone().add(floatOffset);
+      var floatOffset = new THREE.Vector3(0, Math.sin(globalTime * 2.0 + n.id) * 4.0, 0);
+      var targetPos = n.pos.clone().add(floatOffset);
       
-      const isHovered = hoveredNode === n;
-      const isConnected = hoveredNode && edges.some(e => (e.source === n && e.target === hoveredNode) || (e.target === n && e.source === hoveredNode));
+      var isHovered = hoveredNode === n;
+      var isConnected = hoveredNode && edges.some(function(e){ return (e.source === n && e.target === hoveredNode) || (e.target === n && e.source === hoveredNode); });
       n.active = isHovered || isConnected;
 
       if (isHovered) {
-          let pull = camera.position.clone().sub(targetPos).normalize().multiplyScalar(30);
+          var pull = camera.position.clone().sub(targetPos).normalize().multiplyScalar(30);
           targetPos.add(pull);
       }
 
@@ -651,22 +646,22 @@ try {
       n.label.position.y -= (n.radius + 18 * n.labelMult);
       n.label.quaternion.copy(camera.quaternion);
 
-      const tScale = isHovered ? 1.4 : (hoveredNode ? (isConnected ? 1.0 : 0.6) : 1.0);
+      var tScale = isHovered ? 1.4 : (hoveredNode ? (isConnected ? 1.0 : 0.6) : 1.0);
       n.mesh.scale.lerp(new THREE.Vector3(tScale, tScale, tScale), 0.1);
       
-      const tColor = hoveredNode ? (isHovered ? activeColor : (isConnected ? goldColor : dimColor)) : goldColor;
+      var tColor = hoveredNode ? (isHovered ? activeColor : (isConnected ? goldColor : dimColor)) : goldColor;
       n.mesh.children[0].material.color.lerp(tColor, 0.1);
       n.halo.material.opacity += ((hoveredNode ? (n.active ? 1.0 : 0.05) : 1.0) - n.halo.material.opacity) * 0.1;
       n.label.material.opacity += ((hoveredNode ? (n.active ? 1.0 : 0.1) : 1.0) - n.label.material.opacity) * 0.1;
     });
 
-    let edgeIdx = 0;
-    edges.forEach((e, i) => {
+    var edgeIdx = 0;
+    edges.forEach(function(e, i) {
         if(i >= MAX_EDGES) return;
         edgePos[edgeIdx] = e.source.mesh.position.x; edgePos[edgeIdx+1] = e.source.mesh.position.y; edgePos[edgeIdx+2] = e.source.mesh.position.z;
         edgePos[edgeIdx+3] = e.target.mesh.position.x; edgePos[edgeIdx+4] = e.target.mesh.position.y; edgePos[edgeIdx+5] = e.target.mesh.position.z;
         
-        let c = hoveredNode ? ((e.source===hoveredNode || e.target===hoveredNode) ? activeColor : dimColor) : goldColor;
+        var c = hoveredNode ? ((e.source===hoveredNode || e.target===hoveredNode) ? activeColor : dimColor) : goldColor;
         edgeCol[edgeIdx] = c.r; edgeCol[edgeIdx+1] = c.g; edgeCol[edgeIdx+2] = c.b;
         edgeCol[edgeIdx+3] = c.r; edgeCol[edgeIdx+4] = c.g; edgeCol[edgeIdx+5] = c.b;
         edgeIdx += 6;
@@ -675,15 +670,15 @@ try {
     edgeGeo.attributes.position.needsUpdate = true;
     edgeGeo.attributes.color.needsUpdate = true;
 
-    let pIdx = 0;
-    packetsData.forEach((p, i) => {
-        const boost = (hoveredNode && (p.edge.source === hoveredNode || p.edge.target === hoveredNode)) ? 4.0 : 1.0;
+    var pIdx = 0;
+    packetsData.forEach(function(p) {
+        var boost = (hoveredNode && (p.edge.source === hoveredNode || p.edge.target === hoveredNode)) ? 4.0 : 1.0;
         p.progress += dt * p.speed * p.dir * boost;
         if(p.progress > 1.0) { p.progress = 0; p.edge = edges[Math.floor(Math.random() * edges.length)] || p.edge; }
         if(p.progress < 0.0) { p.progress = 1; p.edge = edges[Math.floor(Math.random() * edges.length)] || p.edge; }
         
         if (p.edge) {
-            let src = p.edge.source.mesh.position, tgt = p.edge.target.mesh.position;
+            var src = p.edge.source.mesh.position, tgt = p.edge.target.mesh.position;
             if (hoveredNode && p.edge.source !== hoveredNode && p.edge.target !== hoveredNode) {
                 packetPos[pIdx] = packetPos[pIdx+1] = packetPos[pIdx+2] = 9999;
             } else {
@@ -701,63 +696,69 @@ try {
     renderer.render(scene, camera);
   }
 
-  window.addEventListener("resize", ()=>{ const w = window.innerWidth || 1, h = window.innerHeight || 1; camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setPixelRatio(getDPR()); renderer.setSize(w, h, false); buildGraph(); }, { passive:true });
-  $("brand").addEventListener("click", ()=>camera.position.set(0,60,450));
+  window.addEventListener("resize", function(){ var w = window.innerWidth || 1, h = window.innerHeight || 1; camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setPixelRatio(getDPR()); renderer.setSize(w, h, false); buildGraph(); }, { passive:true });
+  $("brand").addEventListener("click", function(){ camera.position.set(0,60,450); });
   
   canvas.classList.add("ready");
   window.resume3D();
 
+  /* ─── Article loader with FIX 1: parseMeta now stores rawHTML ─── */
   async function loadDynamicArticles() {
-    const CACHE_VER = "v3";
-    const cacheKey = `gh_articles_${CONFIG.githubUser}_${CONFIG.githubRepo}_${CACHE_VER}`;
+    var CACHE_VER = "v4";
+    var cacheKey = "gh_articles_" + CONFIG.githubUser + "_" + CONFIG.githubRepo + "_" + CACHE_VER;
 
     // Check sessionStorage cache
     try {
-      const cached = sessionStorage.getItem(cacheKey);
+      var cached = sessionStorage.getItem(cacheKey);
       if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed && parsed.length > 0) { ARTICLES = parsed; buildGraph(); return; }
+        var parsed = JSON.parse(cached);
+        if (parsed && parsed.length > 0) {
+          ARTICLES = parsed;
+          buildGraph();
+          return;
+        }
       }
     } catch(e) { try { sessionStorage.removeItem(cacheKey); } catch(_){} }
 
     async function parseMeta(url, fallbackId) {
       try {
-        const r = await fetch(url);
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const txt = await r.text();
-        const doc = new DOMParser().parseFromString(txt, "text/html");
-        const node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
+        var r = await fetch(url);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        var txt = await r.text();
+        var doc = new DOMParser().parseFromString(txt, "text/html");
+        var node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
         return {
           id:          fallbackId,
           title:       node.getAttribute("data-title")    || fallbackId.replace(/-/g," "),
           date:        node.getAttribute("data-date")     || "",
           category:    node.getAttribute("data-category") || "Research",
-          downloadUrl: url
+          downloadUrl: url,
+          rawHTML:     node.innerHTML
         };
       } catch(e) {
         return { id: fallbackId, title: fallbackId.replace(/-/g," "), date:"", category:"Research", downloadUrl: url };
       }
     }
 
-    let articleMeta = [];
+    var articleMeta = [];
 
-    // ── Strategy 1: same-origin _list.json (fast, zero rate-limit risk) ──────
+    // Strategy 1: same-origin _list.json (fast, zero rate-limit risk)
     try {
-      const listRes = await fetch(`/${CONFIG.articlesFolder}/_list.json?t=${Date.now()}`);
+      var listRes = await fetch("/" + CONFIG.articlesFolder + "/_list.json?t=" + Date.now());
       if (listRes.ok) {
-        const filenames = await listRes.json();           // e.g. ["output.html"]
-        const htmlFiles = filenames.filter(f => f.endsWith(".html") && !f.startsWith("_"));
+        var filenames = await listRes.json();
+        var htmlFiles = filenames.filter(function(f){ return f.endsWith(".html") && !f.startsWith("_"); });
         articleMeta = await Promise.all(
-          htmlFiles.map(f => parseMeta(`/${CONFIG.articlesFolder}/${f}`, f.replace(".html","")))
+          htmlFiles.map(function(f){ return parseMeta("/" + CONFIG.articlesFolder + "/" + f, f.replace(".html","")); })
         );
       }
     } catch(e) { /* _list.json absent — fall through to GitHub API */ }
 
-    // ── Strategy 2: GitHub API (fallback) ────────────────────────────────────
+    // Strategy 2: GitHub API (fallback)
     if (articleMeta.length === 0) {
       try {
-        const res = await fetch(
-          `https://api.github.com/repos/${CONFIG.githubUser}/${CONFIG.githubRepo}/contents/${CONFIG.articlesFolder}`,
+        var res = await fetch(
+          "https://api.github.com/repos/" + CONFIG.githubUser + "/" + CONFIG.githubRepo + "/contents/" + CONFIG.articlesFolder,
           { headers: { Accept: "application/vnd.github.v3+json" } }
         );
         if (res.status === 403 || res.status === 429) {
@@ -766,10 +767,10 @@ try {
           return;
         }
         if (res.ok) {
-          const files = await res.json();
-          const htmlFiles = files.filter(f => f.name.endsWith(".html") && !f.name.startsWith("_"));
+          var files = await res.json();
+          var htmlFiles = files.filter(function(f){ return f.name.endsWith(".html") && !f.name.startsWith("_"); });
           articleMeta = await Promise.all(
-            htmlFiles.map(f => parseMeta(f.download_url, f.name.replace(".html","")))
+            htmlFiles.map(function(f){ return parseMeta(f.download_url, f.name.replace(".html","")); })
           );
         }
       } catch(e) { console.error("GitHub API fallback error:", e); }
@@ -777,7 +778,13 @@ try {
 
     if (articleMeta.length > 0) {
       ARTICLES = articleMeta;
-      try { sessionStorage.setItem(cacheKey, JSON.stringify(ARTICLES)); } catch(e) { /* quota – skip */ }
+      // Cache metadata without rawHTML to keep sessionStorage lean
+      try {
+        var cacheData = ARTICLES.map(function(a){
+          return { id: a.id, title: a.title, date: a.date, category: a.category, downloadUrl: a.downloadUrl };
+        });
+        sessionStorage.setItem(cacheKey, JSON.stringify(cacheData));
+      } catch(e) { /* quota — skip */ }
       buildGraph();
     }
   }
