@@ -4,89 +4,75 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#020203"/>
-<meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://static.cloudflareinsights.com;
-    style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
-    font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net;
-    img-src 'self' data: blob:;
-    connect-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://api.github.com https://raw.githubusercontent.com;
-    object-src 'none';
-">
 <title>Anıl Kaya | Research and Articles</title>
 <meta name="description" content="Academic articles and research by Anıl Kaya">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,10 90,50 50,90 10,50' fill='none' stroke='%23D4AF37' stroke-width='4'/><circle cx='50' cy='50' r='15' fill='%23e8e8ea'/></svg>">
 <style>
-    @font-face {
-        font-family: 'Latin Modern Roman';
-        src: url('https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/font/lmroman-regular-webfont.woff') format('woff');
-        font-weight: normal; font-style: normal; font-display: swap;
-    }
-    @font-face {
-        font-family: 'Latin Modern Sans';
-        src: url('https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/font/lmsans-bold-webfont.woff') format('woff');
-        font-weight: bold; font-style: normal; font-display: swap;
-    }
+@font-face {
+    font-family: 'Latin Modern Roman';
+    src: url('https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/font/lmroman-regular-webfont.woff') format('woff');
+    font-weight: normal; font-style: normal; font-display: swap;
+}
 </style>
 <link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" crossorigin="anonymous">
 <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous"></noscript>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
 <style>
 :root {
     color-scheme: dark;
-    --font-main: "Latin Modern Roman", serif;
-    --font-ui: "Latin Modern Sans", sans-serif;
+    --font: "Latin Modern Roman", "Georgia", serif;
     --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
     --nav-h: 60px;
     --bg: #020203;
-    --border: rgba(255, 255, 255, 0.08);
+    --border: rgba(255,255,255,0.08);
     --silver: #e8e8ea;
-    --silver-dim: rgba(232, 232, 234, 0.65);
+    --silver-dim: rgba(232,232,234,0.65);
     --gold: #ffe600;
     --gold-soft: #F7E7CE;
     --gold-glow: color-mix(in oklab, var(--gold) 20%, transparent);
-    --card-bg: rgba(10, 10, 12, 0.95);
-    --card-border: rgba(255, 230, 0, 0.25);
+    --card-bg: rgba(10,10,12,0.95);
+    --card-border: rgba(255,230,0,0.25);
     --card-shadow: 0 30px 80px rgba(0,0,0,0.95), 0 0 0 1px var(--card-border) inset;
-    --base-font-size: 0.9rem;
 }
+*, *::before, *::after { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; padding: 0; }
 body {
-    background: var(--bg); color: var(--silver); font-family: var(--font-main);
-    overflow: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    background: var(--bg); color: var(--silver); font-family: var(--font);
+    overflow: hidden; -webkit-font-smoothing: antialiased;
 }
+a { color: var(--gold-soft); text-decoration: none; }
+a:hover { opacity: 0.9; }
+:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 3px; border-radius: 8px; }
+
+/* ── Canvas ── */
 #gl {
-    position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; 
+    position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1;
     touch-action: none; user-select: none; opacity: 0;
-    transition: opacity 1.2s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 1.2s ease, transform 0.6s cubic-bezier(0.16,1,0.3,1);
 }
 #gl.ready { opacity: 1; }
 body.modal-open #gl { transform: scale(1.02); opacity: 0.3; filter: blur(4px); }
 body.modal-open #depthName, body.modal-open #orbitHint { opacity: 0 !important; }
-* { box-sizing: border-box; }
-a { color: var(--gold-soft); text-decoration: none; }
-a:hover { opacity: 0.9; }
-:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 3px; border-radius: 8px; }
+
+/* ── Nav ── */
 #nav {
-    position: fixed; top: 0; left: 0; right: 0; height: calc(var(--nav-h) + var(--safe-top));
-    padding-top: var(--safe-top); padding-left: clamp(20px, 5vw, 48px); padding-right: clamp(20px, 5vw, 48px);
+    position: fixed; top: 0; left: 0; right: 0;
+    height: calc(var(--nav-h) + var(--safe-top)); padding-top: var(--safe-top);
+    padding-left: clamp(20px,5vw,48px); padding-right: clamp(20px,5vw,48px);
     display: flex; align-items: center; justify-content: space-between; z-index: 1000;
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.37);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
 }
 body.modal-open #nav { transform: translateY(-100%); }
 #brand {
-    appearance: none; border: none; background: transparent; font-family: var(--font-ui);
+    appearance: none; border: none; background: transparent; font-family: var(--font);
     font-size: 0.75rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
     color: var(--silver); cursor: pointer; padding: 0; display: flex; align-items: center; gap: 10px;
-    transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+    transition: transform 0.3s, color 0.3s, text-shadow 0.3s;
 }
 #brand::before {
     content: ''; display: inline-block; width: 8px; height: 8px; background: var(--gold);
@@ -94,40 +80,44 @@ body.modal-open #nav { transform: translateY(-100%); }
 }
 #brand:hover { transform: translateY(-1px); color: var(--gold); text-shadow: 0 4px 15px rgba(255,230,0,0.5); }
 .btn {
-    font-family: var(--font-ui); font-size: 0.6rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
-    padding: 8px 18px; border-radius: 4px; border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05); color: var(--silver);
-    cursor: pointer; backdrop-filter: blur(14px); transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    font-family: var(--font); font-size: 0.6rem; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; padding: 8px 18px; border-radius: 4px;
+    border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--silver);
+    cursor: pointer; backdrop-filter: blur(14px);
+    transition: all 0.3s cubic-bezier(0.25,1,0.5,1);
+    display: flex; align-items: center; justify-content: center;
 }
 .btn:hover { background: rgba(255,230,0,0.15); border-color: var(--gold); color: var(--gold); transform: translateY(-2px); box-shadow: 0 8px 20px var(--gold-glow); }
-#copyright {
-    position: fixed; bottom: clamp(12px, 3vw, 24px); left: 50%; transform: translateX(-50%);
-    font-family: var(--font-ui); font-size: 0.55rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
-    color: color-mix(in oklab, var(--silver) 25%, transparent); z-index: 500; pointer-events: none; text-align: center;
-    transition: opacity 0.4s ease;
-}
-body.modal-open #copyright { opacity: 0; }
-@keyframes breath { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; } 50% { transform: translate(-50%, -50%) scale(1.02); opacity: 1; } }
+
+/* ── Overlays ── */
+@keyframes breath { 0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 0.8; } 50% { transform: translate(-50%,-50%) scale(1.02); opacity: 1; } }
 #depthName {
     position: fixed; left: 50%; top: 50%; z-index: 650; pointer-events: none;
-    font-family: var(--font-main); font-weight: 300; letter-spacing: 0.05em;
-    font-size: clamp(1.4rem, 4.5vw, 5rem); color: rgba(255,230,0,0.15);
+    font-family: var(--font); font-weight: 300; letter-spacing: 0.05em;
+    font-size: clamp(1.4rem,4.5vw,5rem); color: rgba(255,230,0,0.15);
     text-shadow: 0 0 40px rgba(255,230,0,0.25); white-space: nowrap; text-align: center; width: 100%;
-    animation: breath 8s infinite ease-in-out; transition: opacity 0.5s ease;
+    animation: breath 8s infinite ease-in-out; transition: opacity 0.5s;
 }
 #orbitHint {
     position: fixed; inset: 0; z-index: 600; pointer-events: none; opacity: 0.4;
-    background: radial-gradient(circle at 50% 50%, rgba(255,230,0,0.15) 0%, rgba(2,2,3,0.0) 60%);
-    transition: opacity 0.5s ease;
+    background: radial-gradient(circle at 50% 50%, rgba(255,230,0,0.15) 0%, transparent 60%);
+    transition: opacity 0.5s;
 }
+#copyright {
+    position: fixed; bottom: clamp(12px,3vw,24px); left: 50%; transform: translateX(-50%);
+    font-family: var(--font); font-size: 0.55rem; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: color-mix(in oklab, var(--silver) 25%, transparent);
+    z-index: 500; pointer-events: none; text-align: center; transition: opacity 0.4s;
+}
+body.modal-open #copyright { opacity: 0; }
+
+/* ── Modal / Article Reader ── */
 #modal {
-    position: fixed; inset: 0; z-index: 2000;
-    display: flex; flex-direction: column;
+    position: fixed; inset: 0; z-index: 2000; display: flex; flex-direction: column;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    overflow-y: auto; -webkit-overflow-scrolling: touch; perspective: 1200px;
-    opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: clamp(16px, 4vh, 40px) 0;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1);
+    padding: clamp(16px,4vh,40px) 0;
 }
 #modal.open { opacity: 1; pointer-events: auto; }
 #readProgress {
@@ -135,72 +125,71 @@ body.modal-open #copyright { opacity: 0; }
     width: 0%; z-index: 2100; transition: width 0.15s ease-out; box-shadow: 0 0 15px var(--gold);
 }
 #closeBtn {
-    position: fixed; top: clamp(16px, 3vw, 32px); right: clamp(16px, 3vw, 32px);
-    width: clamp(38px, 8vw, 44px); height: clamp(38px, 8vw, 44px); border-radius: 4px;
-    background: rgba(10, 10, 12, 0.9); border: 1px solid var(--gold); color: var(--gold);
+    position: fixed; top: clamp(16px,3vw,32px); right: clamp(16px,3vw,32px);
+    width: clamp(38px,8vw,44px); height: clamp(38px,8vw,44px); border-radius: 4px;
+    background: rgba(10,10,12,0.9); border: 1px solid var(--gold); color: var(--gold);
     cursor: pointer; display: flex; justify-content: center; align-items: center;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 2010;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
 }
-#closeBtn:hover { transform: scale(1.1) rotate(90deg); background: var(--gold); color: #000; box-shadow: 0 12px 30px var(--gold-glow); }
+#closeBtn:hover { transform: scale(1.1) rotate(90deg); background: var(--gold); color: #000; }
 #closeBtn svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .article-wrapper {
     background: var(--card-bg); border: 1px solid var(--card-border);
     box-shadow: var(--card-shadow); border-radius: 8px;
     width: calc(100% - 32px); max-width: 780px; margin: auto; flex-shrink: 0;
-    padding: clamp(32px, 6vw, 70px) clamp(20px, 5vw, 50px);
+    padding: clamp(32px,6vw,70px) clamp(20px,5vw,50px);
     position: relative; will-change: transform, opacity;
     transform: translateY(40px) scale(0.98); opacity: 0;
 }
-#modal.open .article-wrapper { animation: cardRise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-@keyframes cardRise { 0% { transform: translateY(40px) scale(0.98); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+#modal.open .article-wrapper { animation: cardRise 0.5s cubic-bezier(0.2,0.8,0.2,1) forwards; }
+@keyframes cardRise { to { transform: translateY(0) scale(1); opacity: 1; } }
+
+/* ── Article Content ── */
 .article-header { margin-bottom: 2.5rem; text-align: center; }
-.article-header .meta { font-family: var(--font-ui) !important; font-size: 0.65rem; color: var(--silver-dim); letter-spacing: 2px; text-transform: uppercase; display: flex; justify-content: center; gap: 12px; align-items: center; margin-bottom: 1.2rem; }
+.article-header .meta { font-family: var(--font); font-size: 0.65rem; color: var(--silver-dim); letter-spacing: 2px; text-transform: uppercase; display: flex; justify-content: center; gap: 12px; align-items: center; margin-bottom: 1.2rem; }
 .article-header .pill { background: rgba(255,230,0,0.1); color: var(--gold); padding: 4px 12px; border-radius: 4px; font-weight: 800; border: 1px solid rgba(255,230,0,0.4); }
-.article-header h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--gold); margin: 0; line-height: 1.15; text-align: center; letter-spacing: -0.5px; text-shadow: 0 4px 20px var(--gold-glow); }
-.article-content { font-family: var(--font-main) !important; font-size: var(--base-font-size); line-height: 1.75; color: color-mix(in oklab, var(--silver) 90%, var(--silver-dim)); text-align: justify; text-justify: inter-word; letter-spacing: 0.1px; }
-.article-content h1, .article-content h2, .article-content h3, .article-content h4 { font-family: var(--font-main) !important; color: var(--gold); line-height: 1.3; margin: 2.5rem 0 1rem; text-align: left; font-weight: normal; }
+.article-header h1 { font-size: clamp(1.8rem,4vw,2.6rem); color: var(--gold); margin: 0; line-height: 1.15; letter-spacing: -0.5px; text-shadow: 0 4px 20px var(--gold-glow); }
+.article-content { font-family: var(--font); font-size: 0.9rem; line-height: 1.75; color: color-mix(in oklab, var(--silver) 90%, var(--silver-dim)); text-align: justify; text-justify: inter-word; }
+.article-content h1,.article-content h2,.article-content h3,.article-content h4 { font-family: var(--font); color: var(--gold); line-height: 1.3; margin: 2.5rem 0 1rem; text-align: left; font-weight: normal; }
 .article-content h2 { font-size: 1.5rem; border-bottom: 1px solid var(--gold-glow); padding-bottom: 0.5rem; margin-top: 3rem; }
 .article-content h3 { font-size: 1.2rem; font-style: italic; color: var(--gold-soft); }
 .article-content p { margin: 0 0 1.5rem; }
-.article-content p:first-of-type::first-letter { font-size: 3rem; line-height: 0.85; float: left; margin-right: 0.6rem; margin-top: 0.2rem; color: var(--gold); font-family: var(--font-main) !important; }
-.article-content a { color: var(--gold); text-decoration: underline; text-decoration-color: var(--gold-glow); text-underline-offset: 4px; transition: all 0.3s; }
-.article-content a:hover { color: var(--silver); text-decoration-color: var(--silver); }
-.article-content ul, .article-content ol { margin: 0 0 1.5rem; padding-left: 2rem; }
-.article-content li { margin-bottom: 0.5rem; padding-left: 0.4rem;}
+.article-content p:first-of-type::first-letter { font-size: 3rem; line-height: 0.85; float: left; margin-right: 0.6rem; margin-top: 0.2rem; color: var(--gold); }
+.article-content a { color: var(--gold); text-decoration: underline; text-decoration-color: var(--gold-glow); text-underline-offset: 4px; }
+.article-content ul,.article-content ol { margin: 0 0 1.5rem; padding-left: 2rem; }
+.article-content li { margin-bottom: 0.5rem; padding-left: 0.4rem; }
 .article-content li::marker { color: var(--gold); }
-.article-content blockquote { margin: 2rem 0; padding: 1.5rem 2rem 1.5rem 3rem; background: rgba(255,255,255,0.02); font-style: italic; border-radius: 4px; position: relative; border: 1px solid var(--card-border); border-left: 4px solid var(--gold); color: color-mix(in oklab, var(--silver) 80%, var(--silver-dim)); }
-.article-content blockquote::before { content: "\201C"; position: absolute; left: 0.6rem; top: 0.5rem; font-family: var(--font-main) !important; font-size: 3rem; color: var(--gold); line-height: 1; opacity: 0.3; }
-.article-content .katex-display { overflow-x: auto; overflow-y: hidden; padding: 1rem 0; margin: 1.8rem 0; background: rgba(0,0,0,0.3); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
-.classical-caption { font-family: var(--font-main) !important; font-size: 1.05rem; font-style: italic; color: var(--gold-soft); text-align: center; margin: 1.5rem auto 2rem; padding: 1rem; border-top: 1px solid var(--gold-glow); border-bottom: 1px solid var(--gold-glow); background: radial-gradient(ellipse at center, rgba(255,230,0,0.04) 0%, rgba(0,0,0,0) 80%); line-height: 1.5; max-width: 95%; }
+.article-content blockquote { margin: 2rem 0; padding: 1.5rem 2rem 1.5rem 3rem; background: rgba(255,255,255,0.02); font-style: italic; border-radius: 4px; position: relative; border: 1px solid var(--card-border); border-left: 4px solid var(--gold); }
+.article-content .katex-display { overflow-x: auto; padding: 1rem 0; margin: 1.8rem 0; background: rgba(0,0,0,0.3); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+.classical-caption { font-family: var(--font); font-size: 1.05rem; font-style: italic; color: var(--gold-soft); text-align: center; margin: 1.5rem auto 2rem; padding: 1rem; border-top: 1px solid var(--gold-glow); border-bottom: 1px solid var(--gold-glow); background: radial-gradient(ellipse at center, rgba(255,230,0,0.04) 0%, transparent 80%); line-height: 1.5; max-width: 95%; }
 .abstract-container { position: relative; margin: 1.5rem 0; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid var(--card-border); box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
-.abstract-text { font-family: var(--font-ui) !important; font-size: 0.8rem; line-height: 1.5; color: color-mix(in oklab, var(--silver) 85%, transparent); transition: all 0.5s ease; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; mask-image: linear-gradient(to bottom, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); }
+.abstract-text { font-family: var(--font); font-size: 0.8rem; line-height: 1.5; color: color-mix(in oklab, var(--silver) 85%, transparent); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; mask-image: linear-gradient(to bottom, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); transition: all 0.5s; }
 #abs-toggle { display: none; }
 #abs-toggle:checked ~ .abstract-text { -webkit-line-clamp: 100; mask-image: none; -webkit-mask-image: none; }
 .expand-btn-wrapper { display: flex; justify-content: flex-start; margin-top: 12px; position: relative; z-index: 10; }
-.expand-btn { background: rgba(10,10,10,0.8); border: 1px solid var(--gold-glow); border-radius: 4px; color: var(--gold); font-family: var(--font-ui) !important; font-size: 0.6rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; padding: 5px 14px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease; }
-.expand-btn:hover { background: rgba(255,230,0,0.1); color: var(--gold); border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 4px 15px var(--gold-glow); }
+.expand-btn { background: rgba(10,10,10,0.8); border: 1px solid var(--gold-glow); border-radius: 4px; color: var(--gold); font-family: var(--font); font-size: 0.6rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; padding: 5px 14px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s; }
+.expand-btn:hover { background: rgba(255,230,0,0.1); border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 4px 15px var(--gold-glow); }
 .expand-btn svg { width: 12px; height: 12px; transition: transform 0.4s; stroke: currentColor; }
 .btn-text-collapse { display: none; }
 #abs-toggle:checked ~ .expand-btn-wrapper .btn-text-expand { display: none; }
 #abs-toggle:checked ~ .expand-btn-wrapper .btn-text-collapse { display: inline; }
 #abs-toggle:checked ~ .expand-btn-wrapper svg { transform: rotate(180deg); }
 .eq { margin: 1.2rem 0; padding: 1.2rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); overflow-x: auto; color: var(--silver); }
-.eq-title { font-family: var(--font-ui) !important; font-size: 0.6rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
-.article-content pre { background: rgba(10, 10, 12, 0.95); border: 1px solid var(--border); padding: 1rem; border-radius: 4px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; font-size: 0.75rem; color: #d1d1d1; margin: 0; line-height: 1.5; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
-.article-content code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; }
-.kw { color: #c678dd; } .fu { color: #61afef; } .st { color: #98c379; } .op { color: #56b6c2; } .cm { color: #7f848e; font-style: italic; } .nu { color: #d19a66; }
+.eq-title { font-family: var(--font); font-size: 0.6rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.article-content pre { background: rgba(10,10,12,0.95); border: 1px solid var(--border); padding: 1rem; border-radius: 4px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.75rem; color: #d1d1d1; margin: 0; line-height: 1.5; }
+.article-content code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 .code-wrapper { position: relative; margin: 1.8rem 0; width: 100%; }
-.copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(20, 20, 24, 0.9); border: 1px solid var(--border); color: var(--silver); border-radius: 4px; padding: 4px 10px; font-family: var(--font-ui) !important; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; z-index: 10; }
+.copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(20,20,24,0.9); border: 1px solid var(--border); color: var(--silver); border-radius: 4px; padding: 4px 10px; font-family: var(--font); font-size: 0.6rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; z-index: 10; }
 .copy-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
 .copy-btn svg { stroke: currentColor; width: 12px; height: 12px; }
-#loadingLine { text-align: center; margin: 2rem 0; font-family: var(--font-ui); letter-spacing: 1.5px; text-transform: uppercase; font-size: 0.65rem; color: var(--gold-soft); animation: pulse 1.5s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-#err { position: fixed; inset: 0; z-index: 9999; display: none; padding: 40px; background: var(--bg); color: var(--silver); font-family: var(--font-ui); overflow-y: auto; }
-#err h2 { color: var(--gold); margin-top: 0; text-transform: uppercase; }
-#err pre { background: #111; padding: 15px; border-radius: 4px; border: 1px solid var(--border); white-space: pre-wrap; font-size: 0.75rem; }
+@keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+#loadingLine { text-align: center; margin: 2rem 0; font-family: var(--font); letter-spacing: 1.5px; text-transform: uppercase; font-size: 0.65rem; color: var(--gold-soft); animation: pulse 1.5s infinite; }
 .references-list { margin-top: 1.5rem; font-size: 0.85rem; }
 .reference-item { padding-left: 2rem; text-indent: -2rem; margin-bottom: 1rem; line-height: 1.6; color: color-mix(in oklab, var(--silver) 85%, transparent); word-break: break-word; }
+#err { position: fixed; inset: 0; z-index: 9999; display: none; padding: 40px; background: var(--bg); color: var(--silver); font-family: var(--font); overflow-y: auto; }
+#err h2 { color: var(--gold); margin-top: 0; text-transform: uppercase; }
+#err pre { background: #111; padding: 15px; border-radius: 4px; border: 1px solid var(--border); white-space: pre-wrap; font-size: 0.75rem; }
 </style>
 </head>
 <body>
@@ -226,573 +215,288 @@ body.modal-open #copyright { opacity: 0; }
   </div>
 </div>
 <div id="err"><h2>Render error</h2><pre id="errText"></pre></div>
-<script>
-window.addEventListener('load', function() {
-    requestAnimationFrame(function() {
-        requestAnimationFrame(function() {
-            setTimeout(initApp, 100); 
-        });
-    });
-});
 
-function initApp() {
-"use strict";
+<!-- Three.js via ES Module import — eliminates r150+ deprecation warning -->
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from "three";
 
-var $ = function(id){ return document.getElementById(id); };
-function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-function showErr(e){
-  var txt = $("errText");
-  if(txt) txt.textContent = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
-  $("err").style.display = "block";
+/* ═══════════════════════════════════════════════════════════════════════
+   ARTICLE REGISTRY  —  the single source of truth
+   ─────────────────────────────────────────────────────────────────────
+   Add new articles here.  The 3-D graph is built from this array
+   immediately on page load — zero network requests required.
+   Full HTML content is fetched lazily from  articles/<file>  on click.
+   ═══════════════════════════════════════════════════════════════════════ */
+const ARTICLE_REGISTRY = [
+  { file: "output.html", title: "Output Gap", date: "Q4 \xb7 2025", category: "Macroeconomics" }
+];
+
+/* ── helpers ───────────────────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function showErr(e) { $("errText").textContent = (e && (e.stack||e.message))||String(e); $("err").style.display = "block"; }
+function sanitize(s) {
+  if (!s) return "";
+  return window.DOMPurify
+    ? DOMPurify.sanitize(s, { USE_PROFILES:{html:true}, FORBID_TAGS:["style","script","iframe","object","embed","form"] })
+    : s;
 }
 
-function sanitizeHTML(str) {
-  if (!str) return "";
-  if (window.DOMPurify) return window.DOMPurify.sanitize(str, { USE_PROFILES: { html: true }, FORBID_TAGS: ["style","script","iframe","object","embed","form"] });
-  return str.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "").replace(/<(iframe|object|embed|form|style)\b[^>]*>([\s\S]*?)<\/\1>/gim, "");
+/* ── article content cache (in-memory, per session) ───────────────── */
+const cache = new Map();
+
+async function fetchContent(art) {
+  if (cache.has(art.file)) return cache.get(art.file);
+  const res = await fetch("articles/" + art.file);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const txt = await res.text();
+  const doc = new DOMParser().parseFromString(txt, "text/html");
+  const node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
+  const html = sanitize(node.innerHTML);
+  cache.set(art.file, html);
+  return html;
 }
 
-var CONFIG = {
-  githubUser: "anilkaya001",
-  githubRepo: "OLStudio",
-  articlesFolder: "articles"
-};
+/* ── modal ─────────────────────────────────────────────────────────── */
+const modal = $("modal"), content = $("articleContentArea");
+let modalT = 0;
 
-var ARTICLE_CACHE = new Map();
-var ARTICLES = [];
-
-async function loadArticle(a){
-  if (ARTICLE_CACHE.has(a.id)) return ARTICLE_CACHE.get(a.id);
-  var rawHTML = a.rawHTML || "";
-  if (!rawHTML && a.downloadUrl) {
-    try {
-      var r = await fetch(a.downloadUrl);
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      var txt = await r.text();
-      var doc = new DOMParser().parseFromString(txt, "text/html");
-      var node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
-      rawHTML = node.innerHTML;
-    } catch(e) {
-      rawHTML = '<p style="text-align:center;color:var(--gold-soft)">Could not load article. Please try again.</p>';
-    }
-  }
-  var meta = { title: a.title, date: a.date, category: a.category };
-  var payload = { meta: meta, safeHTML: sanitizeHTML(rawHTML) };
-  ARTICLE_CACHE.set(a.id, payload);
-  return payload;
-}
-
-var modal = $("modal"), contentArea = $("articleContentArea"), scrollCtx = modal;
-var modalJustOpenedAt = 0;
-
-function closeModal(){
+function closeModal() {
   modal.classList.remove("open"); document.body.classList.remove("modal-open");
-  scrollCtx.scrollTop = 0; $("readProgress").style.width = "0%";
-  if (window.resume3D) window.resume3D();
+  modal.scrollTop = 0; $("readProgress").style.width = "0%";
+  if (window._resume) window._resume();
 }
-
-modal.addEventListener("click", function(e){ if (performance.now() - modalJustOpenedAt > 250 && e.target === modal) closeModal(); });
-window.addEventListener("keydown", function(e){ if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, { passive:true });
+modal.addEventListener("click", e => { if (performance.now()-modalT>250 && e.target===modal) closeModal(); });
+window.addEventListener("keydown", e => { if (e.key==="Escape" && modal.classList.contains("open")) closeModal(); }, {passive:true});
 $("closeBtn").addEventListener("click", closeModal);
+modal.addEventListener("scroll", e => {
+  const el=e.target; $("readProgress").style.width = (el.scrollTop/Math.max(1,el.scrollHeight-el.clientHeight)*100)+"%";
+}, {passive:true});
 
-scrollCtx.addEventListener("scroll", function(e) { 
-    var el = e.target;
-    $("readProgress").style.width = ((el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight)) * 100) + "%"; 
-}, { passive: true });
-
-/* ─── FIX 2: gate on rawHTML OR downloadUrl so fetched articles render ─── */
-window.openArticle = function(a){
-  modalJustOpenedAt = performance.now();
-  modal.classList.add("open"); document.body.classList.add("modal-open");
-  if (window.pause3D) window.pause3D();
-
-  contentArea.innerHTML = '<header class="article-header"><div class="meta"><span class="pill">' + (a.category||"") + '</span><span>&bull;</span><span>' + (a.date||"") + '</span></div><h1>' + (a.title||"") + '</h1></header><p id="loadingLine">Decrypting Node...</p>';
-
-  if (a.rawHTML || a.downloadUrl) {
-      loadArticle(a).then(function(result){
-        var meta = result.meta, safeHTML = result.safeHTML;
-        contentArea.innerHTML = '<header class="article-header"><div class="meta"><span class="pill">' + (meta.category||"") + '</span><span>&bull;</span><span>' + (meta.date||"") + '</span></div><h1>' + (meta.title||"") + '</h1></header>' + safeHTML;
-        
-        contentArea.querySelectorAll('a[href]').forEach(function(link){
-          if (/^https?:\/\//i.test(link.getAttribute("href"))) { link.setAttribute("target","_blank"); link.setAttribute("rel","noopener noreferrer"); }
-        });
-    
-        if (window.renderMathInElement) window.renderMathInElement(contentArea, { delimiters: [{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false}], throwOnError: false });
-        
-        contentArea.querySelectorAll('pre').forEach(function(pre) {
-            var wrapper = document.createElement('div'); wrapper.className = 'code-wrapper';
-            pre.parentNode.insertBefore(wrapper, pre); wrapper.appendChild(pre);
-            var btn = document.createElement('button'); btn.className = 'copy-btn';
-            var defaultHTML = '<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy';
-            var successHTML = '<svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
-            btn.innerHTML = defaultHTML;
-            btn.onclick = function() {
-                var ta = document.createElement("textarea"); ta.value = pre.innerText; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
-                try { document.execCommand('copy'); btn.innerHTML = successHTML; btn.style.color = "var(--gold)"; btn.style.borderColor = "var(--gold)"; setTimeout(function() { btn.innerHTML = defaultHTML; btn.style.color = ""; btn.style.borderColor = ""; }, 2000); } 
-                catch (err) { btn.innerText = "Error"; } finally { document.body.removeChild(ta); }
-            };
-            wrapper.appendChild(btn);
-        });
-      }).catch(function(err){ showErr(err); });
-  } else {
-      contentArea.innerHTML = '<header class="article-header"><div class="meta"><span class="pill">System</span></div><h1>' + a.title + '</h1></header><p style="text-align:center; color: var(--gold-soft);">This is an automated system node. Please upload HTML files to your GitHub <b>articles</b> folder to populate the network.</p>';
-  }
-};
-
-if (!window.THREE) { showErr(new Error("Three.js library failed to load. Please verify CDN connection.")); return; }
-
-try {
-  var canvas = $("gl");
-  var winW = window.innerWidth || 1, winH = window.innerHeight || 1;
-  var getDPR = function(){ return Math.min(window.devicePixelRatio || 1, (window.innerWidth || 1) < 800 ? 1.0 : 1.5); };
-  
-  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
-  renderer.setPixelRatio(getDPR()); renderer.setSize(winW, winH, false);
-  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.3;
-
-  var scene = new THREE.Scene(); scene.background = new THREE.Color(cssVar("--bg") || "#020203");
-  var camera = new THREE.PerspectiveCamera(50, winW/winH, 0.1, 10000); camera.position.set(0, 60, 450);
-
-  scene.add(new THREE.AmbientLight(0xffffff, 1.2));
-  var key = new THREE.DirectionalLight(0xffffff, 3.5); key.position.set(160, 190, 130); scene.add(key);
-  var fill = new THREE.DirectionalLight(0x4488ff, 2.0); fill.position.set(-210, 70, 160); scene.add(fill);
-  var rim = new THREE.PointLight(0xd4af37, 5.0, 1500, 1.5); rim.position.set(0, -100, -320); scene.add(rim);
-
-  var pointer = new THREE.Vector2(0,0); var px=0, py=0, pointerActive=false;
-
-  var floorGeo = new THREE.PlaneGeometry(6000, 6000);
-  var floorMat = new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color(cssVar("--gold") || "#D4AF37") } },
-    vertexShader: "varying vec2 vUv; varying vec3 vPos; void main(){ vUv = uv; vPos = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * vec4(vPos, 1.0); }",
-    fragmentShader: "varying vec2 vUv; varying vec3 vPos; uniform float uTime; uniform vec3 uColor; void main(){ float dist = length(vPos.xz); vec2 grid = fract(vUv * 160.0 - vec2(0.0, uTime * 0.04) + sin(dist*0.005 - uTime*0.8)*0.05); float line = min(grid.x, grid.y); float alpha = smoothstep(0.06, 0.0, line); float fade = exp(-dist * 0.0008); gl_FragColor = vec4(uColor, alpha * fade * 0.25); }"
-  });
-  var floor = new THREE.Mesh(floorGeo, floorMat);
-  floor.rotation.x = -Math.PI / 2; floor.position.y = -220;
-  scene.add(floor);
-
-  var galaxy = new THREE.Group(); scene.add(galaxy);
-  var isMobile = winW < 800;
-  var maxStars = isMobile ? 12000 : 35000;
-  
-  var starPos = new Float32Array(maxStars*3);
-  var starSize = new Float32Array(maxStars);
-
-  for (var i=0; i<maxStars; i++){
-    if (i < maxStars * 0.70) {
-        var u = Math.random() * Math.PI * 2;
-        var v = Math.random() * Math.PI * 2;
-        var R = 220; 
-        var r = 90 * (Math.random() * 0.7 + 0.3); 
-
-        var cx = R * (Math.sin(u) + 2 * Math.sin(2 * u));
-        var cy = R * (Math.cos(u) - 2 * Math.cos(2 * u));
-        var cz = R * (-Math.sin(3 * u));
-
-        var dx = R * (Math.cos(u) + 4 * Math.cos(2 * u));
-        var dy = R * (-Math.sin(u) + 4 * Math.sin(2 * u));
-        var dz = R * (-3 * Math.cos(3 * u));
-        
-        var tangent = new THREE.Vector3(dx, dy, dz).normalize();
-        var upVec = new THREE.Vector3(0, 1, 0); 
-        var normal = new THREE.Vector3().crossVectors(tangent, upVec).normalize();
-        var binormal = new THREE.Vector3().crossVectors(tangent, normal).normalize();
-
-        var spx = cx + r * Math.cos(v) * normal.x + r * Math.sin(v) * binormal.x;
-        var spy = cy + r * Math.cos(v) * normal.y + r * Math.sin(v) * binormal.y;
-        var spz = cz + r * Math.cos(v) * normal.z + r * Math.sin(v) * binormal.z;
-
-        starPos[i*3] = spx * 1.2; 
-        starPos[i*3+1] = spz * 1.2; 
-        starPos[i*3+2] = spy * 1.2 - 200;
-
-        starSize[i] = Math.random() * 2.5 + 1.0;
-    } else {
-        var rd = Math.pow(Math.random(), 0.5) * 3500;
-        var th = Math.random() * Math.PI*2;
-        var ph = Math.acos(2 * Math.random() - 1);
-        starPos[i*3] = rd * Math.sin(ph) * Math.cos(th); 
-        starPos[i*3+1] = rd * Math.sin(ph) * Math.sin(th); 
-        starPos[i*3+2] = rd * Math.cos(ph);
-        
-        starSize[i] = Math.random() * 2.0 + 0.5;
-    }
-  }
-  
-  var starGeom = new THREE.BufferGeometry(); 
-  starGeom.setAttribute("position", new THREE.BufferAttribute(starPos, 3)); 
-  starGeom.setAttribute("aSize", new THREE.BufferAttribute(starSize, 1));
-  
-  var stars = new THREE.Points(starGeom, new THREE.ShaderMaterial({ 
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, 
-      uniforms: { uTime: { value: 0 } }, 
-      vertexShader: "attribute float aSize; varying vec3 vColor; varying float vAlpha; uniform float uTime; void main(){ vec3 p = position; p.y += sin(uTime*0.5 + p.x*0.005)*5.0; vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = aSize * (800.0 / -mv.z); vAlpha = smoothstep(3500.0, 200.0, length(p)); float d = length(mv.xyz); float t = uTime * 0.5; vColor = vec3(0.5 + 0.5 * cos(t + d * 0.003), 0.5 + 0.5 * cos(t + d * 0.003 + 2.094), 0.5 + 0.5 * cos(t + d * 0.003 + 4.188)); }", 
-      fragmentShader: "varying vec3 vColor; varying float vAlpha; void main(){ vec2 uv = gl_PointCoord.xy - 0.5; float d = dot(uv, uv); gl_FragColor = vec4(vColor, smoothstep(0.25, 0.0, d) * vAlpha * 0.8); }" 
-  }));
-  galaxy.add(stars);
-
-  function labelSprite(text){
-    var w=1024, h=128, c=document.createElement("canvas"); c.width=w; c.height=h; var g=c.getContext("2d");
-    g.fillStyle = "rgba(255,255,255,1.0)"; g.textAlign = "center"; g.textBaseline = "middle"; 
-    var fSize = 65; g.font = "800 " + fSize + "px 'Latin Modern Sans',sans-serif";
-    while(g.measureText(text).width > w - 40) { fSize -= 2; g.font = "800 " + fSize + "px 'Latin Modern Sans',sans-serif"; }
-    g.fillText(text, w/2, h/2); var tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
-    var spr=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false })); 
-    spr.scale.set(100, 12.5, 1); return spr;
-  }
-
-  var graphGroup = new THREE.Group(); scene.add(graphGroup);
-  var nodes = [], edges = [];
-  
-  var MAX_EDGES = 500;
-  var edgeGeo = new THREE.BufferGeometry();
-  var edgePos = new Float32Array(MAX_EDGES * 6);
-  var edgeCol = new Float32Array(MAX_EDGES * 6);
-  edgeGeo.setAttribute('position', new THREE.BufferAttribute(edgePos, 3));
-  edgeGeo.setAttribute('color', new THREE.BufferAttribute(edgeCol, 3));
-  
-  var edgeMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending });
-  var networkLines = new THREE.LineSegments(edgeGeo, edgeMat);
-  graphGroup.add(networkLines);
-
-  function createGlowTexture() {
-      var canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
-      var ctx = canvas.getContext('2d');
-      var grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-      grad.addColorStop(0, 'rgba(255, 255, 255, 1)'); grad.addColorStop(0.3, 'rgba(255, 230, 0, 0.9)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = grad; ctx.fillRect(0, 0, 128, 128);
-      var tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; return tex;
-  }
-  function createNodeHalo() {
-      var canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
-      var ctx = canvas.getContext('2d');
-      var grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-      grad.addColorStop(0, 'rgba(255, 255, 0, 0.9)'); grad.addColorStop(0.4, 'rgba(255, 220, 0, 0.3)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = grad; ctx.fillRect(0, 0, 128, 128);
-      var tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; return tex;
-  }
-
-  var MAX_PACKETS = 300;
-  var packetGeo = new THREE.BufferGeometry();
-  var packetPos = new Float32Array(MAX_PACKETS * 3);
-  packetGeo.setAttribute('position', new THREE.BufferAttribute(packetPos, 3));
-  var packetMat = new THREE.PointsMaterial({ color: new THREE.Color(cssVar("--gold")), size: 10, map: createGlowTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-  var packetsMesh = new THREE.Points(packetGeo, packetMat);
-  var packetsData = [];
-  graphGroup.add(packetsMesh);
-
-  var goldColor = new THREE.Color(cssVar("--gold") || "#ffe600");
-  var activeColor = new THREE.Color("#ffffff");
-  var dimColor = new THREE.Color(0.08, 0.08, 0.08); 
-
-  function buildGraph(){
-    for(var i = graphGroup.children.length - 1; i >= 0; i--) {
-        if(graphGroup.children[i] !== networkLines && graphGroup.children[i] !== packetsMesh) graphGroup.remove(graphGroup.children[i]);
-    }
-    nodes = []; edges = []; packetsData = [];
-
-    if (!ARTICLES || ARTICLES.length === 0) {
-        ARTICLES = [
-            { id: "sys1", title: "Automated Fetch Active", category: "System" },
-            { id: "sys2", title: "Awaiting GitHub Sync", category: "Network" },
-            { id: "sys3", title: "Manifold Initialized", category: "Topology" }
-        ];
-    }
-
-    var w = window.innerWidth || 1, h = window.innerHeight || 1;
-    var isMob = w < 800;
-    var finalScale = Math.max(Math.min((w / h) * 0.8, 1.2), 0.5);
-    if (isNaN(finalScale) || !isFinite(finalScale)) finalScale = 0.8;
-    var haloTex = createNodeHalo();
-
-    ARTICLES.forEach(function(art, idx) {
-      var radius = (isMob ? 18 : 12) * finalScale;
-      
-      var coreMat = new THREE.MeshStandardMaterial({ color: 0x111115, emissive: 0x111115, roughness: 0.2, metalness: 0.8 });
-      var core = new THREE.Mesh(new THREE.IcosahedronGeometry(radius, 1), coreMat);
-      
-      var wireGeo = new THREE.TorusKnotGeometry(radius * 1.3, radius * 0.15, 64, 8, 2, 3);
-      var wireMat = new THREE.MeshBasicMaterial({ color: goldColor, wireframe: true, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending });
-      var wire = new THREE.Mesh(wireGeo, wireMat);
-      core.add(wire);
-
-      var haloMat = new THREE.SpriteMaterial({ map: haloTex, color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-      var halo = new THREE.Sprite(haloMat);
-      halo.scale.set(radius * 9, radius * 9, 1);
-      core.add(halo);
-      
-      var label = labelSprite(art.title); label.scale.multiplyScalar(finalScale * (isMob ? 1.8 : 1.2));
-      core.userData.article = label.userData.article = art;
-
-      var pos = new THREE.Vector3().randomDirection().multiplyScalar(Math.random() * 150 + 50);
-      
-      nodes.push({ id: idx, mesh: core, label: label, halo: halo, pos: pos, vel: new THREE.Vector3(), radius: radius, active: false, labelMult: (isMob?1.8:1.2) });
-      graphGroup.add(core); graphGroup.add(label);
-    });
-
-    if (nodes.length > 1) {
-        nodes.forEach(function(n1, i) {
-            var connections = Math.floor(Math.random() * 2) + 1;
-            for(var c=0; c<connections; c++) {
-                var n2 = nodes[Math.floor(Math.random() * nodes.length)];
-                if (n1.id !== n2.id && !edges.find(function(e){ return (e.source===n1 && e.target===n2) || (e.source===n2 && e.target===n1); })) {
-                    edges.push({ source: n1, target: n2 });
-                }
-            }
-        });
-        for(var i=0; i<nodes.length-1; i++) {
-             if (!edges.find(function(e){ return (e.source===nodes[i] && e.target===nodes[i+1]) || (e.source===nodes[i+1] && e.target===nodes[i]); })) {
-                  edges.push({ source: nodes[i], target: nodes[i+1] });
-             }
-        }
-    }
-
-    for(var i=0; i<Math.min(edges.length * 3, MAX_PACKETS); i++) {
-        if(edges.length === 0) break;
-        packetsData.push({ edge: edges[Math.floor(Math.random() * edges.length)], progress: Math.random(), speed: Math.random() * 0.4 + 0.2, dir: Math.random() > 0.5 ? 1 : -1 });
-    }
-  }
-
-  buildGraph();
-
-  var raycaster = new THREE.Raycaster(); var hoveredNode = null;
-  function updatePointer(ev){
-    var r = canvas.getBoundingClientRect(), p = ev.touches ? ev.touches[0] : (ev.changedTouches ? ev.changedTouches[0] : ev);
-    if (!p) return;
-    pointer.x = ((p.clientX - r.left)/Math.max(1, r.width))*2 - 1; pointer.y = -((p.clientY - r.top)/Math.max(1, r.height))*2 + 1;
-    px = p.clientX - r.left; py = p.clientY - r.top; pointerActive = true;
-  }
-  canvas.addEventListener("pointermove", updatePointer, { passive:true });
-  canvas.addEventListener("click", function(e){ if(document.body.classList.contains("modal-open")) return; updatePointer(e); raycaster.setFromCamera(pointer, camera); var h = raycaster.intersectObjects(graphGroup.children, true).find(function(x){ return x.object.userData.article; }); if(h) window.openArticle(h.object.userData.article); }, { passive:true });
-
-  var clock = new THREE.Clock();
-  var rafId = 0, globalTime = 0;
-  
-  window.pause3D = function() { if(rafId) { cancelAnimationFrame(rafId); rafId = 0; } };
-  window.resume3D = function() { if(!rafId){ clock.getDelta(); rafId = requestAnimationFrame(frame); } };
-
-  function frame(){
-    rafId = requestAnimationFrame(frame);
-    if (document.body.classList.contains("modal-open")) return;
-    
-    var dt = Math.min(0.033, clock.getDelta());
-    globalTime += dt;
-    
-    var nx = pointerActive ? pointer.x : 0.0, ny = pointerActive ? -pointer.y : 0.0;
-    var targetCamX = nx * 120;
-    var targetCamY = 60 - ny * 80;
-    camera.position.x += (targetCamX - camera.position.x) * 0.05; 
-    camera.position.y += (targetCamY - camera.position.y) * 0.05;
-    camera.lookAt(0,0,0);
-    
-    if (pointerActive){
-      raycaster.setFromCamera(pointer, camera);
-      var h = raycaster.intersectObjects(graphGroup.children, true).find(function(x){ return x.object.userData.article; });
-      hoveredNode = h ? nodes.find(function(n){ return n.mesh.userData.article === h.object.userData.article; }) : null; 
-      document.body.style.cursor = hoveredNode ? "pointer" : "default";
-    }
-
-    stars.material.uniforms.uTime.value = globalTime; 
-    galaxy.rotation.y = globalTime * 0.015;
-    floor.material.uniforms.uTime.value = globalTime;
-
-    var repulseForce = 18000;
-    var springLen = 130;
-    var springK = 0.05;
-    var centerPull = 0.006;
-    var damping = 0.85;
-
-    for(var i=0; i<nodes.length; i++){
-        var n1 = nodes[i];
-        n1.vel.add(n1.pos.clone().multiplyScalar(-centerPull));
-        for(var j=i+1; j<nodes.length; j++){
-            var n2 = nodes[j];
-            var diff = n1.pos.clone().sub(n2.pos);
-            var distSq = diff.lengthSq();
-            if(distSq > 0.1 && distSq < 80000) {
-                var f = diff.normalize().multiplyScalar(repulseForce / distSq);
-                n1.vel.add(f); n2.vel.sub(f);
-            }
-        }
-    }
-    edges.forEach(function(e) {
-        var diff = e.target.pos.clone().sub(e.source.pos);
-        var dist = diff.length();
-        var f = diff.normalize().multiplyScalar((dist - springLen) * springK);
-        e.source.vel.add(f); e.target.vel.sub(f);
-    });
-
-    nodes.forEach(function(n) {
-      n.vel.multiplyScalar(damping);
-      n.pos.add(n.vel.clone().multiplyScalar(dt * 10));
-      
-      var floatOffset = new THREE.Vector3(0, Math.sin(globalTime * 2.0 + n.id) * 4.0, 0);
-      var targetPos = n.pos.clone().add(floatOffset);
-      
-      var isHovered = hoveredNode === n;
-      var isConnected = hoveredNode && edges.some(function(e){ return (e.source === n && e.target === hoveredNode) || (e.target === n && e.source === hoveredNode); });
-      n.active = isHovered || isConnected;
-
-      if (isHovered) {
-          var pull = camera.position.clone().sub(targetPos).normalize().multiplyScalar(30);
-          targetPos.add(pull);
-      }
-
-      n.mesh.position.lerp(targetPos, 0.2);
-      n.mesh.rotation.x += dt * 0.3; n.mesh.rotation.y += dt * 0.5;
-      n.mesh.children[0].rotation.x -= dt * 2.0; n.mesh.children[0].rotation.y += dt * 2.0; 
-      
-      n.label.position.copy(n.mesh.position);
-      n.label.position.y -= (n.radius + 18 * n.labelMult);
-      n.label.quaternion.copy(camera.quaternion);
-
-      var tScale = isHovered ? 1.4 : (hoveredNode ? (isConnected ? 1.0 : 0.6) : 1.0);
-      n.mesh.scale.lerp(new THREE.Vector3(tScale, tScale, tScale), 0.1);
-      
-      var tColor = hoveredNode ? (isHovered ? activeColor : (isConnected ? goldColor : dimColor)) : goldColor;
-      n.mesh.children[0].material.color.lerp(tColor, 0.1);
-      n.halo.material.opacity += ((hoveredNode ? (n.active ? 1.0 : 0.05) : 1.0) - n.halo.material.opacity) * 0.1;
-      n.label.material.opacity += ((hoveredNode ? (n.active ? 1.0 : 0.1) : 1.0) - n.label.material.opacity) * 0.1;
-    });
-
-    var edgeIdx = 0;
-    edges.forEach(function(e, i) {
-        if(i >= MAX_EDGES) return;
-        edgePos[edgeIdx] = e.source.mesh.position.x; edgePos[edgeIdx+1] = e.source.mesh.position.y; edgePos[edgeIdx+2] = e.source.mesh.position.z;
-        edgePos[edgeIdx+3] = e.target.mesh.position.x; edgePos[edgeIdx+4] = e.target.mesh.position.y; edgePos[edgeIdx+5] = e.target.mesh.position.z;
-        
-        var c = hoveredNode ? ((e.source===hoveredNode || e.target===hoveredNode) ? activeColor : dimColor) : goldColor;
-        edgeCol[edgeIdx] = c.r; edgeCol[edgeIdx+1] = c.g; edgeCol[edgeIdx+2] = c.b;
-        edgeCol[edgeIdx+3] = c.r; edgeCol[edgeIdx+4] = c.g; edgeCol[edgeIdx+5] = c.b;
-        edgeIdx += 6;
-    });
-    for(; edgeIdx < MAX_EDGES * 6; edgeIdx++) edgePos[edgeIdx] = edgeCol[edgeIdx] = 0;
-    edgeGeo.attributes.position.needsUpdate = true;
-    edgeGeo.attributes.color.needsUpdate = true;
-
-    var pIdx = 0;
-    packetsData.forEach(function(p) {
-        var boost = (hoveredNode && (p.edge.source === hoveredNode || p.edge.target === hoveredNode)) ? 4.0 : 1.0;
-        p.progress += dt * p.speed * p.dir * boost;
-        if(p.progress > 1.0) { p.progress = 0; p.edge = edges[Math.floor(Math.random() * edges.length)] || p.edge; }
-        if(p.progress < 0.0) { p.progress = 1; p.edge = edges[Math.floor(Math.random() * edges.length)] || p.edge; }
-        
-        if (p.edge) {
-            var src = p.edge.source.mesh.position, tgt = p.edge.target.mesh.position;
-            if (hoveredNode && p.edge.source !== hoveredNode && p.edge.target !== hoveredNode) {
-                packetPos[pIdx] = packetPos[pIdx+1] = packetPos[pIdx+2] = 9999;
-            } else {
-                packetPos[pIdx] = src.x + (tgt.x - src.x) * p.progress;
-                packetPos[pIdx+1] = src.y + (tgt.y - src.y) * p.progress;
-                packetPos[pIdx+2] = src.z + (tgt.z - src.z) * p.progress;
-            }
-        } else { packetPos[pIdx] = packetPos[pIdx+1] = packetPos[pIdx+2] = 9999; }
-        pIdx += 3;
-    });
-    packetGeo.attributes.position.needsUpdate = true;
-
-    graphGroup.rotation.y = Math.sin(globalTime * 0.1) * 0.15; 
-
-    renderer.render(scene, camera);
-  }
-
-  window.addEventListener("resize", function(){ var w = window.innerWidth || 1, h = window.innerHeight || 1; camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setPixelRatio(getDPR()); renderer.setSize(w, h, false); buildGraph(); }, { passive:true });
-  $("brand").addEventListener("click", function(){ camera.position.set(0,60,450); });
-  
-  canvas.classList.add("ready");
-  window.resume3D();
-
-  /* ─── Article loader with FIX 1: parseMeta now stores rawHTML ─── */
-  async function loadDynamicArticles() {
-    var CACHE_VER = "v4";
-    var cacheKey = "gh_articles_" + CONFIG.githubUser + "_" + CONFIG.githubRepo + "_" + CACHE_VER;
-
-    // Check sessionStorage cache
-    try {
-      var cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        var parsed = JSON.parse(cached);
-        if (parsed && parsed.length > 0) {
-          ARTICLES = parsed;
-          buildGraph();
-          return;
-        }
-      }
-    } catch(e) { try { sessionStorage.removeItem(cacheKey); } catch(_){} }
-
-    async function parseMeta(url, fallbackId) {
-      try {
-        var r = await fetch(url);
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        var txt = await r.text();
-        var doc = new DOMParser().parseFromString(txt, "text/html");
-        var node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
-        return {
-          id:          fallbackId,
-          title:       node.getAttribute("data-title")    || fallbackId.replace(/-/g," "),
-          date:        node.getAttribute("data-date")     || "",
-          category:    node.getAttribute("data-category") || "Research",
-          downloadUrl: url,
-          rawHTML:     node.innerHTML
-        };
-      } catch(e) {
-        return { id: fallbackId, title: fallbackId.replace(/-/g," "), date:"", category:"Research", downloadUrl: url };
-      }
-    }
-
-    var articleMeta = [];
-
-    // Strategy 1: same-origin _list.json (fast, zero rate-limit risk)
-    try {
-      var listRes = await fetch("/" + CONFIG.articlesFolder + "/_list.json?t=" + Date.now());
-      if (listRes.ok) {
-        var filenames = await listRes.json();
-        var htmlFiles = filenames.filter(function(f){ return f.endsWith(".html") && !f.startsWith("_"); });
-        articleMeta = await Promise.all(
-          htmlFiles.map(function(f){ return parseMeta("/" + CONFIG.articlesFolder + "/" + f, f.replace(".html","")); })
-        );
-      }
-    } catch(e) { /* _list.json absent — fall through to GitHub API */ }
-
-    // Strategy 2: GitHub API (fallback)
-    if (articleMeta.length === 0) {
-      try {
-        var res = await fetch(
-          "https://api.github.com/repos/" + CONFIG.githubUser + "/" + CONFIG.githubRepo + "/contents/" + CONFIG.articlesFolder,
-          { headers: { Accept: "application/vnd.github.v3+json" } }
-        );
-        if (res.status === 403 || res.status === 429) {
-          console.warn("GitHub API rate-limited — will retry in 15 s");
-          setTimeout(loadDynamicArticles, 15000);
-          return;
-        }
-        if (res.ok) {
-          var files = await res.json();
-          var htmlFiles = files.filter(function(f){ return f.name.endsWith(".html") && !f.name.startsWith("_"); });
-          articleMeta = await Promise.all(
-            htmlFiles.map(function(f){ return parseMeta(f.download_url, f.name.replace(".html","")); })
-          );
-        }
-      } catch(e) { console.error("GitHub API fallback error:", e); }
-    }
-
-    if (articleMeta.length > 0) {
-      ARTICLES = articleMeta;
-      // Cache metadata without rawHTML to keep sessionStorage lean
-      try {
-        var cacheData = ARTICLES.map(function(a){
-          return { id: a.id, title: a.title, date: a.date, category: a.category, downloadUrl: a.downloadUrl };
-        });
-        sessionStorage.setItem(cacheKey, JSON.stringify(cacheData));
-      } catch(e) { /* quota — skip */ }
-      buildGraph();
-    }
-  }
-  loadDynamicArticles();
-
-} catch(e) { showErr(e); }
-
+function header(a) {
+  return '<header class="article-header"><div class="meta"><span class="pill">'
+    +(a.category||"")+'</span><span>\u2022</span><span>'+(a.date||"")
+    +'</span></div><h1>'+(a.title||"")+'</h1></header>';
 }
+
+function openArticle(art) {
+  modalT = performance.now();
+  modal.classList.add("open"); document.body.classList.add("modal-open");
+  if (window._pause) window._pause();
+
+  content.innerHTML = header(art) + '<p id="loadingLine">Decrypting Node\u2026</p>';
+
+  fetchContent(art).then(html => {
+    content.innerHTML = header(art) + html;
+    // external links
+    content.querySelectorAll("a[href]").forEach(a => {
+      if (/^https?:\/\//i.test(a.getAttribute("href"))) { a.target="_blank"; a.rel="noopener noreferrer"; }
+    });
+    // KaTeX
+    if (window.renderMathInElement) renderMathInElement(content, {
+      delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],
+      throwOnError:false
+    });
+    // copy buttons on <pre>
+    content.querySelectorAll("pre").forEach(pre => {
+      const w=document.createElement("div"); w.className="code-wrapper";
+      pre.parentNode.insertBefore(w,pre); w.appendChild(pre);
+      const b=document.createElement("button"); b.className="copy-btn";
+      const d='<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+      const ok='<svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+      b.innerHTML=d;
+      b.onclick=()=>navigator.clipboard.writeText(pre.innerText).then(()=>{b.innerHTML=ok;b.style.color="var(--gold)";setTimeout(()=>{b.innerHTML=d;b.style.color="";},2000);}).catch(()=>{b.innerText="Error";});
+      w.appendChild(b);
+    });
+  }).catch(e => {
+    console.error("Article fetch error:", e);
+    content.innerHTML = header(art)+'<p style="text-align:center;color:var(--gold-soft)">Could not load article. Please try again later.</p>';
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   THREE.JS SCENE
+   ═══════════════════════════════════════════════════════════════════ */
+try {
+const canvas = $("gl");
+const W=()=>window.innerWidth||1, H=()=>window.innerHeight||1;
+const dpr=()=>Math.min(devicePixelRatio||1, W()<800?1:1.5);
+
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false, powerPreference:"high-performance"});
+renderer.setPixelRatio(dpr()); renderer.setSize(W(),H(),false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.3;
+
+const scene = new THREE.Scene(); scene.background = new THREE.Color(css("--bg")||"#020203");
+const camera = new THREE.PerspectiveCamera(50, W()/H(), 0.1, 10000);
+camera.position.set(0,60,450);
+
+scene.add(new THREE.AmbientLight(0xffffff,1.2));
+const kL=new THREE.DirectionalLight(0xffffff,3.5); kL.position.set(160,190,130); scene.add(kL);
+const fL=new THREE.DirectionalLight(0x4488ff,2); fL.position.set(-210,70,160); scene.add(fL);
+const rL=new THREE.PointLight(0xd4af37,5,1500,1.5); rL.position.set(0,-100,-320); scene.add(rL);
+
+const ptr = new THREE.Vector2(); let ptrOn=false;
+
+/* floor grid */
+const floorU = {uTime:{value:0}, uColor:{value:new THREE.Color(css("--gold")||"#D4AF37")}};
+const floorM = new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:floorU,
+  vertexShader:`varying vec2 vUv;varying vec3 vP;void main(){vUv=uv;vP=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(vP,1.);}`,
+  fragmentShader:`varying vec2 vUv;varying vec3 vP;uniform float uTime;uniform vec3 uColor;void main(){float d=length(vP.xz);vec2 g=fract(vUv*160.-vec2(0.,uTime*.04)+sin(d*.005-uTime*.8)*.05);float l=min(g.x,g.y);float a=smoothstep(.06,.0,l);float f=exp(-d*.0008);gl_FragColor=vec4(uColor,a*f*.25);}`});
+const floorMesh=new THREE.Mesh(new THREE.PlaneGeometry(6000,6000),floorM);
+floorMesh.rotation.x=-Math.PI/2; floorMesh.position.y=-220; scene.add(floorMesh);
+
+/* stars */
+const galaxy=new THREE.Group(); scene.add(galaxy);
+const mob=W()<800, nS=mob?12000:35000;
+const sp=new Float32Array(nS*3), ss=new Float32Array(nS);
+for(let i=0;i<nS;i++){
+  if(i<nS*0.7){
+    const u=Math.random()*Math.PI*2,v=Math.random()*Math.PI*2,R=220,r=90*(Math.random()*.7+.3);
+    const cx=R*(Math.sin(u)+2*Math.sin(2*u)),cy=R*(Math.cos(u)-2*Math.cos(2*u)),cz=R*(-Math.sin(3*u));
+    const dx=R*(Math.cos(u)+4*Math.cos(2*u)),dy=R*(-Math.sin(u)+4*Math.sin(2*u)),dz=R*(-3*Math.cos(3*u));
+    const T=new THREE.Vector3(dx,dy,dz).normalize(),N=new THREE.Vector3().crossVectors(T,new THREE.Vector3(0,1,0)).normalize(),B=new THREE.Vector3().crossVectors(T,N).normalize();
+    sp[i*3]=(cx+r*Math.cos(v)*N.x+r*Math.sin(v)*B.x)*1.2;
+    sp[i*3+1]=(cz+r*Math.cos(v)*N.z+r*Math.sin(v)*B.z)*1.2;
+    sp[i*3+2]=(cy+r*Math.cos(v)*N.y+r*Math.sin(v)*B.y)*1.2-200;
+    ss[i]=Math.random()*2.5+1;
+  } else {
+    const rd=Math.sqrt(Math.random())*3500,th=Math.random()*6.2832,ph=Math.acos(2*Math.random()-1);
+    sp[i*3]=rd*Math.sin(ph)*Math.cos(th); sp[i*3+1]=rd*Math.sin(ph)*Math.sin(th); sp[i*3+2]=rd*Math.cos(ph);
+    ss[i]=Math.random()*2+.5;
+  }
+}
+const sGeo=new THREE.BufferGeometry();
+sGeo.setAttribute("position",new THREE.BufferAttribute(sp,3));
+sGeo.setAttribute("aSize",new THREE.BufferAttribute(ss,1));
+const starU={uTime:{value:0}};
+const starMesh=new THREE.Points(sGeo,new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:starU,
+  vertexShader:`attribute float aSize;varying vec3 vC;varying float vA;uniform float uTime;void main(){vec3 p=position;p.y+=sin(uTime*.5+p.x*.005)*5.;vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;gl_PointSize=aSize*(800./-mv.z);vA=smoothstep(3500.,200.,length(p));float d=length(mv.xyz),t=uTime*.5;vC=vec3(.5+.5*cos(t+d*.003),.5+.5*cos(t+d*.003+2.094),.5+.5*cos(t+d*.003+4.188));}`,
+  fragmentShader:`varying vec3 vC;varying float vA;void main(){vec2 uv=gl_PointCoord.xy-.5;float d=dot(uv,uv);gl_FragColor=vec4(vC,smoothstep(.25,.0,d)*vA*.8);}`}));
+galaxy.add(starMesh);
+
+/* ── graph ── */
+const gGrp=new THREE.Group(); scene.add(gGrp);
+let nodes=[],edges=[],pkts=[];
+const ME=500,MP=300;
+const eP=new Float32Array(ME*6),eC=new Float32Array(ME*6);
+const eG=new THREE.BufferGeometry();
+eG.setAttribute("position",new THREE.BufferAttribute(eP,3));
+eG.setAttribute("color",new THREE.BufferAttribute(eC,3));
+const eLines=new THREE.LineSegments(eG,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.9,blending:THREE.AdditiveBlending}));
+gGrp.add(eLines);
+
+function glowTex(){const c=document.createElement("canvas");c.width=c.height=128;const g=c.getContext("2d"),r=g.createRadialGradient(64,64,0,64,64,64);r.addColorStop(0,"rgba(255,255,255,1)");r.addColorStop(.3,"rgba(255,230,0,.9)");r.addColorStop(1,"rgba(0,0,0,0)");g.fillStyle=r;g.fillRect(0,0,128,128);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;}
+function haloTex(){const c=document.createElement("canvas");c.width=c.height=128;const g=c.getContext("2d"),r=g.createRadialGradient(64,64,0,64,64,64);r.addColorStop(0,"rgba(255,255,0,.9)");r.addColorStop(.4,"rgba(255,220,0,.3)");r.addColorStop(1,"rgba(0,0,0,0)");g.fillStyle=r;g.fillRect(0,0,128,128);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;}
+
+const pP=new Float32Array(MP*3);
+const pG=new THREE.BufferGeometry(); pG.setAttribute("position",new THREE.BufferAttribute(pP,3));
+const pM=new THREE.Points(pG,new THREE.PointsMaterial({color:new THREE.Color(css("--gold")),size:10,map:glowTex(),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+gGrp.add(pM);
+
+const gC=new THREE.Color(css("--gold")||"#ffe600"), wC=new THREE.Color("#fff"), dC=new THREE.Color(.08,.08,.08);
+
+function mkLabel(txt){
+  const w=1024,h=128,c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");
+  g.fillStyle="rgba(255,255,255,1)";g.textAlign="center";g.textBaseline="middle";
+  let f=65;g.font="800 "+f+"px 'Latin Modern Roman',Georgia,serif";
+  while(g.measureText(txt).width>w-40){f-=2;g.font="800 "+f+"px 'Latin Modern Roman',Georgia,serif";}
+  g.fillText(txt,w/2,h/2);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false}));s.scale.set(100,12.5,1);return s;
+}
+
+function buildGraph(){
+  for(let i=gGrp.children.length-1;i>=0;i--){const c=gGrp.children[i];if(c!==eLines&&c!==pM)gGrp.remove(c);}
+  nodes=[];edges=[];pkts=[];
+  const w=W(),h=H(),m=w<800;let sc=Math.max(Math.min((w/h)*.8,1.2),.5);if(!isFinite(sc))sc=.8;
+  const ht=haloTex();
+
+  ARTICLE_REGISTRY.forEach((art,idx)=>{
+    const rad=(m?18:12)*sc;
+    const core=new THREE.Mesh(new THREE.IcosahedronGeometry(rad,1),new THREE.MeshStandardMaterial({color:0x111115,emissive:0x111115,roughness:.2,metalness:.8}));
+    const wire=new THREE.Mesh(new THREE.TorusKnotGeometry(rad*1.3,rad*.15,64,8,2,3),new THREE.MeshBasicMaterial({color:gC,wireframe:true,transparent:true,opacity:1,blending:THREE.AdditiveBlending}));
+    core.add(wire);
+    const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:ht,color:0xffffff,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+    halo.scale.set(rad*9,rad*9,1);core.add(halo);
+    const lbl=mkLabel(art.title);lbl.scale.multiplyScalar(sc*(m?1.8:1.2));
+    core.userData.article=lbl.userData.article=art;
+    const pos=new THREE.Vector3().randomDirection().multiplyScalar(Math.random()*150+50);
+    nodes.push({id:idx,mesh:core,label:lbl,halo,pos,vel:new THREE.Vector3(),rad,active:false,lm:m?1.8:1.2});
+    gGrp.add(core);gGrp.add(lbl);
+  });
+
+  if(nodes.length>1){
+    nodes.forEach(n=>{const cc=Math.floor(Math.random()*2)+1;for(let c=0;c<cc;c++){const n2=nodes[Math.floor(Math.random()*nodes.length)];if(n.id!==n2.id&&!edges.find(e=>(e.a===n&&e.b===n2)||(e.a===n2&&e.b===n)))edges.push({a:n,b:n2});}});
+    for(let i=0;i<nodes.length-1;i++)if(!edges.find(e=>(e.a===nodes[i]&&e.b===nodes[i+1])||(e.a===nodes[i+1]&&e.b===nodes[i])))edges.push({a:nodes[i],b:nodes[i+1]});
+  }
+  for(let i=0;i<Math.min(edges.length*3,MP);i++){if(!edges.length)break;pkts.push({e:edges[Math.floor(Math.random()*edges.length)],p:Math.random(),s:Math.random()*.4+.2,d:Math.random()>.5?1:-1});}
+}
+buildGraph();
+
+/* ── raycaster ── */
+const ray=new THREE.Raycaster(); let hovN=null;
+function uPtr(ev){const r=canvas.getBoundingClientRect(),p=ev.touches?ev.touches[0]:(ev.changedTouches?ev.changedTouches[0]:ev);if(!p)return;ptr.x=((p.clientX-r.left)/Math.max(1,r.width))*2-1;ptr.y=-((p.clientY-r.top)/Math.max(1,r.height))*2+1;ptrOn=true;}
+canvas.addEventListener("pointermove",uPtr,{passive:true});
+canvas.addEventListener("click",ev=>{if(document.body.classList.contains("modal-open"))return;uPtr(ev);ray.setFromCamera(ptr,camera);const h=ray.intersectObjects(gGrp.children,true).find(x=>x.object.userData.article);if(h)openArticle(h.object.userData.article);},{passive:true});
+
+/* ── render loop ── */
+const clk=new THREE.Clock(); let raf=0,gt=0;
+window._pause=()=>{if(raf){cancelAnimationFrame(raf);raf=0;}};
+window._resume=()=>{if(!raf){clk.getDelta();raf=requestAnimationFrame(frame);}};
+
+function frame(){
+  raf=requestAnimationFrame(frame);
+  if(document.body.classList.contains("modal-open"))return;
+  const dt=Math.min(.033,clk.getDelta());gt+=dt;
+
+  const nx=ptrOn?ptr.x:0,ny=ptrOn?-ptr.y:0;
+  camera.position.x+=(nx*120-camera.position.x)*.05;
+  camera.position.y+=(60-ny*80-camera.position.y)*.05;
+  camera.lookAt(0,0,0);
+
+  if(ptrOn){ray.setFromCamera(ptr,camera);const h=ray.intersectObjects(gGrp.children,true).find(x=>x.object.userData.article);hovN=h?nodes.find(n=>n.mesh.userData.article===h.object.userData.article):null;document.body.style.cursor=hovN?"pointer":"default";}
+
+  starU.uTime.value=gt; galaxy.rotation.y=gt*.015; floorU.uTime.value=gt;
+
+  // force layout
+  for(let i=0;i<nodes.length;i++){const n=nodes[i];n.vel.add(n.pos.clone().multiplyScalar(-.006));for(let j=i+1;j<nodes.length;j++){const m=nodes[j],d=n.pos.clone().sub(m.pos),q=d.lengthSq();if(q>.1&&q<80000){const f=d.normalize().multiplyScalar(18000/q);n.vel.add(f);m.vel.sub(f);}}}
+  edges.forEach(e=>{const d=e.b.pos.clone().sub(e.a.pos),l=d.length();const f=d.normalize().multiplyScalar((l-130)*.05);e.a.vel.add(f);e.b.vel.sub(f);});
+
+  nodes.forEach(n=>{
+    n.vel.multiplyScalar(.85);n.pos.add(n.vel.clone().multiplyScalar(dt*10));
+    const fl=new THREE.Vector3(0,Math.sin(gt*2+n.id)*4,0);let tp=n.pos.clone().add(fl);
+    const isH=hovN===n,isC=hovN&&edges.some(e=>(e.a===n&&e.b===hovN)||(e.b===n&&e.a===hovN));
+    n.active=isH||isC;
+    if(isH)tp.add(camera.position.clone().sub(tp).normalize().multiplyScalar(30));
+    n.mesh.position.lerp(tp,.2);n.mesh.rotation.x+=dt*.3;n.mesh.rotation.y+=dt*.5;
+    n.mesh.children[0].rotation.x-=dt*2;n.mesh.children[0].rotation.y+=dt*2;
+    n.label.position.copy(n.mesh.position);n.label.position.y-=(n.rad+18*n.lm);n.label.quaternion.copy(camera.quaternion);
+    const ts=isH?1.4:(hovN?(isC?1:.6):1);n.mesh.scale.lerp(new THREE.Vector3(ts,ts,ts),.1);
+    n.mesh.children[0].material.color.lerp(hovN?(isH?wC:(isC?gC:dC)):gC,.1);
+    n.halo.material.opacity+=((hovN?(n.active?1:.05):1)-n.halo.material.opacity)*.1;
+    n.label.material.opacity+=((hovN?(n.active?1:.1):1)-n.label.material.opacity)*.1;
+  });
+
+  let ei=0;edges.forEach((e,i)=>{if(i>=ME)return;const s=e.a.mesh.position,t=e.b.mesh.position;eP[ei]=s.x;eP[ei+1]=s.y;eP[ei+2]=s.z;eP[ei+3]=t.x;eP[ei+4]=t.y;eP[ei+5]=t.z;const c=hovN?((e.a===hovN||e.b===hovN)?wC:dC):gC;eC[ei]=eC[ei+3]=c.r;eC[ei+1]=eC[ei+4]=c.g;eC[ei+2]=eC[ei+5]=c.b;ei+=6;});
+  for(;ei<ME*6;ei++)eP[ei]=eC[ei]=0;eG.attributes.position.needsUpdate=eG.attributes.color.needsUpdate=true;
+
+  let pi=0;pkts.forEach(pk=>{const bo=(hovN&&(pk.e.a===hovN||pk.e.b===hovN))?4:1;pk.p+=dt*pk.s*pk.d*bo;if(pk.p>1){pk.p=0;if(edges.length)pk.e=edges[Math.floor(Math.random()*edges.length)];}if(pk.p<0){pk.p=1;if(edges.length)pk.e=edges[Math.floor(Math.random()*edges.length)];}if(pk.e&&!(hovN&&pk.e.a!==hovN&&pk.e.b!==hovN)){const s=pk.e.a.mesh.position,t=pk.e.b.mesh.position;pP[pi]=s.x+(t.x-s.x)*pk.p;pP[pi+1]=s.y+(t.y-s.y)*pk.p;pP[pi+2]=s.z+(t.z-s.z)*pk.p;}else{pP[pi]=pP[pi+1]=pP[pi+2]=9999;}pi+=3;});
+  pG.attributes.position.needsUpdate=true;
+
+  gGrp.rotation.y=Math.sin(gt*.1)*.15;
+  renderer.render(scene,camera);
+}
+
+window.addEventListener("resize",()=>{camera.aspect=W()/H();camera.updateProjectionMatrix();renderer.setPixelRatio(dpr());renderer.setSize(W(),H(),false);buildGraph();},{passive:true});
+$("brand").addEventListener("click",()=>camera.position.set(0,60,450));
+
+canvas.classList.add("ready");
+window._resume();
+
+} catch(e){ showErr(e); }
 </script>
 </body>
 </html>
