@@ -263,9 +263,23 @@ let ARTICLES = [];
 
 async function loadArticle(a){
   if (ARTICLE_CACHE.has(a.id)) return ARTICLE_CACHE.get(a.id);
+  let rawHTML = a.rawHTML;
+  // Lazy-fetch full HTML only when article is actually opened
+  if (!rawHTML && a.downloadUrl) {
+    try {
+      const r = await fetch(a.downloadUrl);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const txt = await r.text();
+      const doc = new DOMParser().parseFromString(txt, "text/html");
+      const node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
+      rawHTML = node.innerHTML;
+    } catch(e) {
+      rawHTML = `<p style="text-align:center;color:var(--gold-soft)">Could not load article content. Please try again.</p>`;
+    }
+  }
   const meta = { title: a.title, date: a.date, category: a.category };
-  const payload = { meta, safeHTML: sanitizeHTML(a.rawHTML) };
-  ARTICLE_CACHE.set(a.id, payload); 
+  const payload = { meta, safeHTML: sanitizeHTML(rawHTML || "") };
+  ARTICLE_CACHE.set(a.id, payload);
   return payload;
 }
 
@@ -695,33 +709,49 @@ try {
   window.resume3D();
 
   async function loadDynamicArticles() {
-    const cacheKey = `gh_articles_${CONFIG.githubUser}_${CONFIG.githubRepo}`;
+    const CACHE_VER = "v2";
+    const cacheKey = `gh_articles_${CONFIG.githubUser}_${CONFIG.githubRepo}_${CACHE_VER}`;
     const cached = sessionStorage.getItem(cacheKey);
-    if (cached) { try { let parsed = JSON.parse(cached); if(parsed && parsed.length > 0) { ARTICLES = parsed; buildGraph(); return; } } catch(e){} }
-    
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.length > 0) { ARTICLES = parsed; buildGraph(); return; }
+      } catch(e) { sessionStorage.removeItem(cacheKey); }
+    }
+
     try {
       const res = await fetch(`https://api.github.com/repos/${CONFIG.githubUser}/${CONFIG.githubRepo}/contents/${CONFIG.articlesFolder}`);
-      if (!res.ok) return;
+      if (!res.ok) { console.warn("GitHub API:", res.status, res.statusText); return; }
       const files = await res.json();
       const htmlFiles = files.filter(f => f.name.endsWith('.html'));
-      
-      if (htmlFiles.length > 0) {
-          ARTICLES = await Promise.all(htmlFiles.map(async (file) => {
-            const htmlRes = await fetch(file.download_url);
-            const htmlText = await htmlRes.text();
-            const doc = new DOMParser().parseFromString(htmlText, "text/html");
-            const node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
-            return {
-              id: file.name.replace('.html', ''),
-              title: node.getAttribute("data-title") || file.name.replace('.html', '').replace(/-/g, ' '),
-              date: node.getAttribute("data-date") || "",
-              category: node.getAttribute("data-category") || "Research",
-              rawHTML: node.innerHTML
-            };
-          }));
-          sessionStorage.setItem(cacheKey, JSON.stringify(ARTICLES));
-          buildGraph();
-      }
+      if (htmlFiles.length === 0) return;
+
+      ARTICLES = await Promise.all(htmlFiles.map(async (file) => {
+        try {
+          const htmlRes = await fetch(file.download_url);
+          if (!htmlRes.ok) throw new Error(`HTTP ${htmlRes.status}`);
+          const htmlText = await htmlRes.text();
+          const doc = new DOMParser().parseFromString(htmlText, "text/html");
+          const node = doc.querySelector("[data-title]") || doc.querySelector("main") || doc.body;
+          return {
+            id:          file.name.replace('.html', ''),
+            title:       node.getAttribute("data-title")    || file.name.replace('.html','').replace(/-/g,' '),
+            date:        node.getAttribute("data-date")     || "",
+            category:    node.getAttribute("data-category") || "Research",
+            downloadUrl: file.download_url
+            // rawHTML intentionally omitted — fetched lazily on article open
+          };
+        } catch(e) {
+          console.warn("Could not parse article metadata:", file.name, e);
+          return { id: file.name.replace('.html',''), title: file.name.replace('.html','').replace(/-/g,' '), date:"", category:"Research", downloadUrl: file.download_url };
+        }
+      }));
+
+      // Store only lightweight metadata — never rawHTML — to avoid sessionStorage quota errors
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(ARTICLES)); }
+      catch(e) { console.warn("sessionStorage quota exceeded, cache skipped:", e.message); }
+
+      buildGraph();
     } catch (err) { console.error("Dynamic load error:", err); }
   }
   loadDynamicArticles();
