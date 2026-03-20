@@ -81,7 +81,7 @@ body.modal-open #nav,body.modal-open #copyright{opacity:0!important;pointer-even
 <script type="module">
 import * as THREE from "three";
 
-const ARTICLE_REGISTRY=[{file:"output.html",title:"Output Gap",date:"Q4 \xb7 2025",category:"Macroeconomics"}];
+const ARTICLE_REGISTRY=[{file:"output.html",title:"Output Gap",date:"Q4 \xb7 2025",category:"Macroeconomics"},{file:"inf.html",title:"Enflasyonist Zamanlar",date:"Q1 \xb7 2026",category:"Monetary Theory"}];
 const $=id=>document.getElementById(id);
 function showErr(e){$("errText").textContent=(e&&(e.stack||e.message))||String(e);$("err").style.display="block"}
 function sanitize(s){if(!s)return"";return window.DOMPurify?DOMPurify.sanitize(s,{USE_PROFILES:{html:true,svg:true,svgFilters:true},FORBID_TAGS:["script","iframe","object","embed","form"],ADD_ATTR:['viewBox','xmlns','fill','stroke','stroke-width','stroke-opacity','stroke-dasharray','stroke-linecap','stroke-linejoin','d','points','x','y','x1','y1','x2','y2','cx','cy','r','rx','ry','width','height','transform','text-anchor','dominant-baseline','font-size','font-family','font-weight','font-style','letter-spacing','text-transform','clip-path','opacity']}):s}
@@ -166,36 +166,42 @@ const gridFloor=new THREE.Mesh(new THREE.PlaneGeometry(8000,8000,64,64),new THRE
 gridFloor.rotation.x=-Math.PI/2;gridFloor.position.y=-200;scene.add(gridFloor);
 
 /* ─── CUBOCTAHEDRON NODE ─── */
-const gGrp=new THREE.Group();scene.add(gGrp);let nodeObj=null;
+const gGrp=new THREE.Group();scene.add(gGrp);let nodeObjs=[];
 function makeCuboctahedron(s){const v=[[s,s,0],[-s,s,0],[-s,-s,0],[s,-s,0],[s,0,s],[-s,0,s],[-s,0,-s],[s,0,-s],[0,s,s],[0,-s,s],[0,-s,-s],[0,s,-s]],f=[[0,8,1,11],[1,5,2,6],[2,9,3,10],[0,7,3,4],[8,4,9,5],[11,6,10,7],[0,4,8],[1,8,5],[2,5,9],[3,9,4],[0,11,7],[1,6,11],[2,10,6],[3,7,10]];return buildPoly(v,f)}
-function buildNode(){
-  if(nodeObj)gGrp.remove(nodeObj.group);const minDim=Math.min(W(),H()),sc=Math.max(.35,Math.min(minDim/800,1.2)),rad=12*sc;
-  const group=new THREE.Group(),art=ARTICLE_REGISTRY[0];
-  const cGeo=makeCuboctahedron(rad);
-  group.add(new THREE.Mesh(cGeo,new THREE.MeshPhysicalMaterial({color:0x080818,metalness:.2,roughness:.05,transmission:.6,thickness:2,ior:1.8,clearcoat:1,clearcoatRoughness:.02,emissive:0x0a0a20,emissiveIntensity:1})));
-  group.add(new THREE.LineSegments(new THREE.EdgesGeometry(cGeo),new THREE.LineBasicMaterial({color:0xDAA520,transparent:true,opacity:.85})));
-  /* Halo glow around the cuboctahedron */
-  const hc=document.createElement("canvas");hc.width=hc.height=256;const hg=hc.getContext("2d"),hgr=hg.createRadialGradient(128,128,0,128,128,128);
-  hgr.addColorStop(0,"rgba(218,165,32,0.5)");hgr.addColorStop(.25,"rgba(218,165,32,0.2)");hgr.addColorStop(.5,"rgba(218,165,32,0.05)");hgr.addColorStop(1,"rgba(0,0,0,0)");
-  hg.fillStyle=hgr;hg.fillRect(0,0,256,256);
-  const haloTex=new THREE.CanvasTexture(hc);haloTex.colorSpace=THREE.SRGBColorSpace;
-  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:haloTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
-  halo.scale.set(rad*10,rad*10,1);group.add(halo);
-  /* Title label — centered */
-  const lc=document.createElement("canvas");lc.width=1024;lc.height=128;const lg=lc.getContext("2d");lg.fillStyle="#fff";lg.textAlign="center";lg.textBaseline="middle";lg.font="800 60px 'Latin Modern Roman',serif";lg.fillText(art.title,512,64);
-  const lbl=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(lc),transparent:true,depthWrite:false}));lbl.material.map.colorSpace=THREE.SRGBColorSpace;lbl.scale.set(120*sc,15*sc,1);lbl.position.y=-(rad+14*sc);group.add(lbl);
-  /* Category · Date — centered */
-  const cc=document.createElement("canvas");cc.width=512;cc.height=64;const cg=cc.getContext("2d");cg.fillStyle="rgba(218,165,32,0.8)";cg.textAlign="center";cg.textBaseline="middle";cg.font="600 28px 'Latin Modern Roman',serif";cg.fillText(art.category+" \u2022 "+art.date,256,32);
-  const cat=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cc),transparent:true,depthWrite:false}));cat.material.map.colorSpace=THREE.SRGBColorSpace;cat.scale.set(80*sc,10*sc,1);cat.position.y=-(rad+26*sc);group.add(cat);
-  group.traverse(ch=>{ch.userData.article=art});group.position.set(0,NODE_Y,0);gGrp.add(group);
-  nodeObj={group,rad,rotVel:new THREE.Vector2(0,0)}
+function buildNodes(){
+  nodeObjs.forEach(n=>gGrp.remove(n.group));nodeObjs=[];
+  const minDim=Math.min(W(),H()),sc=Math.max(.35,Math.min(minDim/800,1.2)),rad=11*sc;
+  const count=ARTICLE_REGISTRY.length;
+  const spread=count>1?55*sc:0;
+  ARTICLE_REGISTRY.forEach((art,idx)=>{
+    const group=new THREE.Group();
+    const cGeo=makeCuboctahedron(rad);
+    group.add(new THREE.Mesh(cGeo,new THREE.MeshPhysicalMaterial({color:0x080818,metalness:.2,roughness:.05,transmission:.6,thickness:2,ior:1.8,clearcoat:1,clearcoatRoughness:.02,emissive:0x0a0a20,emissiveIntensity:1})));
+    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(cGeo),new THREE.LineBasicMaterial({color:0xDAA520,transparent:true,opacity:.85})));
+    const hc=document.createElement("canvas");hc.width=hc.height=256;const hg=hc.getContext("2d"),hgr=hg.createRadialGradient(128,128,0,128,128,128);
+    hgr.addColorStop(0,"rgba(218,165,32,0.5)");hgr.addColorStop(.25,"rgba(218,165,32,0.2)");hgr.addColorStop(.5,"rgba(218,165,32,0.05)");hgr.addColorStop(1,"rgba(0,0,0,0)");
+    hg.fillStyle=hgr;hg.fillRect(0,0,256,256);
+    const haloTex=new THREE.CanvasTexture(hc);haloTex.colorSpace=THREE.SRGBColorSpace;
+    const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:haloTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+    halo.scale.set(rad*10,rad*10,1);group.add(halo);
+    const lc=document.createElement("canvas");lc.width=1024;lc.height=128;const lg=lc.getContext("2d");lg.fillStyle="#fff";lg.textAlign="center";lg.textBaseline="middle";lg.font="800 60px 'Latin Modern Roman',serif";lg.fillText(art.title,512,64);
+    const lbl=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(lc),transparent:true,depthWrite:false}));lbl.material.map.colorSpace=THREE.SRGBColorSpace;lbl.scale.set(120*sc,15*sc,1);lbl.position.y=-(rad+14*sc);group.add(lbl);
+    const cc=document.createElement("canvas");cc.width=512;cc.height=64;const cg=cc.getContext("2d");cg.fillStyle="rgba(218,165,32,0.8)";cg.textAlign="center";cg.textBaseline="middle";cg.font="600 28px 'Latin Modern Roman',serif";cg.fillText(art.category+" \u2022 "+art.date,256,32);
+    const cat=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cc),transparent:true,depthWrite:false}));cat.material.map.colorSpace=THREE.SRGBColorSpace;cat.scale.set(80*sc,10*sc,1);cat.position.y=-(rad+26*sc);group.add(cat);
+    group.traverse(ch=>{ch.userData.article=art});
+    /* Position symmetrically: for N articles, spread evenly around x=0 */
+    const xPos=count>1?(idx-(count-1)/2)*spread:0;
+    group.position.set(xPos,NODE_Y,0);
+    gGrp.add(group);
+    nodeObjs.push({group,rad,rotVel:new THREE.Vector2(0,0),idx,baseX:xPos});
+  });
 }
-buildNode();
+buildNodes();
 
 /* ─── DRAG ─── */
 let isDragging=false,wasDragged=false,dragStart=new THREE.Vector2(),lastDrag=new THREE.Vector2();
 canvas.addEventListener("pointerdown",e=>{if(document.body.classList.contains("modal-open"))return;const r=canvas.getBoundingClientRect();dragStart.set(e.clientX-r.left,e.clientY-r.top);lastDrag.copy(dragStart);isDragging=true;wasDragged=false;canvas.setPointerCapture(e.pointerId)});
-canvas.addEventListener("pointermove",e=>{const r=canvas.getBoundingClientRect();ptr.x=((e.clientX-r.left)/Math.max(1,r.width))*2-1;ptr.y=-((e.clientY-r.top)/Math.max(1,r.height))*2+1;ptrOn=true;if(isDragging&&nodeObj){const cx=e.clientX-r.left,cy=e.clientY-r.top;nodeObj.rotVel.x+=(cy-lastDrag.y)*.008;nodeObj.rotVel.y+=(cx-lastDrag.x)*.008;lastDrag.set(cx,cy);if(Math.abs(cx-dragStart.x)+Math.abs(cy-dragStart.y)>5)wasDragged=true}},{passive:true});
+canvas.addEventListener("pointermove",e=>{const r=canvas.getBoundingClientRect();ptr.x=((e.clientX-r.left)/Math.max(1,r.width))*2-1;ptr.y=-((e.clientY-r.top)/Math.max(1,r.height))*2+1;ptrOn=true;if(isDragging&&nodeObjs.length){const cx=e.clientX-r.left,cy=e.clientY-r.top;nodeObjs.forEach(n=>{n.rotVel.x+=(cy-lastDrag.y)*.008;n.rotVel.y+=(cx-lastDrag.x)*.008});lastDrag.set(cx,cy);if(Math.abs(cx-dragStart.x)+Math.abs(cy-dragStart.y)>5)wasDragged=true}},{passive:true});
 canvas.addEventListener("pointerup",e=>{isDragging=false;canvas.releasePointerCapture(e.pointerId)});
 canvas.addEventListener("click",e=>{if(document.body.classList.contains("modal-open")||wasDragged)return;const r=canvas.getBoundingClientRect();ptr.x=((e.clientX-r.left)/Math.max(1,r.width))*2-1;ptr.y=-((e.clientY-r.top)/Math.max(1,r.height))*2+1;ray.setFromCamera(ptr,cam);const h=ray.intersectObjects(gGrp.children,true).find(x=>x.object.userData.article);if(h)openArticle(h.object.userData.article)});
 
@@ -219,12 +225,12 @@ function frame(){
   S1.mat.uniforms.uTime.value=S2.mat.uniforms.uTime.value=gt;
   starGrp.children[0].rotation.y=gt*.01;starGrp.children[1].rotation.y=gt*.006;
   gridU.uTime.value=gt;
-  if(nodeObj){const n=nodeObj;if(!isDragging)n.rotVel.multiplyScalar(.96);n.group.rotation.x+=n.rotVel.x*dt*2;n.group.rotation.y+=n.rotVel.y*dt*2;if(Math.abs(n.rotVel.x)<.01&&Math.abs(n.rotVel.y)<.01){n.group.rotation.x+=dt*.15;n.group.rotation.y+=dt*.25}const ts=hovN?1.15:1;n.group.scale.lerp(new THREE.Vector3(ts,ts,ts),.06);n.group.position.y=NODE_Y+Math.sin(gt*1.2)*3+Math.cos(gt*.7)*2}
+  nodeObjs.forEach(n=>{if(!isDragging)n.rotVel.multiplyScalar(.96);n.group.rotation.x+=n.rotVel.x*dt*2;n.group.rotation.y+=n.rotVel.y*dt*2;if(Math.abs(n.rotVel.x)<.01&&Math.abs(n.rotVel.y)<.01){n.group.rotation.x+=dt*.15;n.group.rotation.y+=dt*.25}const ts=hovN?1.15:1;n.group.scale.lerp(new THREE.Vector3(ts,ts,ts),.06);n.group.position.y=NODE_Y+Math.sin(gt*1.2+n.idx*1.7)*3+Math.cos(gt*.7+n.idx*2.3)*2})
   ren.render(scene,cam);
 }
 
-window.addEventListener("resize",()=>{cam.aspect=W()/H();cam.updateProjectionMatrix();ren.setPixelRatio(dpr());ren.setSize(W(),H(),false);buildNode();resizeTitle()},{passive:true});
-$("brand").addEventListener("click",()=>{cam.position.set(0,40,320);if(nodeObj){nodeObj.rotVel.set(0,0);nodeObj.group.rotation.set(0,0,0)}});
+window.addEventListener("resize",()=>{cam.aspect=W()/H();cam.updateProjectionMatrix();ren.setPixelRatio(dpr());ren.setSize(W(),H(),false);buildNodes();resizeTitle()},{passive:true});
+$("brand").addEventListener("click",()=>{cam.position.set(0,40,320);nodeObjs.forEach(n=>{n.rotVel.set(0,0);n.group.rotation.set(0,0,0)})});
 canvas.classList.add("ready");window._resume();
 }catch(e){showErr(e)}
 </script>
