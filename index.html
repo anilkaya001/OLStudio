@@ -4,8 +4,8 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#010108"/>
-<title>Anıl Kaya | Research and Articles</title>
-<meta name="description" content="Academic articles and research by Anıl Kaya">
+<title>In Econometrics, We Trust</title>
+<meta name="description" content="A comprehensive guide to time series econometric methods">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,10 90,50 50,90 10,50' fill='none' stroke='%23D4AF37' stroke-width='4'/><circle cx='50' cy='50' r='15' fill='%23e8e8ea'/></svg>">
 <style>@font-face{font-family:'Latin Modern Roman';src:url('https://cdn.jsdelivr.net/gh/sugina-dev/latin-modern-web@1.0.1/font/lmroman-regular-webfont.woff') format('woff');font-weight:normal;font-style:normal;font-display:swap}</style>
 <link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" crossorigin="anonymous">
@@ -35,18 +35,6 @@ body.modal-open #nav,body.modal-open #copyright{opacity:0!important;pointer-even
 #dragHint{position:fixed;bottom:clamp(30px,5vw,60px);left:50%;transform:translateX(-50%);font-family:var(--font);font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:rgba(218,165,32,.3);z-index:600;pointer-events:none;transition:opacity 1s;animation:fadeHint 6s forwards}
 @keyframes fadeHint{0%,60%{opacity:1}100%{opacity:0}}
 @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
-#polyModal{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;background:rgba(1,1,8,.85);backdrop-filter:blur(16px);opacity:0;pointer-events:none;transition:opacity .35s}
-#polyModal.open{opacity:1;pointer-events:auto}
-#polyCard{background:rgba(10,10,20,.85);border:1px solid var(--glass-border);backdrop-filter:var(--glass-blur);border-radius:14px;width:min(90vw,600px);height:min(80vh,600px);position:relative;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.8),0 0 1px rgba(218,165,32,.2) inset}
-#polyCanvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}#polyCanvas:active{cursor:grabbing}
-#polyClose{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;transition:all .2s}
-#polyClose:hover{background:var(--gold);color:#000;transform:scale(1.1)}
-#polyClose svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
-#polyNav{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:8px;z-index:10;width:90%}
-.pnav{font-family:var(--font);font-size:.55rem;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass);backdrop-filter:blur(10px);color:rgba(232,232,234,.6);cursor:pointer;transition:all .2s}
-.pnav:hover,.pnav.active{border-color:rgba(218,165,32,.4);color:var(--gold);background:rgba(218,165,32,.08)}
-#polyName{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-family:var(--font);font-size:.8rem;letter-spacing:3px;text-transform:uppercase;color:rgba(218,165,32,.8);text-shadow:0 0 20px rgba(218,165,32,.4);z-index:10}
-#polyHint{position:absolute;top:50px;left:50%;transform:translateX(-50%);font-family:var(--font);font-size:.5rem;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.3);z-index:10;pointer-events:none}
 #modal{position:fixed;inset:0;z-index:2000;display:flex;flex-direction:column;background:rgba(1,1,8,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow-y:auto;-webkit-overflow-scrolling:touch;opacity:0;pointer-events:none;transition:opacity .4s cubic-bezier(.16,1,.3,1);padding:clamp(16px,4vh,40px) 0}
 #modal.open{opacity:1;pointer-events:auto}
 #readProgress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--gold),#fff,var(--gold));width:0%;z-index:2100;transition:width .15s ease-out;box-shadow:0 0 20px var(--gold)}
@@ -56,24 +44,22 @@ body.modal-open #nav,body.modal-open #copyright{opacity:0!important;pointer-even
 .article-wrapper{background:var(--card-bg);border:1px solid var(--card-border);box-shadow:0 40px 100px rgba(0,0,0,.95),0 0 0 1px var(--card-border) inset,0 0 80px rgba(218,165,32,.03) inset;border-radius:10px;width:calc(100% - 32px);max-width:780px;margin:auto;flex-shrink:0;padding:clamp(32px,6vw,70px) clamp(20px,5vw,50px);position:relative;will-change:transform,opacity;transform:translateY(50px) scale(.97);opacity:0}
 #modal.open .article-wrapper{animation:cardRise .6s cubic-bezier(.2,.8,.2,1) forwards}
 @keyframes cardRise{to{transform:translateY(0) scale(1);opacity:1}}
-.article-header{margin-bottom:2.5rem;text-align:center}.article-header .meta{font-family:var(--font);font-size:.62rem;color:var(--silver-dim);letter-spacing:2.5px;text-transform:uppercase;display:flex;justify-content:center;gap:12px;align-items:center;margin-bottom:1.2rem}.article-header .pill{background:rgba(218,165,32,.08);color:var(--gold);padding:4px 14px;border-radius:3px;font-weight:800;border:1px solid rgba(218,165,32,.3)}.article-header h1{font-size:clamp(1.8rem,4vw,2.6rem);color:var(--gold);margin:0;line-height:1.15;letter-spacing:-.5px;text-shadow:0 4px 30px var(--gold-glow)}
+.article-header{margin-bottom:2.5rem;text-align:center}.article-header h1{font-size:clamp(1.8rem,4vw,2.6rem);color:var(--gold);margin:0;line-height:1.15;letter-spacing:-.5px;text-shadow:0 4px 30px var(--gold-glow)}
 .article-content{font-family:var(--font);font-size:.9rem;line-height:1.75;color:color-mix(in oklab,var(--silver) 90%,var(--silver-dim));text-align:justify;text-justify:inter-word}.article-content h1,.article-content h2,.article-content h3,.article-content h4{font-family:var(--font);color:var(--gold);line-height:1.3;margin:2.5rem 0 1rem;text-align:left;font-weight:normal}.article-content h2{font-size:1.5rem;border-bottom:1px solid var(--gold-glow);padding-bottom:.5rem;margin-top:3rem}.article-content h3{font-size:1.2rem;font-style:italic;color:var(--gold-soft)}.article-content p{margin:0 0 1.5rem}.article-content p:first-of-type::first-letter{font-size:3rem;line-height:.85;float:left;margin-right:.6rem;margin-top:.2rem;color:var(--gold)}.article-content a{color:var(--gold);text-decoration:underline;text-decoration-color:var(--gold-glow);text-underline-offset:4px}.article-content ul,.article-content ol{margin:0 0 1.5rem;padding-left:2rem}.article-content li{margin-bottom:.5rem;padding-left:.4rem}.article-content li::marker{color:var(--gold)}.article-content blockquote{margin:2rem 0;padding:1.5rem 2rem 1.5rem 3rem;background:rgba(255,255,255,.015);font-style:italic;border-radius:4px;border:1px solid var(--card-border);border-left:4px solid var(--gold)}.article-content .katex-display{overflow-x:auto;padding:1rem 0;margin:1.8rem 0;background:rgba(0,0,0,.3);border-radius:4px;border:1px solid rgba(255,255,255,.04)}
-.classical-caption{font-family:var(--font);font-size:1.05rem;font-style:italic;color:var(--gold-soft);text-align:center;margin:1.5rem auto 2rem;padding:1rem;border-top:1px solid var(--gold-glow);border-bottom:1px solid var(--gold-glow);line-height:1.5;max-width:95%}.abstract-container{position:relative;margin:1.5rem 0;padding:1.5rem;background:rgba(0,0,0,.2);border-radius:4px;border:1px solid var(--card-border);box-shadow:inset 0 0 15px rgba(0,0,0,.5)}.abstract-text{font-family:var(--font);font-size:.8rem;line-height:1.5;color:color-mix(in oklab,var(--silver) 85%,transparent);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;mask-image:linear-gradient(to bottom,black 50%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,black 50%,transparent 100%);transition:all .5s}#abs-toggle{display:none}#abs-toggle:checked~.abstract-text{-webkit-line-clamp:100;mask-image:none;-webkit-mask-image:none}.expand-btn-wrapper{display:flex;justify-content:flex-start;margin-top:12px;position:relative;z-index:10}.expand-btn{background:rgba(6,6,14,.8);border:1px solid var(--gold-glow);border-radius:3px;color:var(--gold);font-family:var(--font);font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;padding:5px 14px;display:inline-flex;align-items:center;gap:6px;transition:all .3s}.expand-btn:hover{background:rgba(218,165,32,.08);border-color:rgba(218,165,32,.5);transform:translateY(-2px);box-shadow:0 4px 20px rgba(218,165,32,.1)}.expand-btn svg{width:12px;height:12px;transition:transform .4s;stroke:currentColor}.btn-text-collapse{display:none}#abs-toggle:checked~.expand-btn-wrapper .btn-text-expand{display:none}#abs-toggle:checked~.expand-btn-wrapper .btn-text-collapse{display:inline}#abs-toggle:checked~.expand-btn-wrapper svg{transform:rotate(180deg)}
-.eq{margin:1.2rem 0;padding:1.2rem;border-radius:4px;border:1px solid rgba(255,255,255,.04);background:rgba(0,0,0,.3);overflow-x:auto;color:var(--silver)}.eq-title{font-family:var(--font);font-size:.58rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}.article-content pre{background:rgba(6,6,14,.95);border:1px solid rgba(255,255,255,.06);padding:1rem;border-radius:4px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;color:#d1d1d1;margin:0;line-height:1.5}.article-content code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.code-wrapper{position:relative;margin:1.8rem 0;width:100%}.copy-btn{position:absolute;top:8px;right:8px;background:rgba(6,6,14,.9);border:1px solid rgba(255,255,255,.08);color:var(--silver);border-radius:3px;padding:4px 10px;font-family:var(--font);font-size:.58rem;font-weight:600;text-transform:uppercase;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;z-index:10}.copy-btn:hover{background:var(--gold);color:#000;border-color:var(--gold)}.copy-btn svg{stroke:currentColor;width:12px;height:12px}@keyframes pulseLine{0%,100%{opacity:.4}50%{opacity:1}}#loadingLine{text-align:center;margin:2rem 0;font-family:var(--font);letter-spacing:2px;text-transform:uppercase;font-size:.6rem;color:var(--gold-soft);animation:pulseLine 1.5s infinite}.references-list{margin-top:1.5rem;font-size:.85rem}.reference-item{padding-left:2rem;text-indent:-2rem;margin-bottom:1rem;line-height:1.6;color:color-mix(in oklab,var(--silver) 85%,transparent);word-break:break-word}#err{position:fixed;inset:0;z-index:9999;display:none;padding:40px;background:var(--bg);color:var(--silver);font-family:var(--font);overflow-y:auto}#err h2{color:var(--gold)}#err pre{background:#080810;padding:15px;border-radius:4px;border:1px solid rgba(255,255,255,.06);white-space:pre-wrap;font-size:.75rem}
+.abstract-container{position:relative;margin:1.5rem 0;padding:1.5rem;background:rgba(0,0,0,.2);border-radius:4px;border:1px solid var(--card-border);box-shadow:inset 0 0 15px rgba(0,0,0,.5)}.abstract-text{font-family:var(--font);font-size:.8rem;line-height:1.5;color:color-mix(in oklab,var(--silver) 85%,transparent);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;mask-image:linear-gradient(to bottom,black 50%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,black 50%,transparent 100%);transition:all .5s}#abs-toggle{display:none}#abs-toggle:checked~.abstract-text{-webkit-line-clamp:100;mask-image:none;-webkit-mask-image:none}.expand-btn-wrapper{display:flex;justify-content:flex-start;margin-top:12px;position:relative;z-index:10}.expand-btn{background:rgba(6,6,14,.8);border:1px solid var(--gold-glow);border-radius:3px;color:var(--gold);font-family:var(--font);font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;padding:5px 14px;display:inline-flex;align-items:center;gap:6px;transition:all .3s}.expand-btn:hover{background:rgba(218,165,32,.08);border-color:rgba(218,165,32,.5);transform:translateY(-2px);box-shadow:0 4px 20px rgba(218,165,32,.1)}.expand-btn svg{width:12px;height:12px;transition:transform .4s;stroke:currentColor}.btn-text-collapse{display:none}#abs-toggle:checked~.expand-btn-wrapper .btn-text-expand{display:none}#abs-toggle:checked~.expand-btn-wrapper .btn-text-collapse{display:inline}#abs-toggle:checked~.expand-btn-wrapper svg{transform:rotate(180deg)}
+.eq{margin:1.2rem 0;padding:1.2rem;border-radius:4px;border:1px solid rgba(255,255,255,.04);background:rgba(0,0,0,.3);overflow-x:auto;color:var(--silver)}.eq-title{font-family:var(--font);font-size:.58rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}.article-content pre{background:rgba(6,6,14,.95);border:1px solid rgba(255,255,255,.06);padding:1rem;border-radius:4px;overflow-x:auto;font-family:var(--font);font-size:.75rem;color:#d1d1d1;margin:0;line-height:1.5}.article-content code{font-family:var(--font)}.code-wrapper{position:relative;margin:1.8rem 0;width:100%}.copy-btn{position:absolute;top:8px;right:8px;background:rgba(6,6,14,.9);border:1px solid rgba(255,255,255,.08);color:var(--silver);border-radius:3px;padding:4px 10px;font-family:var(--font);font-size:.58rem;font-weight:600;text-transform:uppercase;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;z-index:10}.copy-btn:hover{background:var(--gold);color:#000;border-color:var(--gold)}.copy-btn svg{stroke:currentColor;width:12px;height:12px}@keyframes pulseLine{0%,100%{opacity:.4}50%{opacity:1}}#loadingLine{text-align:center;margin:2rem 0;font-family:var(--font);letter-spacing:2px;text-transform:uppercase;font-size:.6rem;color:var(--gold-soft);animation:pulseLine 1.5s infinite}.references-list{margin-top:1.5rem;font-size:.85rem}.reference-item{padding-left:2rem;text-indent:-2rem;margin-bottom:1rem;line-height:1.6;color:color-mix(in oklab,var(--silver) 85%,transparent);word-break:break-word}#err{position:fixed;inset:0;z-index:9999;display:none;padding:40px;background:var(--bg);color:var(--silver);font-family:var(--font);overflow-y:auto}#err h2{color:var(--gold)}#err pre{background:#080810;padding:15px;border-radius:4px;border:1px solid rgba(255,255,255,.06);white-space:pre-wrap;font-size:.75rem}
 </style>
 </head>
 <body>
 <nav id="nav" aria-label="Primary">
   <button id="brand" type="button" aria-label="Reset View">Anıl Kaya</button>
   <div class="nav-btns">
-    <button id="polyBtn" class="gbtn" aria-label="Polyhedra Gallery"><svg viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" stroke-linejoin="round"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="8.5" x2="22" y2="15.5"/><line x1="22" y1="8.5" x2="2" y2="15.5"/></svg>Polyhedra</button>
     <a class="gbtn" href="https://www.linkedin.com/in/anillkaya" target="_blank" rel="noopener noreferrer">LinkedIn</a>
   </div>
 </nav>
 <canvas id="gl" aria-hidden="true"></canvas>
 <div id="dragHint">Click &amp; drag to orbit the manifold</div>
 <div id="copyright" aria-hidden="true">&copy; 2026 Anıl Kaya</div>
-<div id="polyModal"><div id="polyCard"><button id="polyClose"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button><div id="polyName">Cuboctahedron</div><div id="polyHint">Drag to inspect</div><canvas id="polyCanvas"></canvas><div id="polyNav"></div></div></div>
 <div id="readProgress" aria-hidden="true"></div>
 <div id="modal" role="dialog" aria-modal="true" aria-label="Article Reader"><button id="closeBtn" aria-label="Close Article"><svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12"></path></svg></button><div class="article-wrapper" id="modalBody"><div class="article-content" id="articleContentArea"></div></div></div>
 <div id="err"><h2>Render error</h2><pre id="errText"></pre></div>
@@ -81,7 +67,7 @@ body.modal-open #nav,body.modal-open #copyright{opacity:0!important;pointer-even
 <script type="module">
 import * as THREE from "three";
 
-const ARTICLE_REGISTRY=[{file:"output.html",title:"Output Gap",date:"Q4 \xb7 2025",category:"Macroeconomics"},{file:"inf.html",title:"Enflasyonist Zamanlar",date:"Q1 \xb7 2026",category:"Monetary Theory"}];
+const ARTICLE_REGISTRY=[{file:"ols.html",title:"Ordinary Least Squares"},{file:"gls.html",title:"Generalized Least Squares"},{file:"mle.html",title:"Maximum Likelihood Estimation"},{file:"gmm.html",title:"Generalized Method of Moments"},{file:"ar.html",title:"Autoregressive Models"},{file:"ma.html",title:"Moving Average Models"},{file:"arma.html",title:"ARMA Models"},{file:"arima.html",title:"ARIMA Models"},{file:"adf.html",title:"Augmented Dickey-Fuller Test"},{file:"arch.html",title:"ARCH Models"},{file:"garch.html",title:"GARCH Models"},{file:"var.html",title:"Vector Autoregression"},{file:"svar.html",title:"Structural VAR"},{file:"vecm.html",title:"Vector Error Correction Model"},{file:"engle-granger.html",title:"Engle-Granger Cointegration"},{file:"hp-filter.html",title:"Hodrick-Prescott Filter"},{file:"kalman.html",title:"Kalman Filter"},{file:"bandpass.html",title:"Band-Pass Filters"},{file:"markov-switching.html",title:"Markov Switching Models"},{file:"structural-breaks.html",title:"Structural Break Tests"},{file:"local-projections.html",title:"Local Projections"},{file:"bayesian-var.html",title:"Bayesian VAR"},{file:"state-space.html",title:"State-Space Models"},{file:"panel.html",title:"Panel Data Methods"},{file:"exponential-smoothing.html",title:"Exponential Smoothing"}];
 const $=id=>document.getElementById(id);
 function showErr(e){$("errText").textContent=(e&&(e.stack||e.message))||String(e);$("err").style.display="block"}
 function sanitize(s){if(!s)return"";return window.DOMPurify?DOMPurify.sanitize(s,{USE_PROFILES:{html:true,svg:true,svgFilters:true},FORBID_TAGS:["script","iframe","object","embed","form"],ADD_ATTR:['viewBox','xmlns','fill','stroke','stroke-width','stroke-opacity','stroke-dasharray','stroke-linecap','stroke-linejoin','d','points','x','y','x1','y1','x2','y2','cx','cy','r','rx','ry','width','height','transform','text-anchor','dominant-baseline','font-size','font-family','font-weight','font-style','letter-spacing','text-transform','clip-path','opacity']}):s}
@@ -90,28 +76,19 @@ async function fetchContent(art){if(cache.has(art.file))return cache.get(art.fil
 const modal=$("modal"),content=$("articleContentArea");let modalT=0;
 function closeModal(){modal.classList.remove("open");document.body.classList.remove("modal-open");modal.scrollTop=0;$("readProgress").style.width="0%";if(window._resume)window._resume()}
 modal.addEventListener("click",e=>{if(performance.now()-modalT>250&&e.target===modal)closeModal()});
-window.addEventListener("keydown",e=>{if(e.key==="Escape"){if($("polyModal").classList.contains("open")){$("polyModal").classList.remove("open");return}if(modal.classList.contains("open"))closeModal()}},{passive:true});
+window.addEventListener("keydown",e=>{if(e.key==="Escape"&&modal.classList.contains("open"))closeModal()},{passive:true});
 $("closeBtn").addEventListener("click",closeModal);
 modal.addEventListener("scroll",e=>{const el=e.target;$("readProgress").style.width=(el.scrollTop/Math.max(1,el.scrollHeight-el.clientHeight)*100)+"%"},{passive:true});
-function hdr(a){return'<header class="article-header"><div class="meta"><span class="pill">'+(a.category||"")+'</span><span>\u2022</span><span>'+(a.date||"")+'</span></div><h1>'+(a.title||"")+'</h1></header>'}
+function hdr(a){return'<header class="article-header"><h1>'+(a.title||"")+'</h1></header>'}
 function openArticle(art){modalT=performance.now();modal.classList.add("open");document.body.classList.add("modal-open");if(window._pause)window._pause();content.innerHTML=hdr(art)+'<p id="loadingLine">Decrypting Node\u2026</p>';fetchContent(art).then(html=>{content.innerHTML=hdr(art)+html;content.querySelectorAll("a[href]").forEach(a=>{if(/^https?:\/\//i.test(a.getAttribute("href"))){a.target="_blank";a.rel="noopener noreferrer"}});if(window.renderMathInElement)renderMathInElement(content,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false});content.querySelectorAll("pre").forEach(pre=>{const w=document.createElement("div");w.className="code-wrapper";pre.parentNode.insertBefore(w,pre);w.appendChild(pre);const b=document.createElement("button");b.className="copy-btn";const d='<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';const ok='<svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg> Copied!';b.innerHTML=d;b.onclick=()=>navigator.clipboard.writeText(pre.innerText).then(()=>{b.innerHTML=ok;b.style.color="var(--gold)";setTimeout(()=>{b.innerHTML=d;b.style.color=""},2000)}).catch(()=>{b.innerText="Error"});w.appendChild(b)})}).catch(e=>{console.error(e);content.innerHTML=hdr(art)+'<p style="text-align:center;color:var(--gold-soft)">Could not load article.</p>'})}
 
-/* ═══════ POLYHEDRA GALLERY ═══════ */
-const POLYHEDRA=[
-  {name:"Cuboctahedron",fn:()=>{const s=1,v=[[s,s,0],[-s,s,0],[-s,-s,0],[s,-s,0],[s,0,s],[-s,0,s],[-s,0,-s],[s,0,-s],[0,s,s],[0,-s,s],[0,-s,-s],[0,s,-s]],f=[[0,8,1,11],[1,5,2,6],[2,9,3,10],[0,7,3,4],[8,4,9,5],[11,6,10,7],[0,4,8],[1,8,5],[2,5,9],[3,9,4],[0,11,7],[1,6,11],[2,10,6],[3,7,10]];return buildPoly(v,f)}},
-  {name:"Icosahedron",fn:()=>new THREE.IcosahedronGeometry(1.4,0)},
-  {name:"Dodecahedron",fn:()=>new THREE.DodecahedronGeometry(1.4,0)},
-  {name:"Octahedron",fn:()=>new THREE.OctahedronGeometry(1.4,0)},
-  {name:"Tetrahedron",fn:()=>new THREE.TetrahedronGeometry(1.6,0)},
-];
+/* ═══════ GEOMETRY HELPERS ═══════ */
 function buildPoly(verts,faces){const geo=new THREE.BufferGeometry(),pos=[],idx=[];verts.forEach(v=>pos.push(...v));faces.forEach(f=>{if(f.length===3)idx.push(f[0],f[1],f[2]);else if(f.length===4)idx.push(f[0],f[1],f[2],f[0],f[2],f[3])});geo.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));geo.setIndex(idx);geo.computeVertexNormals();return geo}
-let polyScene,polyCam,polyRen,polyMesh,polyWire,polyRaf=0,pDrag=false,pLast=new THREE.Vector2(),pRot=new THREE.Vector2();
-function initPolyGallery(){const c=$("polyCanvas");polyRen=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});polyRen.setPixelRatio(Math.min(devicePixelRatio,2));polyScene=new THREE.Scene();polyCam=new THREE.PerspectiveCamera(40,1,.1,100);c.addEventListener("pointerdown",e=>{pDrag=true;pLast.set(e.clientX,e.clientY);c.setPointerCapture(e.pointerId)});c.addEventListener("pointermove",e=>{if(!pDrag)return;pRot.y+=(e.clientX-pLast.x)*.008;pRot.x+=(e.clientY-pLast.y)*.008;pLast.set(e.clientX,e.clientY)},{passive:true});c.addEventListener("pointerup",e=>{pDrag=false;c.releasePointerCapture(e.pointerId)});const nav=$("polyNav");POLYHEDRA.forEach((p,i)=>{const b=document.createElement("button");b.className="pnav";b.textContent=p.name;b.onclick=()=>showPoly(i);nav.appendChild(b)});showPoly(0)}
-function showPoly(idx){$("polyName").textContent=POLYHEDRA[idx].name;document.querySelectorAll(".pnav").forEach((b,i)=>b.classList.toggle("active",i===idx));if(polyMesh){polyScene.remove(polyMesh);polyScene.remove(polyWire)}const geo=POLYHEDRA[idx].fn();geo.computeBoundingSphere();const r=geo.boundingSphere.radius,dist=(r*1.5)/Math.sin(polyCam.fov*Math.PI/360);polyCam.position.set(0,0,dist);polyMesh=new THREE.Mesh(geo,new THREE.ShaderMaterial({uniforms:{colorGold:{value:new THREE.Color("#DAA520")},colorBronze:{value:new THREE.Color("#cd7f32")},colorBlue:{value:new THREE.Color("#080820")},camDist:{value:dist},radius:{value:r}},vertexShader:`varying vec3 vVP,vN;void main(){vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.);vVP=mv.xyz;gl_Position=projectionMatrix*mv;}`,fragmentShader:`uniform vec3 colorGold,colorBronze,colorBlue;uniform float camDist,radius;varying vec3 vVP,vN;void main(){float d=length(vVP),depth=clamp((d-(camDist-radius))/(radius*2.),0.,1.);vec3 c=depth<.5?mix(colorGold,colorBronze,depth*2.):mix(colorBronze,colorBlue,(depth-.5)*2.);vec3 n=normalize(vN),vd=normalize(-vVP),ld=normalize(vec3(1,1,1));float diff=max(dot(n,ld),0.),fres=pow(1.-max(dot(n,vd),0.),3.);gl_FragColor=vec4(c*(diff*.8+.2)+colorGold*fres*.6,1.);}`,side:THREE.DoubleSide}));polyWire=new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xDAA520,transparent:true,opacity:.2}));polyScene.add(polyMesh);polyScene.add(polyWire);pRot.set(0,0)}
-function polyFrame(){if(!$("polyModal").classList.contains("open")){polyRaf=0;return}polyRaf=requestAnimationFrame(polyFrame);const r=$("polyCard").getBoundingClientRect();polyRen.setSize(r.width,r.height,false);polyCam.aspect=r.width/r.height;polyCam.updateProjectionMatrix();if(polyMesh){if(!pDrag){pRot.y+=.005;pRot.x+=.002}polyMesh.rotation.set(pRot.x,pRot.y,0);polyWire.rotation.copy(polyMesh.rotation)}polyRen.render(polyScene,polyCam)}
-$("polyBtn").addEventListener("click",()=>{if(!polyScene)initPolyGallery();$("polyModal").classList.add("open");if(!polyRaf)polyRaf=requestAnimationFrame(polyFrame)});
-$("polyClose").addEventListener("click",()=>$("polyModal").classList.remove("open"));
-$("polyModal").addEventListener("click",e=>{if(e.target===$("polyModal"))$("polyModal").classList.remove("open")});
+function makeCuboctahedron(s){const v=[[s,s,0],[-s,s,0],[-s,-s,0],[s,-s,0],[s,0,s],[-s,0,s],[-s,0,-s],[s,0,-s],[0,s,s],[0,-s,s],[0,-s,-s],[0,s,-s]],f=[[0,8,1,11],[1,5,2,6],[2,9,3,10],[0,7,3,4],[8,4,9,5],[11,6,10,7],[0,4,8],[1,8,5],[2,5,9],[3,9,4],[0,11,7],[1,6,11],[2,10,6],[3,7,10]];return buildPoly(v,f)}
+
+/* depth-fade shader for decorative polyhedra */
+const polyVS=`varying vec3 vVP,vN;void main(){vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.);vVP=mv.xyz;gl_Position=projectionMatrix*mv;}`;
+const polyFS=`uniform vec3 cG,cBr,cBl;uniform float cD,rad;varying vec3 vVP,vN;void main(){float d=length(vVP),dp=clamp((d-(cD-rad))/(rad*2.),0.,1.);vec3 c=dp<.5?mix(cG,cBr,dp*2.):mix(cBr,cBl,(dp-.5)*2.);vec3 n=normalize(vN),vd=normalize(-vVP),ld=normalize(vec3(1,1,1));float diff=max(dot(n,ld),0.),fr=pow(1.-max(dot(n,vd),0.),3.);gl_FragColor=vec4(c*(diff*.8+.2)+cG*fr*.5,1.);}`;
 
 /* ═══════ MAIN SCENE ═══════ */
 try{
@@ -126,17 +103,14 @@ const fL=new THREE.DirectionalLight(0x2244aa,1.2);fL.position.set(-250,80,200);s
 const rL=new THREE.PointLight(0xDAA520,4,2000,1.2);rL.position.set(0,-150,-400);scene.add(rL);
 const ptr=new THREE.Vector2();let ptrOn=false;const mob=W()<800;
 
-/* ─── LAYOUT CONSTANTS (vertical axis of symmetry) ─── */
-const NODE_Y=30;    /* cuboctahedron floats here            */
-const TITLE_Y=-55;  /* text sits well below, no overlap     */
-const MID_Y=(NODE_Y+TITLE_Y)/2; /* ≈ -12.5 — camera aims here */
+const NODE_Y=30, TITLE_Y=-55, MID_Y=(NODE_Y+TITLE_Y)/2;
 
 /* ─── TITLE ─── */
 let titleSpr;
 function makeTitle(){
   const w=2560,h=256,c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");
   g.font="300 110px 'Latin Modern Roman',serif";g.textAlign="center";g.textBaseline="middle";
-  g.fillStyle="#DAA520";g.fillText("In Econometrics We Trust",w/2,h/2);
+  g.fillStyle="#DAA520";g.fillText("In Econometrics, We Trust",w/2,h/2);
   const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;
   const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,opacity:1}));
   spr.position.set(0,TITLE_Y,-60);return spr;
@@ -165,34 +139,51 @@ const gridFloor=new THREE.Mesh(new THREE.PlaneGeometry(8000,8000,64,64),new THRE
   fragmentShader:`varying vec2 vUv;varying vec3 vP;uniform float uTime;uniform vec3 uGold;void main(){float d=length(vP.xz);vec2 g=fract(vUv*180.-vec2(0.,uTime*.03));float line=min(g.x,g.y);float a=smoothstep(.06,.0,line)*exp(-d*.0007)*.18;gl_FragColor=vec4(uGold*(.7+.3*sin(uTime*.8+d*.002)),a);}`}));
 gridFloor.rotation.x=-Math.PI/2;gridFloor.position.y=-200;scene.add(gridFloor);
 
-/* ─── CUBOCTAHEDRON NODE ─── */
+/* ─── FLOATING DECORATIVE POLYHEDRA ─── */
+const floaters=[];
+const FLOAT_DEFS=[
+  {geo:()=>new THREE.IcosahedronGeometry(6,0),  pos:[-120,80,-80], spd:[.3,.4,.2]},
+  {geo:()=>new THREE.DodecahedronGeometry(5,0), pos:[140,10,-120], spd:[.2,.35,.25]},
+  {geo:()=>new THREE.OctahedronGeometry(7,0),   pos:[-80,-40,-60], spd:[.35,.2,.3]},
+  {geo:()=>new THREE.TetrahedronGeometry(5,0),  pos:[100,70,-100], spd:[.25,.3,.35]},
+  {geo:()=>new THREE.IcosahedronGeometry(4,0),  pos:[-160,-20,-140],spd:[.15,.25,.2]},
+  {geo:()=>new THREE.DodecahedronGeometry(3,0), pos:[60,-60,-40],  spd:[.4,.15,.3]},
+  {geo:()=>new THREE.OctahedronGeometry(4.5,0), pos:[180,50,-160], spd:[.2,.3,.15]},
+];
+FLOAT_DEFS.forEach(fd=>{
+  const geo=fd.geo();geo.computeBoundingSphere();
+  const r=geo.boundingSphere.radius,dist=cam.position.z-fd.pos[2];
+  const grp=new THREE.Group();
+  grp.add(new THREE.Mesh(geo,new THREE.ShaderMaterial({uniforms:{cG:{value:new THREE.Color("#DAA520")},cBr:{value:new THREE.Color("#cd7f32")},cBl:{value:new THREE.Color("#080820")},cD:{value:dist},rad:{value:r}},vertexShader:polyVS,fragmentShader:polyFS,side:THREE.DoubleSide,transparent:true})));
+  grp.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xDAA520,transparent:true,opacity:.15})));
+  grp.position.set(...fd.pos);
+  scene.add(grp);
+  floaters.push({grp,spd:fd.spd,base:fd.pos.slice()});
+});
+
+/* ─── ARTICLE NODES (smaller cuboctahedra) ─── */
 const gGrp=new THREE.Group();scene.add(gGrp);let nodeObjs=[];
-function makeCuboctahedron(s){const v=[[s,s,0],[-s,s,0],[-s,-s,0],[s,-s,0],[s,0,s],[-s,0,s],[-s,0,-s],[s,0,-s],[0,s,s],[0,-s,s],[0,-s,-s],[0,s,-s]],f=[[0,8,1,11],[1,5,2,6],[2,9,3,10],[0,7,3,4],[8,4,9,5],[11,6,10,7],[0,4,8],[1,8,5],[2,5,9],[3,9,4],[0,11,7],[1,6,11],[2,10,6],[3,7,10]];return buildPoly(v,f)}
 function buildNodes(){
   nodeObjs.forEach(n=>gGrp.remove(n.group));nodeObjs=[];
-  const minDim=Math.min(W(),H()),sc=Math.max(.35,Math.min(minDim/800,1.2)),rad=11*sc;
-  const count=ARTICLE_REGISTRY.length;
-  const spread=count>1?55*sc:0;
+  const minDim=Math.min(W(),H()),sc=Math.max(.3,Math.min(minDim/900,1)),rad=7*sc;
+  const count=ARTICLE_REGISTRY.length,spread=count>1?48*sc:0;
   ARTICLE_REGISTRY.forEach((art,idx)=>{
-    const group=new THREE.Group();
-    const cGeo=makeCuboctahedron(rad);
+    const group=new THREE.Group(),cGeo=makeCuboctahedron(rad);
     group.add(new THREE.Mesh(cGeo,new THREE.MeshPhysicalMaterial({color:0x080818,metalness:.2,roughness:.05,transmission:.6,thickness:2,ior:1.8,clearcoat:1,clearcoatRoughness:.02,emissive:0x0a0a20,emissiveIntensity:1})));
     group.add(new THREE.LineSegments(new THREE.EdgesGeometry(cGeo),new THREE.LineBasicMaterial({color:0xDAA520,transparent:true,opacity:.85})));
+    /* halo */
     const hc=document.createElement("canvas");hc.width=hc.height=256;const hg=hc.getContext("2d"),hgr=hg.createRadialGradient(128,128,0,128,128,128);
-    hgr.addColorStop(0,"rgba(218,165,32,0.5)");hgr.addColorStop(.25,"rgba(218,165,32,0.2)");hgr.addColorStop(.5,"rgba(218,165,32,0.05)");hgr.addColorStop(1,"rgba(0,0,0,0)");
+    hgr.addColorStop(0,"rgba(218,165,32,0.4)");hgr.addColorStop(.3,"rgba(218,165,32,0.12)");hgr.addColorStop(.6,"rgba(218,165,32,0.03)");hgr.addColorStop(1,"rgba(0,0,0,0)");
     hg.fillStyle=hgr;hg.fillRect(0,0,256,256);
     const haloTex=new THREE.CanvasTexture(hc);haloTex.colorSpace=THREE.SRGBColorSpace;
     const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:haloTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
-    halo.scale.set(rad*10,rad*10,1);group.add(halo);
-    const lc=document.createElement("canvas");lc.width=1024;lc.height=128;const lg=lc.getContext("2d");lg.fillStyle="#fff";lg.textAlign="center";lg.textBaseline="middle";lg.font="800 60px 'Latin Modern Roman',serif";lg.fillText(art.title,512,64);
-    const lbl=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(lc),transparent:true,depthWrite:false}));lbl.material.map.colorSpace=THREE.SRGBColorSpace;lbl.scale.set(120*sc,15*sc,1);lbl.position.y=-(rad+14*sc);group.add(lbl);
-    const cc=document.createElement("canvas");cc.width=512;cc.height=64;const cg=cc.getContext("2d");cg.fillStyle="rgba(218,165,32,0.8)";cg.textAlign="center";cg.textBaseline="middle";cg.font="600 28px 'Latin Modern Roman',serif";cg.fillText(art.category+" \u2022 "+art.date,256,32);
-    const cat=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cc),transparent:true,depthWrite:false}));cat.material.map.colorSpace=THREE.SRGBColorSpace;cat.scale.set(80*sc,10*sc,1);cat.position.y=-(rad+26*sc);group.add(cat);
+    halo.scale.set(rad*8,rad*8,1);group.add(halo);
+    /* title label */
+    const lc=document.createElement("canvas");lc.width=1024;lc.height=128;const lg=lc.getContext("2d");lg.fillStyle="#fff";lg.textAlign="center";lg.textBaseline="middle";lg.font="800 56px 'Latin Modern Roman',serif";lg.fillText(art.title,512,64);
+    const lbl=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(lc),transparent:true,depthWrite:false}));lbl.material.map.colorSpace=THREE.SRGBColorSpace;lbl.scale.set(90*sc,11*sc,1);lbl.position.y=-(rad+10*sc);group.add(lbl);
     group.traverse(ch=>{ch.userData.article=art});
-    /* Position symmetrically: for N articles, spread evenly around x=0 */
     const xPos=count>1?(idx-(count-1)/2)*spread:0;
-    group.position.set(xPos,NODE_Y,0);
-    gGrp.add(group);
+    group.position.set(xPos,NODE_Y,0);gGrp.add(group);
     nodeObjs.push({group,rad,rotVel:new THREE.Vector2(0,0),idx,baseX:xPos});
   });
 }
@@ -213,19 +204,25 @@ window._resume=()=>{if(!raf){clk.getDelta();raf=requestAnimationFrame(frame)}};
 function frame(){
   raf=requestAnimationFrame(frame);if(document.body.classList.contains("modal-open"))return;
   const dt=Math.min(.033,clk.getDelta());gt+=dt;
-  /* Camera orbits around MID_Y for symmetric framing */
   const nx=ptrOn?ptr.x:0,ny=ptrOn?-ptr.y:0,orbA=gt*.015;
   cam.position.x+=(nx*80+Math.sin(orbA)*15-cam.position.x)*.03;
   cam.position.y+=(MID_Y+20-ny*50+Math.cos(orbA*.7)*8-cam.position.y)*.03;
   cam.lookAt(0,MID_Y,0);
-  /* Hover */
+  /* hover */
   if(ptrOn&&!isDragging){ray.setFromCamera(ptr,cam);hovN=!!ray.intersectObjects(gGrp.children,true).find(x=>x.object.userData.article);document.body.style.cursor=hovN?"pointer":"grab"}
   if(isDragging)document.body.style.cursor="grabbing";
-  /* Animate */
+  /* stars */
   S1.mat.uniforms.uTime.value=S2.mat.uniforms.uTime.value=gt;
   starGrp.children[0].rotation.y=gt*.01;starGrp.children[1].rotation.y=gt*.006;
   gridU.uTime.value=gt;
-  nodeObjs.forEach(n=>{if(!isDragging)n.rotVel.multiplyScalar(.96);n.group.rotation.x+=n.rotVel.x*dt*2;n.group.rotation.y+=n.rotVel.y*dt*2;if(Math.abs(n.rotVel.x)<.01&&Math.abs(n.rotVel.y)<.01){n.group.rotation.x+=dt*.15;n.group.rotation.y+=dt*.25}const ts=hovN?1.15:1;n.group.scale.lerp(new THREE.Vector3(ts,ts,ts),.06);n.group.position.y=NODE_Y+Math.sin(gt*1.2+n.idx*1.7)*3+Math.cos(gt*.7+n.idx*2.3)*2})
+  /* floating polyhedra */
+  floaters.forEach((f,i)=>{
+    f.grp.rotation.x+=f.spd[0]*dt;f.grp.rotation.y+=f.spd[1]*dt;f.grp.rotation.z+=f.spd[2]*dt;
+    f.grp.position.y=f.base[1]+Math.sin(gt*.4+i*2.1)*12;
+    f.grp.position.x=f.base[0]+Math.sin(gt*.15+i*1.3)*8;
+  });
+  /* article nodes */
+  nodeObjs.forEach(n=>{if(!isDragging)n.rotVel.multiplyScalar(.96);n.group.rotation.x+=n.rotVel.x*dt*2;n.group.rotation.y+=n.rotVel.y*dt*2;if(Math.abs(n.rotVel.x)<.01&&Math.abs(n.rotVel.y)<.01){n.group.rotation.x+=dt*.15;n.group.rotation.y+=dt*.25}const ts=hovN?1.12:1;n.group.scale.lerp(new THREE.Vector3(ts,ts,ts),.06);n.group.position.y=NODE_Y+Math.sin(gt*1.2+n.idx*1.7)*2.5+Math.cos(gt*.7+n.idx*2.3)*1.5});
   ren.render(scene,cam);
 }
 
