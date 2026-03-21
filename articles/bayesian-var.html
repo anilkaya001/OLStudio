@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bayesian VAR</title></head>
+<body>
+<main data-title="Bayesian VAR">
+
+<h2>1&nbsp;&nbsp;The Curse of Dimensionality</h2>
+<p>
+A VAR($p$) with $n$ variables has $n + n^2 p$ parameters. With $n = 7$ and $p = 4$, this is 203 parameters from perhaps 200 observations. Bayesian methods combat this by shrinking parameters towards a prior, trading small bias for large variance reduction.
+</p>
+
+<h2>2&nbsp;&nbsp;The Minnesota Prior</h2>
+<p>
+Litterman (1986) and Doan, Litterman and Sims (1984) proposed the Minnesota prior, centring each variable's own first lag coefficient at 1 (random walk prior) with all other coefficients at 0:
+</p>
+<div class="eq"><div class="eq-title">Minnesota Prior Variance</div>
+$$\text{Var}(A_{ij,l}) = \begin{cases} (\lambda_1/l)^2 & \text{if } i = j \text{ (own lags)} \\ (\lambda_1\lambda_2\sigma_i/l\sigma_j)^2 & \text{if } i \neq j \text{ (cross lags)} \end{cases}$$
+</div>
+<p>
+$\lambda_1$ controls overall tightness (typical: 0.1-0.2), $\lambda_2$ controls cross-variable shrinkage (typical: 0.5-1), and $l$ is the lag length. The $\sigma_i/\sigma_j$ ratio scales for different variable units.
+</p>
+
+<h2>3&nbsp;&nbsp;Posterior Computation</h2>
+<p>
+Under a Normal-Inverse-Wishart prior with the Minnesota structure, the posterior for each equation is available in closed form:
+</p>
+<div class="eq"><div class="eq-title">Posterior Mean</div>
+$$\hat{\boldsymbol{\beta}}_{\text{Bayes}} = (\mathbf{X}'\mathbf{X} + \boldsymbol{\Omega}_0^{-1})^{-1}(\mathbf{X}'\mathbf{y} + \boldsymbol{\Omega}_0^{-1}\boldsymbol{\beta}_0)$$
+</div>
+<p>
+This is a matrix-weighted average of the OLS estimate and the prior mean, with weights proportional to sample precision ($\mathbf{X}'\mathbf{X}$) and prior precision ($\boldsymbol{\Omega}_0^{-1}$). As $T \to \infty$, the posterior converges to OLS.
+</p>
+
+<h2>4&nbsp;&nbsp;Forecasting with BVAR</h2>
+<p>
+Predictive distributions integrate over parameter uncertainty:
+</p>
+<div class="eq">
+$$f(\mathbf{y}_{T+h} \mid \mathbf{Y}_T) = \int f(\mathbf{y}_{T+h} \mid \boldsymbol{\theta}, \mathbf{Y}_T)\pi(\boldsymbol{\theta} \mid \mathbf{Y}_T)d\boldsymbol{\theta}$$
+</div>
+<p>
+This is typically computed via Gibbs sampling: draw $\boldsymbol{\theta}^{(s)}$ from the posterior, simulate $\mathbf{y}_{T+h}^{(s)}$ forward, repeat. The resulting forecast intervals account for both shock uncertainty and parameter uncertainty, yielding wider and more honest intervals than frequentist VARs.
+</p>
+
+<h2>5&nbsp;&nbsp;Extensions</h2>
+<p>
+<strong>Stochastic volatility:</strong> Cogley and Sargent (2005) allow time-varying VAR coefficients and stochastic volatility, capturing the Great Moderation.
+<strong>Large BVARs:</strong> Ba&nacute;bura, Giannone and Reichlin (2010) show Minnesota-prior BVARs with $n > 100$ variables can outperform factor models.
+<strong>Hierarchical priors:</strong> Hyperparameters ($\lambda_1, \lambda_2$) can themselves receive priors, estimated by marginal likelihood (empirical Bayes) or full Bayes.
+</p>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ARIMA Models</title></head>
+<body>
+<main data-title="ARIMA Models">
+
+<h2>1&nbsp;&nbsp;Integrated Processes</h2>
+<p>
+Many economic time series (GDP, prices, exchange rates) exhibit nonstationarity. A process $y_t$ is integrated of order $d$, written $y_t \sim I(d)$, if $\Delta^d y_t$ is stationary where $\Delta = 1 - L$ is the difference operator. The ARIMA($p,d,q$) model applies an ARMA($p,q$) to the $d$-th difference:
+</p>
+<div class="eq"><div class="eq-title">ARIMA(p,d,q)</div>
+$$\Phi(L)(1-L)^d y_t = c + \Theta(L)\varepsilon_t$$
+</div>
+<p>
+In practice, $d = 1$ suffices for most economic series. $d = 2$ is rare and should be treated with caution.
+</p>
+
+<h2>2&nbsp;&nbsp;The Random Walk</h2>
+<p>
+The simplest $I(1)$ process is the random walk: $y_t = y_{t-1} + \varepsilon_t$, equivalently ARIMA(0,1,0). Its properties highlight nonstationarity:
+</p>
+<div class="eq">
+$$\mathbb{E}[y_t] = y_0, \quad \text{Var}(y_t) = t\sigma^2, \quad \text{Cov}(y_t, y_s) = \min(t,s)\sigma^2$$
+</div>
+<p>
+Variance grows linearly with time. The random walk with drift adds a constant: $y_t = \delta + y_{t-1} + \varepsilon_t$, generating a stochastic trend with deterministic drift $\delta$.
+</p>
+
+<h2>3&nbsp;&nbsp;Box-Jenkins Methodology</h2>
+<p>
+The three-stage procedure (Box and Jenkins, 1970):
+</p>
+<p>
+<strong>Stage 1: Identification.</strong> Determine $d$ using unit root tests (ADF, PP, KPSS). Then identify $p$ and $q$ from the ACF/PACF of $\Delta^d y_t$ or using information criteria.
+</p>
+<p>
+<strong>Stage 2: Estimation.</strong> Conditional or exact MLE of the ARMA parameters on the differenced series. Standard errors from the inverse Hessian or outer product of gradients.
+</p>
+<p>
+<strong>Stage 3: Diagnostics.</strong> Check residuals for white noise (Ljung-Box test), normality (Jarque-Bera), and remaining ARCH effects. Iterate if necessary.
+</p>
+
+<h2>4&nbsp;&nbsp;Deterministic Components</h2>
+<p>
+The treatment of the constant $c$ depends on $d$. For ARIMA($p,1,q$) with $c \neq 0$:
+</p>
+<div class="eq">
+$$\Phi(L)\Delta y_t = c + \Theta(L)\varepsilon_t$$
+</div>
+<p>
+The constant in the differenced equation implies a deterministic linear trend in levels: $\mathbb{E}[y_t] = y_0 + (c / (1-\phi_1 - \cdots - \phi_p))t$. A time trend in the levels equation would imply a quadratic trend.
+</p>
+
+<h2>5&nbsp;&nbsp;Forecasting from ARIMA</h2>
+<p>
+Forecasts are generated from the ARMA model for $w_t = \Delta^d y_t$, then cumulated back to levels. For ARIMA(0,1,0):
+</p>
+<div class="eq">
+$$\hat{y}_{T+h|T} = y_T + h\delta, \quad \text{Var}(e_{T+h|T}) = h\sigma^2$$
+</div>
+<p>
+Confidence intervals widen with the square root of the horizon. For general ARIMA, the MA($\infty$) representation of the differenced process determines forecast error variances. The key practical point: ARIMA forecasts from $I(1)$ processes revert to a linear extrapolation of the last level plus estimated drift, with uncertainty growing without bound.
+</p>
+
+<h2>6&nbsp;&nbsp;ARIMA vs. Trend Stationarity</h2>
+<p>
+The distinction between difference stationarity ($I(1)$: $y_t = y_{t-1} + \varepsilon_t$) and trend stationarity ($y_t = \alpha + \beta t + u_t$ with stationary $u_t$) has profound implications for forecasting. Under trend stationarity, shocks are transitory and forecasts revert to trend. Under $I(1)$, shocks are permanent and forecasts carry the full impact of all past innovations. The appropriate model is determined by unit root testing.
+</p>
+
+<h2>7&nbsp;&nbsp;Seasonal ARIMA</h2>
+<p>
+SARIMA($p,d,q$)($P,D,Q$)$_s$ incorporates seasonal patterns at frequency $s$ (e.g., $s=4$ for quarterly, $s=12$ for monthly):
+</p>
+<div class="eq"><div class="eq-title">SARIMA</div>
+$$\Phi(L)\Phi_s(L^s)(1-L)^d(1-L^s)^D y_t = c + \Theta(L)\Theta_s(L^s)\varepsilon_t$$
+</div>
+<p>
+where $\Phi_s(L^s) = 1 - \Phi_1 L^s - \cdots - \Phi_P L^{Ps}$ and $\Theta_s(L^s) = 1 + \Theta_1 L^s + \cdots + \Theta_Q L^{Qs}$ are the seasonal polynomials. The airline model SARIMA(0,1,1)(0,1,1)$_{12}$ is a classic benchmark for monthly data.
+</p>
+
+</main>
+</body>
+</html>

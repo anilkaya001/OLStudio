@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Panel Data Methods</title></head>
+<body>
+<main data-title="Panel Data Methods">
+
+<h2>1&nbsp;&nbsp;The Panel Model</h2>
+<p>
+Panel data observes $N$ cross-sectional units over $T$ time periods. The standard linear panel model:
+</p>
+<div class="eq"><div class="eq-title">Panel Regression</div>
+$$y_{it} = \mathbf{x}_{it}'\boldsymbol{\beta} + \alpha_i + \varepsilon_{it}, \quad i = 1, \ldots, N; \; t = 1, \ldots, T$$
+</div>
+<p>
+$\alpha_i$ captures unobserved individual heterogeneity. The key question: is $\alpha_i$ correlated with $\mathbf{x}_{it}$?
+</p>
+
+<h2>2&nbsp;&nbsp;Fixed Effects (Within) Estimator</h2>
+<p>
+If $\text{Cov}(\alpha_i, \mathbf{x}_{it}) \neq 0$, the fixed effects estimator eliminates $\alpha_i$ by demeaning:
+</p>
+<div class="eq"><div class="eq-title">Within Transformation</div>
+$$\tilde{y}_{it} = \tilde{\mathbf{x}}_{it}'\boldsymbol{\beta} + \tilde{\varepsilon}_{it}$$
+</div>
+<p>
+where $\tilde{y}_{it} = y_{it} - \bar{y}_i$ and $\bar{y}_i = T^{-1}\sum_t y_{it}$. The FE estimator:
+</p>
+<div class="eq"><div class="eq-title">Fixed Effects Estimator</div>
+$$\hat{\boldsymbol{\beta}}_{\text{FE}} = \left(\sum_{i}\sum_{t}\tilde{\mathbf{x}}_{it}\tilde{\mathbf{x}}_{it}'\right)^{-1}\sum_{i}\sum_{t}\tilde{\mathbf{x}}_{it}\tilde{y}_{it}$$
+</div>
+<p>
+Equivalently, include $N$ individual dummies (LSDV). FE is consistent whether or not $\alpha_i$ correlates with regressors, but time-invariant regressors are swept out.
+</p>
+
+<h2>3&nbsp;&nbsp;Random Effects (GLS) Estimator</h2>
+<p>
+If $\text{Cov}(\alpha_i, \mathbf{x}_{it}) = 0$, $\alpha_i$ is treated as random: $\alpha_i \sim (0, \sigma_\alpha^2)$. The composite error $\nu_{it} = \alpha_i + \varepsilon_{it}$ has equicorrelation within units. GLS quasi-demeans by $\theta = 1 - (\sigma_\varepsilon^2/(T\sigma_\alpha^2 + \sigma_\varepsilon^2))^{1/2}$:
+</p>
+<div class="eq">
+$$\hat{\boldsymbol{\beta}}_{\text{RE}} = \text{GLS on } (y_{it} - \theta\bar{y}_i) = (1-\theta)\mathbf{x}_{it}'\boldsymbol{\beta} + \cdots$$
+</div>
+<p>
+RE is more efficient than FE under its assumptions but inconsistent if $\alpha_i$ correlates with $\mathbf{x}_{it}$.
+</p>
+
+<h2>4&nbsp;&nbsp;Hausman Test</h2>
+<p>
+The Hausman (1978) test discriminates between FE and RE:
+</p>
+<div class="eq"><div class="eq-title">Hausman Statistic</div>
+$$H = (\hat{\boldsymbol{\beta}}_{\text{FE}} - \hat{\boldsymbol{\beta}}_{\text{RE}})'[\widehat{\text{Var}}(\hat{\boldsymbol{\beta}}_{\text{FE}}) - \widehat{\text{Var}}(\hat{\boldsymbol{\beta}}_{\text{RE}})]^{-1}(\hat{\boldsymbol{\beta}}_{\text{FE}} - \hat{\boldsymbol{\beta}}_{\text{RE}}) \xrightarrow{d} \chi^2_k$$
+</div>
+<p>
+Rejection implies $\text{Cov}(\alpha_i, \mathbf{x}_{it}) \neq 0$, favouring FE.
+</p>
+
+<h2>5&nbsp;&nbsp;Dynamic Panels</h2>
+<p>
+When a lagged dependent variable $y_{i,t-1}$ is included, FE is biased (Nickell, 1981). Arellano and Bond (1991) use GMM with lagged levels as instruments for the first-differenced equation:
+</p>
+<div class="eq">
+$$\Delta y_{it} = \rho\Delta y_{i,t-1} + \Delta\mathbf{x}_{it}'\boldsymbol{\beta} + \Delta\varepsilon_{it}$$
+</div>
+<p>
+$\mathbb{E}[y_{i,t-2}\Delta\varepsilon_{it}] = 0$ provides valid instruments. Blundell and Bond (1998) augment with the levels equation (system GMM) for improved efficiency when $\rho$ is near unity.
+</p>
+
+<h2>6&nbsp;&nbsp;Cluster-Robust Inference</h2>
+<p>
+With panel data, errors are typically correlated within units. Cluster-robust standard errors allow arbitrary within-cluster correlation:
+</p>
+<div class="eq">
+$$\widehat{\text{Var}}_{\text{CL}} = (\mathbf{X}'\mathbf{X})^{-1}\left(\sum_{i=1}^N \mathbf{X}_i'\hat{\mathbf{u}}_i\hat{\mathbf{u}}_i'\mathbf{X}_i\right)(\mathbf{X}'\mathbf{X})^{-1}$$
+</div>
+<p>
+Valid inference requires $N \to \infty$; with small $N$, bias-corrected cluster-robust (Cameron, Gelbach, Miller, 2008) or wild cluster bootstrap is needed.
+</p>
+
+</main>
+</body>
+</html>

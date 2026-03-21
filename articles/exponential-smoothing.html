@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Exponential Smoothing</title></head>
+<body>
+<main data-title="Exponential Smoothing">
+
+<h2>1&nbsp;&nbsp;Simple Exponential Smoothing</h2>
+<p>
+Simple Exponential Smoothing (SES) forecasts using an exponentially weighted average of all past observations:
+</p>
+<div class="eq"><div class="eq-title">SES Recursion</div>
+$$\hat{y}_{t+1|t} = \alpha y_t + (1-\alpha)\hat{y}_{t|t-1}, \quad 0 < \alpha < 1$$
+</div>
+<p>
+Unfolding the recursion: $\hat{y}_{t+1|t} = \alpha\sum_{j=0}^{\infty}(1-\alpha)^j y_{t-j}$. The smoothing parameter $\alpha$ controls the decay rate. High $\alpha$ tracks recent data; low $\alpha$ produces smoother forecasts. SES is optimal for the ARIMA(0,1,1) model $y_t = y_{t-1} + \varepsilon_t - (1-\alpha)\varepsilon_{t-1}$.
+</p>
+
+<h2>2&nbsp;&nbsp;Holt's Linear Method</h2>
+<p>
+Holt (1957) extended SES to handle trends via two equations:
+</p>
+<div class="eq"><div class="eq-title">Level</div>
+$$\ell_t = \alpha y_t + (1-\alpha)(\ell_{t-1} + b_{t-1})$$
+</div>
+<div class="eq"><div class="eq-title">Trend</div>
+$$b_t = \beta^*(\ell_t - \ell_{t-1}) + (1-\beta^*)b_{t-1}$$
+</div>
+<div class="eq"><div class="eq-title">Forecast</div>
+$$\hat{y}_{t+h|t} = \ell_t + hb_t$$
+</div>
+<p>
+$\alpha$ smooths the level, $\beta^*$ smooths the trend. The $h$-step forecast extends linearly. This is optimal for ARIMA(0,2,2).
+</p>
+
+<h2>3&nbsp;&nbsp;Holt-Winters Seasonal Method</h2>
+<p>
+Winters (1960) added a seasonal component with period $s$:
+</p>
+<p><strong>Additive seasonality:</strong></p>
+<div class="eq">
+$$\ell_t = \alpha(y_t - s_{t-s}) + (1-\alpha)(\ell_{t-1}+b_{t-1})$$
+$$s_t = \gamma(y_t - \ell_{t-1} - b_{t-1}) + (1-\gamma)s_{t-s}$$
+$$\hat{y}_{t+h|t} = \ell_t + hb_t + s_{t+h-s}$$
+</div>
+<p><strong>Multiplicative seasonality:</strong></p>
+<div class="eq">
+$$\ell_t = \alpha(y_t/s_{t-s}) + (1-\alpha)(\ell_{t-1}+b_{t-1})$$
+$$s_t = \gamma(y_t/(\ell_{t-1}+b_{t-1})) + (1-\gamma)s_{t-s}$$
+$$\hat{y}_{t+h|t} = (\ell_t + hb_t)s_{t+h-s}$$
+</div>
+
+<h2>4&nbsp;&nbsp;ETS Framework</h2>
+<p>
+Hyndman et al. (2002) unified exponential smoothing under the ETS (Error, Trend, Seasonal) taxonomy. Each of the three components can be None (N), Additive (A), Multiplicative (M), or Damped (for trend). This gives 30 models, each with a state-space representation and well-defined likelihood:
+</p>
+<div class="eq">
+$$\text{ETS}(E, T, S): \quad E \in \{A,M\}, \; T \in \{N,A,A_d,M,M_d\}, \; S \in \{N,A,M\}$$
+</div>
+<p>
+Model selection via AIC chooses among the 30 specifications automatically. This provides both point forecasts and proper prediction intervals derived from the error distribution.
+</p>
+
+<h2>5&nbsp;&nbsp;Damped Trend</h2>
+<p>
+Gardner and McKenzie (1985) introduced trend dampening, where the trend decays geometrically:
+</p>
+<div class="eq">
+$$\hat{y}_{t+h|t} = \ell_t + (\phi + \phi^2 + \cdots + \phi^h)b_t$$
+</div>
+<p>
+$0 < \phi < 1$ shrinks the trend towards zero at long horizons, improving forecast accuracy empirically. The damped trend is one of the most robust forecasting methods known: it consistently performs well across diverse datasets in M-competition benchmarks.
+</p>
+
+</main>
+</body>
+</html>

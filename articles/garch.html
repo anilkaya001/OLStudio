@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>GARCH Models</title></head>
+<body>
+<main data-title="GARCH Models">
+
+<h2>1&nbsp;&nbsp;From ARCH to GARCH</h2>
+<p>
+Bollerslev (1986) introduced the Generalized ARCH model, adding lagged conditional variances for parsimony:
+</p>
+<div class="eq"><div class="eq-title">GARCH(p,q)</div>
+$$\sigma_t^2 = \omega + \sum_{i=1}^{q}\alpha_i \varepsilon_{t-i}^2 + \sum_{j=1}^{p}\beta_j \sigma_{t-j}^2$$
+</div>
+<p>
+The standard GARCH(1,1) dominates in practice:
+</p>
+<div class="eq"><div class="eq-title">GARCH(1,1)</div>
+$$\sigma_t^2 = \omega + \alpha \varepsilon_{t-1}^2 + \beta \sigma_{t-1}^2$$
+</div>
+<p>
+with $\omega > 0$, $\alpha \geq 0$, $\beta \geq 0$. Covariance stationarity requires $\alpha + \beta < 1$. The unconditional variance is $\bar{\sigma}^2 = \omega/(1-\alpha-\beta)$.
+</p>
+
+<h2>2&nbsp;&nbsp;Volatility Persistence</h2>
+<p>
+The half-life of a volatility shock is $\ln(0.5)/\ln(\alpha+\beta)$. Empirically $\alpha+\beta$ is close to unity (0.95-0.99), implying highly persistent volatility. When $\alpha + \beta = 1$, the process is Integrated GARCH (IGARCH): shocks to variance persist indefinitely.
+</p>
+
+<h2>3&nbsp;&nbsp;GARCH(1,1) as ARMA(1,1) for $\varepsilon_t^2$</h2>
+<div class="eq">
+$$\varepsilon_t^2 = \omega + (\alpha + \beta)\varepsilon_{t-1}^2 + v_t - \beta v_{t-1}$$
+</div>
+<p>
+where $v_t = \varepsilon_t^2 - \sigma_t^2$ is a martingale difference. This is an ARMA(1,1) for squared returns with AR coefficient $(\alpha+\beta)$ and MA coefficient $(-\beta)$.
+</p>
+
+<h2>4&nbsp;&nbsp;MLE</h2>
+<div class="eq"><div class="eq-title">GARCH Log-Likelihood</div>
+$$\ell = -\frac{1}{2}\sum_{t=1}^{T}\left[\ln\sigma_t^2 + \frac{\varepsilon_t^2}{\sigma_t^2}\right]$$
+</div>
+<p>
+where $\sigma_t^2$ is computed recursively from initial values. QMLE under non-Gaussian innovations remains consistent. Student-$t$ innovations $z_t \sim t_\nu$ better capture fat tails, with $\nu$ estimated jointly.
+</p>
+
+<h2>5&nbsp;&nbsp;Asymmetric Extensions</h2>
+<p>
+<strong>GJR-GARCH</strong> (Glosten, Jagannathan, Runkle, 1993):
+</p>
+<div class="eq">
+$$\sigma_t^2 = \omega + \alpha\varepsilon_{t-1}^2 + \gamma\varepsilon_{t-1}^2\mathbb{1}(\varepsilon_{t-1}<0) + \beta\sigma_{t-1}^2$$
+</div>
+<p>
+<strong>EGARCH</strong> (Nelson, 1991):
+</p>
+<div class="eq">
+$$\ln\sigma_t^2 = \omega + \alpha\left(\frac{|\varepsilon_{t-1}|}{\sigma_{t-1}} - \sqrt{2/\pi}\right) + \gamma\frac{\varepsilon_{t-1}}{\sigma_{t-1}} + \beta\ln\sigma_{t-1}^2$$
+</div>
+<p>
+EGARCH models the log-variance, automatically ensuring positivity without parameter constraints. The $\gamma$ term captures the leverage effect.
+</p>
+
+<h2>6&nbsp;&nbsp;Forecasting Volatility</h2>
+<p>
+From GARCH(1,1), the $h$-step conditional variance forecast:
+</p>
+<div class="eq"><div class="eq-title">Variance Forecast</div>
+$$\hat{\sigma}^2_{T+h|T} = \bar{\sigma}^2 + (\alpha+\beta)^{h-1}(\hat{\sigma}^2_{T+1|T} - \bar{\sigma}^2)$$
+</div>
+<p>
+Volatility forecasts mean-revert to $\bar{\sigma}^2$ at rate $(\alpha+\beta)^h$. This mean-reversion is central to option pricing and risk management. The VIX index, for instance, can be interpreted through this lens as the market's expectation of future realised volatility.
+</p>
+
+<h2>7&nbsp;&nbsp;Multivariate Extensions</h2>
+<p>
+The DCC-GARCH (Engle, 2002) models time-varying correlations. Each series has a univariate GARCH, and the correlation matrix evolves as $\mathbf{Q}_t = (1-a-b)\bar{\mathbf{Q}} + a\mathbf{z}_{t-1}\mathbf{z}_{t-1}' + b\mathbf{Q}_{t-1}$ where $\bar{\mathbf{Q}}$ is the unconditional correlation matrix of standardised residuals.
+</p>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Vector Autoregression</title></head>
+<body>
+<main data-title="Vector Autoregression">
+
+<h2>1&nbsp;&nbsp;The VAR(p) Model</h2>
+<p>
+Sims (1980) introduced the Vector Autoregression as an atheoretical alternative to simultaneous equations models. The VAR($p$) for an $n$-dimensional vector $\mathbf{y}_t$:
+</p>
+<div class="eq"><div class="eq-title">VAR(p)</div>
+$$\mathbf{y}_t = \boldsymbol{\nu} + \mathbf{A}_1\mathbf{y}_{t-1} + \mathbf{A}_2\mathbf{y}_{t-2} + \cdots + \mathbf{A}_p\mathbf{y}_{t-p} + \mathbf{u}_t$$
+</div>
+<p>
+where $\mathbf{A}_i$ are $n \times n$ coefficient matrices, $\boldsymbol{\nu}$ is an $n \times 1$ intercept, and $\mathbf{u}_t \sim \text{WN}(\mathbf{0}, \boldsymbol{\Sigma}_u)$. The system contains $n + n^2 p$ parameters.
+</p>
+
+<h2>2&nbsp;&nbsp;Stability and Stationarity</h2>
+<p>
+The companion form stacks the VAR($p$) into a VAR(1):
+</p>
+<div class="eq">
+$$\boldsymbol{\xi}_t = \boldsymbol{\nu}^* + \mathbf{F}\boldsymbol{\xi}_{t-1} + \mathbf{v}_t$$
+</div>
+<p>
+where $\boldsymbol{\xi}_t = (\mathbf{y}_t', \mathbf{y}_{t-1}', \ldots, \mathbf{y}_{t-p+1}')'$ and $\mathbf{F}$ is the $np \times np$ companion matrix. Stability (stationarity) requires all eigenvalues of $\mathbf{F}$ to lie inside the unit circle: $|\lambda_i(\mathbf{F})| < 1$ for all $i$.
+</p>
+
+<h2>3&nbsp;&nbsp;Estimation</h2>
+<p>
+Each equation of a VAR($p$) has the same regressors. OLS equation-by-equation is equivalent to GLS (and MLE under normality):
+</p>
+<div class="eq"><div class="eq-title">OLS for VAR</div>
+$$\hat{\mathbf{B}} = (\mathbf{Z}\mathbf{Z}')^{-1}\mathbf{Z}\mathbf{Y}'$$
+</div>
+<p>
+where $\mathbf{B} = [\boldsymbol{\nu}, \mathbf{A}_1, \ldots, \mathbf{A}_p]$, $\mathbf{Z}$ stacks the regressors, and $\mathbf{Y}$ stacks the dependent variables. The estimator is consistent and asymptotically normal. The residual covariance: $\hat{\boldsymbol{\Sigma}} = T^{-1}\hat{\mathbf{U}}\hat{\mathbf{U}}'$.
+</p>
+
+<h2>4&nbsp;&nbsp;Granger Causality</h2>
+<p>
+Variable $x$ Granger-causes variable $y$ if past values of $x$ help predict $y$ beyond $y$'s own past. In a bivariate VAR:
+</p>
+<div class="eq">
+$$y_t = \nu_1 + \sum_{j=1}^p a_{11,j}y_{t-j} + \sum_{j=1}^p a_{12,j}x_{t-j} + u_{1t}$$
+</div>
+<p>
+$H_0: a_{12,1} = \cdots = a_{12,p} = 0$ is tested via a standard $F$-test (or Wald $\chi^2$). Rejection implies Granger causality from $x$ to $y$. This is predictive, not structural, causality.
+</p>
+
+<h2>5&nbsp;&nbsp;Impulse Response Functions</h2>
+<p>
+The VMA($\infty$) representation $\mathbf{y}_t = \boldsymbol{\mu} + \sum_{s=0}^{\infty}\boldsymbol{\Phi}_s\mathbf{u}_{t-s}$ gives the impulse response matrices $\boldsymbol{\Phi}_s = \partial\mathbf{y}_{t+s}/\partial\mathbf{u}_t'$, computed recursively: $\boldsymbol{\Phi}_s = \sum_{j=1}^{\min(s,p)}\mathbf{A}_j\boldsymbol{\Phi}_{s-j}$ with $\boldsymbol{\Phi}_0 = \mathbf{I}_n$.
+</p>
+<p>
+Since $\boldsymbol{\Sigma}_u$ is generally non-diagonal, responses to $\mathbf{u}_t$ shocks are hard to interpret. Cholesky decomposition $\boldsymbol{\Sigma}_u = \mathbf{P}\mathbf{P}'$ orthogonalises shocks: $\boldsymbol{\Theta}_s = \boldsymbol{\Phi}_s\mathbf{P}$ gives structural impulse responses. This imposes a recursive ordering (lower-triangular), which carries economic assumptions.
+</p>
+
+<h2>6&nbsp;&nbsp;Forecast Error Variance Decomposition</h2>
+<p>
+The FEVD measures the proportion of the $h$-step forecast error variance of variable $i$ attributable to shocks in variable $j$:
+</p>
+<div class="eq"><div class="eq-title">FEVD</div>
+$$\text{FEVD}_{ij}(h) = \frac{\sum_{s=0}^{h-1}(\mathbf{e}_i'\boldsymbol{\Theta}_s\mathbf{e}_j)^2}{\sum_{s=0}^{h-1}\mathbf{e}_i'\boldsymbol{\Theta}_s\boldsymbol{\Theta}_s'\mathbf{e}_i}$$
+</div>
+<p>
+where $\mathbf{e}_j$ is the $j$-th unit vector. FEVD sums to 1 across $j$ for each $(i,h)$.
+</p>
+
+<h2>7&nbsp;&nbsp;Lag Selection</h2>
+<p>
+Information criteria adapted for VARs penalise the $n^2 p$ parameters:
+</p>
+<div class="eq">
+$$\text{AIC}(p) = \ln|\hat{\boldsymbol{\Sigma}}_p| + \frac{2n^2 p}{T}, \quad \text{BIC}(p) = \ln|\hat{\boldsymbol{\Sigma}}_p| + \frac{n^2 p \ln T}{T}$$
+</div>
+<p>
+Sequential LR tests provide an alternative. Overparameterisation is a serious concern: a VAR($p$) with $n$ variables has $n^2 p$ slope parameters, growing rapidly with $n$.
+</p>
+
+</main>
+</body>
+</html>

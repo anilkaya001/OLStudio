@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Engle-Granger Cointegration</title></head>
+<body>
+<main data-title="Engle-Granger Cointegration">
+
+<h2>1&nbsp;&nbsp;The Two-Step Procedure</h2>
+<p>
+Engle and Granger (1987) proposed a simple two-step method for testing and estimating a single cointegrating relationship between two (or more) $I(1)$ variables.
+</p>
+
+<h2>2&nbsp;&nbsp;Step 1: Cointegrating Regression</h2>
+<p>
+Run the static OLS regression:
+</p>
+<div class="eq"><div class="eq-title">Cointegrating Regression</div>
+$$y_t = \alpha + \boldsymbol{\beta}'\mathbf{x}_t + u_t$$
+</div>
+<p>
+where $y_t$ and $\mathbf{x}_t$ are $I(1)$. Under the null of no cointegration, $u_t \sim I(1)$. Under the alternative, $u_t \sim I(0)$ and $\boldsymbol{\beta}$ is the cointegrating vector. The remarkable result (Stock, 1987): OLS on $I(1)$ variables is super-consistent. $\hat{\boldsymbol{\beta}}$ converges at rate $T$ (not $\sqrt{T}$), so it can be treated as known in the second step.
+</p>
+
+<h2>3&nbsp;&nbsp;Step 2: Unit Root Test on Residuals</h2>
+<p>
+Apply an ADF test to $\hat{u}_t$:
+</p>
+<div class="eq"><div class="eq-title">ADF on Residuals</div>
+$$\Delta\hat{u}_t = \gamma\hat{u}_{t-1} + \sum_{j=1}^{p}\delta_j\Delta\hat{u}_{t-j} + e_t$$
+</div>
+<p>
+$H_0: \gamma = 0$ (no cointegration) vs. $H_1: \gamma < 0$ (cointegration). Critical values are more negative than standard ADF because $\hat{u}_t$ is constructed to minimise variance, biasing towards stationarity. MacKinnon (1991, 2010) provides response surface critical values depending on the number of $I(1)$ regressors.
+</p>
+
+<h2>4&nbsp;&nbsp;ECM Estimation</h2>
+<p>
+If cointegration is established, estimate the Error Correction Model:
+</p>
+<div class="eq"><div class="eq-title">Error Correction Model</div>
+$$\Delta y_t = \alpha_0 + \alpha_1\hat{u}_{t-1} + \sum_{j=1}^{p}\gamma_j\Delta y_{t-j} + \sum_{j=0}^{p}\delta_j\Delta\mathbf{x}_{t-j} + \varepsilon_t$$
+</div>
+<p>
+The error correction coefficient $\alpha_1 < 0$ measures adjustment speed. Standard inference applies in the second-step ECM since all variables are $I(0)$.
+</p>
+
+<h2>5&nbsp;&nbsp;Limitations</h2>
+<p>
+The Engle-Granger procedure can detect at most one cointegrating vector (even among $n > 2$ variables). It requires choosing which variable is the dependent variable; different choices can yield different conclusions. The two-step nature means first-step estimation error propagates, though super-consistency mitigates this asymptotically. For multiple cointegrating vectors, the Johansen VECM is preferred.
+</p>
+
+<h2>6&nbsp;&nbsp;Dynamic OLS (DOLS) and Fully Modified OLS (FMOLS)</h2>
+<p>
+Stock and Watson (1993) proposed DOLS, which augments the cointegrating regression with leads and lags of $\Delta\mathbf{x}_t$:
+</p>
+<div class="eq">
+$$y_t = \alpha + \boldsymbol{\beta}'\mathbf{x}_t + \sum_{j=-q}^{q}\boldsymbol{\gamma}_j'\Delta\mathbf{x}_{t-j} + v_t$$
+</div>
+<p>
+This corrects for endogeneity and serial correlation, yielding asymptotically efficient estimates with standard $t$-statistics. Phillips and Hansen (1990) FMOLS achieves similar corrections nonparametrically. Both produce valid inference directly from the cointegrating regression.
+</p>
+
+</main>
+</body>
+</html>

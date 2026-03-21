@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Vector Error Correction Model</title></head>
+<body>
+<main data-title="Vector Error Correction Model">
+
+<h2>1&nbsp;&nbsp;Cointegration and the VECM</h2>
+<p>
+When $n$ variables are individually $I(1)$ but a linear combination is $I(0)$, they are cointegrated (Engle and Granger, 1987). The Granger Representation Theorem states that cointegrated variables have a VECM representation:
+</p>
+<div class="eq"><div class="eq-title">VECM</div>
+$$\Delta\mathbf{y}_t = \boldsymbol{\nu} + \boldsymbol{\Pi}\mathbf{y}_{t-1} + \sum_{j=1}^{p-1}\boldsymbol{\Gamma}_j\Delta\mathbf{y}_{t-j} + \mathbf{u}_t$$
+</div>
+<p>
+where $\boldsymbol{\Pi} = \boldsymbol{\alpha}\boldsymbol{\beta}'$ with $\boldsymbol{\alpha}$ the $n \times r$ loading (adjustment) matrix, $\boldsymbol{\beta}$ the $n \times r$ cointegrating matrix, and $r = \text{rank}(\boldsymbol{\Pi})$ the cointegrating rank ($0 < r < n$).
+</p>
+
+<h2>2&nbsp;&nbsp;Interpretation</h2>
+<p>
+The term $\boldsymbol{\beta}'\mathbf{y}_{t-1}$ measures the $r$ equilibrium deviations. The loading matrix $\boldsymbol{\alpha}$ governs the speed of adjustment: $\alpha_{ij}$ is how variable $i$ responds to disequilibrium in the $j$-th cointegrating relation. If $\alpha_{ij} < 0$, variable $i$ adjusts towards equilibrium.
+</p>
+<p>
+The short-run dynamics $\boldsymbol{\Gamma}_j\Delta\mathbf{y}_{t-j}$ capture stationary transitory effects. The long-run equilibrium is determined by $\boldsymbol{\beta}'\mathbf{y}_t = \mathbf{0}$.
+</p>
+
+<h2>3&nbsp;&nbsp;Johansen Procedure</h2>
+<p>
+Johansen (1988, 1991) developed a maximum likelihood framework for determining $r$ and estimating $\boldsymbol{\alpha}$ and $\boldsymbol{\beta}$.
+</p>
+<p>
+<strong>Step 1:</strong> Regress $\Delta\mathbf{y}_t$ and $\mathbf{y}_{t-1}$ on a constant and $\Delta\mathbf{y}_{t-1}, \ldots, \Delta\mathbf{y}_{t-p+1}$. Obtain residuals $\hat{\mathbf{R}}_{0t}$ and $\hat{\mathbf{R}}_{1t}$.
+</p>
+<p>
+<strong>Step 2:</strong> Form the residual product matrices $\mathbf{S}_{ij} = T^{-1}\sum \hat{\mathbf{R}}_{it}\hat{\mathbf{R}}_{jt}'$.
+</p>
+<p>
+<strong>Step 3:</strong> Solve the eigenvalue problem $|\lambda\mathbf{S}_{11} - \mathbf{S}_{10}\mathbf{S}_{00}^{-1}\mathbf{S}_{01}| = 0$ for ordered eigenvalues $\hat{\lambda}_1 \geq \cdots \geq \hat{\lambda}_n \geq 0$.
+</p>
+
+<h2>4&nbsp;&nbsp;Trace and Maximum Eigenvalue Tests</h2>
+<div class="eq"><div class="eq-title">Trace Test</div>
+$$\lambda_{\text{trace}}(r_0) = -T\sum_{i=r_0+1}^{n}\ln(1-\hat{\lambda}_i)$$
+</div>
+<div class="eq"><div class="eq-title">Max Eigenvalue Test</div>
+$$\lambda_{\max}(r_0, r_0+1) = -T\ln(1-\hat{\lambda}_{r_0+1})$$
+</div>
+<p>
+The trace test is $H_0: r \leq r_0$ vs. $H_1: r > r_0$. The max test is $H_0: r = r_0$ vs. $H_1: r = r_0 + 1$. Critical values depend on the deterministic specification and are tabulated by Johansen or computed by simulation. Sequential testing starts from $r_0 = 0$.
+</p>
+
+<h2>5&nbsp;&nbsp;Estimation</h2>
+<p>
+The ML estimator of $\boldsymbol{\beta}$ (the cointegrating vectors) is constructed from the eigenvectors corresponding to the $r$ largest eigenvalues: $\hat{\boldsymbol{\beta}} = (\hat{\mathbf{v}}_1, \ldots, \hat{\mathbf{v}}_r)$, normalised appropriately. The loading matrix: $\hat{\boldsymbol{\alpha}} = \mathbf{S}_{01}\hat{\boldsymbol{\beta}}(\hat{\boldsymbol{\beta}}'\mathbf{S}_{11}\hat{\boldsymbol{\beta}})^{-1}$.
+</p>
+
+<h2>6&nbsp;&nbsp;Deterministic Components</h2>
+<p>
+Five standard cases (Johansen, 1995): (i) no intercept, no trend; (ii) restricted intercept in CE; (iii) unrestricted intercept; (iv) restricted trend in CE; (v) unrestricted trend. The choice affects critical values and economic interpretation.
+</p>
+
+<h2>7&nbsp;&nbsp;Structural VECM</h2>
+<p>
+Structural restrictions can be imposed on $\boldsymbol{\alpha}$ and $\boldsymbol{\beta}$ separately. Weak exogeneity ($\alpha_{ij} = 0$) means variable $i$ does not adjust to the $j$-th equilibrium. The hypothesis $\boldsymbol{\beta} = (\mathbf{H}\boldsymbol{\varphi}, \ldots)$ restricts the cointegrating space. Both are testable via LR statistics with $\chi^2$ distributions.
+</p>
+
+</main>
+</body>
+</html>

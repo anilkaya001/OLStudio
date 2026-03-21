@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Structural Break Tests</title></head>
+<body>
+<main data-title="Structural Break Tests">
+
+<h2>1&nbsp;&nbsp;The Break Problem</h2>
+<p>
+A structural break is a discrete, permanent change in the parameters of a model at an unknown date $T_b$. Ignoring breaks leads to biased estimates, invalid forecasts, and misleading inference. The model with $m$ breaks at dates $T_1, \ldots, T_m$:
+</p>
+<div class="eq">
+$$y_t = \mathbf{x}_t'\boldsymbol{\beta}_j + u_t, \quad T_{j-1} < t \leq T_j, \quad j = 1, \ldots, m+1$$
+</div>
+
+<h2>2&nbsp;&nbsp;Chow Test (Known Break Date)</h2>
+<p>
+When $T_b$ is known, the Chow (1960) test compares restricted (pooled) and unrestricted (split-sample) regressions:
+</p>
+<div class="eq"><div class="eq-title">Chow F-Statistic</div>
+$$F = \frac{(\text{RSS}_R - \text{RSS}_1 - \text{RSS}_2)/k}{(\text{RSS}_1 + \text{RSS}_2)/(T - 2k)} \sim F_{k, T-2k}$$
+</div>
+
+<h2>3&nbsp;&nbsp;CUSUM and CUSUM-of-Squares</h2>
+<p>
+Brown, Durbin and Evans (1975) proposed monitoring cumulative sums of recursive residuals $w_t$:
+</p>
+<div class="eq"><div class="eq-title">CUSUM</div>
+$$W_t = \frac{1}{\hat{\sigma}}\sum_{j=k+1}^{t}w_j$$
+</div>
+<p>
+Under stability, $W_t$ fluctuates around zero within significance bands $\pm c\sqrt{T-k}$ (where $c$ depends on the significance level). Departure signals instability. The CUSUM-of-squares uses $\sum w_j^2$ to detect variance shifts.
+</p>
+
+<h2>4&nbsp;&nbsp;Andrews (1993) SupF Test</h2>
+<p>
+When the break date is unknown, Andrews (1993) proposes the supremum of Chow statistics over a trimmed range $[\pi_0 T, (1-\pi_0)T]$:
+</p>
+<div class="eq"><div class="eq-title">SupF</div>
+$$\text{SupF} = \sup_{\pi \in [\pi_0, 1-\pi_0]} F(\pi T)$$
+</div>
+<p>
+Critical values are non-standard (supremum of a chi-squared process) and depend on $\pi_0$ (typically 0.15) and the number of parameters. Hansen (1997) provides $p$-values via simulation.
+</p>
+
+<h2>5&nbsp;&nbsp;Bai-Perron (1998, 2003) Multiple Breaks</h2>
+<p>
+Bai and Perron developed a comprehensive framework for estimating and testing multiple structural breaks. The break dates are estimated by global minimisation of the sum of squared residuals:
+</p>
+<div class="eq">
+$$(\hat{T}_1, \ldots, \hat{T}_m) = \arg\min_{T_1, \ldots, T_m} \sum_{j=1}^{m+1}\sum_{t=T_{j-1}+1}^{T_j}(y_t - \mathbf{x}_t'\hat{\boldsymbol{\beta}}_j)^2$$
+</div>
+<p>
+Efficient computation uses the dynamic programming algorithm of Bai and Perron (2003). Sequential testing determines the number of breaks: the $\text{SupF}(l+1|l)$ test evaluates whether adding an $(l+1)$-th break significantly improves fit given $l$ breaks. Confidence intervals for break dates use the asymptotic distribution of $\hat{T}_j$.
+</p>
+
+<h2>6&nbsp;&nbsp;Implications for Unit Root Testing</h2>
+<p>
+Perron (1989) showed that unaccounted structural breaks bias ADF tests towards non-rejection of the unit root null. A stationary series with a level shift or trend break can mimic a unit root process. The Zivot-Andrews (1992) test endogenises the break date, and the Lee-Strazicich (2003) test allows breaks under both null and alternative.
+</p>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Autoregressive Models</title></head>
+<body>
+<main data-title="Autoregressive Models">
+
+<h2>1&nbsp;&nbsp;The AR(p) Process</h2>
+<p>
+An autoregressive process of order $p$, denoted AR($p$), expresses the current value of a time series as a linear combination of its $p$ most recent values plus a white noise innovation:
+</p>
+<div class="eq"><div class="eq-title">AR(p) Model</div>
+$$y_t = c + \phi_1 y_{t-1} + \phi_2 y_{t-2} + \cdots + \phi_p y_{t-p} + \varepsilon_t$$
+</div>
+<p>
+where $c$ is an intercept, $\phi_1, \ldots, \phi_p$ are the autoregressive coefficients, and $\varepsilon_t \sim \text{WN}(0, \sigma^2)$. Using the lag operator $L$ where $L^j y_t = y_{t-j}$:
+</p>
+<div class="eq"><div class="eq-title">Lag Polynomial Form</div>
+$$\Phi(L) y_t = c + \varepsilon_t, \qquad \Phi(L) = 1 - \phi_1 L - \phi_2 L^2 - \cdots - \phi_p L^p$$
+</div>
+
+<h2>2&nbsp;&nbsp;Stationarity Conditions</h2>
+<p>
+The AR($p$) process is covariance stationary if and only if all roots of the characteristic equation $\Phi(z) = 0$ lie strictly outside the unit circle ($|z_i| > 1$ for all $i = 1, \ldots, p$). Equivalently, all eigenvalues of the companion matrix:
+</p>
+<div class="eq">
+$$\mathbf{F} = \begin{pmatrix} \phi_1 & \phi_2 & \cdots & \phi_{p-1} & \phi_p \\ 1 & 0 & \cdots & 0 & 0 \\ 0 & 1 & \cdots & 0 & 0 \\ \vdots & & \ddots & & \vdots \\ 0 & 0 & \cdots & 1 & 0 \end{pmatrix}$$
+</div>
+<p>
+must have modulus less than one. For AR(1), the condition simplifies to $|\phi_1| < 1$.
+</p>
+
+<h2>3&nbsp;&nbsp;AR(1) Properties</h2>
+<p>
+For $y_t = c + \phi y_{t-1} + \varepsilon_t$ with $|\phi| < 1$:
+</p>
+<div class="eq">
+$$\mathbb{E}[y_t] = \frac{c}{1-\phi}, \quad \gamma_0 = \frac{\sigma^2}{1-\phi^2}, \quad \gamma_k = \phi^k \gamma_0, \quad \rho_k = \phi^k$$
+</div>
+<p>
+The autocorrelation function (ACF) decays geometrically. The partial autocorrelation function (PACF) has a single spike at lag 1 and is zero for all $k > 1$. This provides the key diagnostic: an AR($p$) has PACF that cuts off after lag $p$.
+</p>
+
+<h2>4&nbsp;&nbsp;Wold Representation</h2>
+<p>
+Any stationary AR($p$) has an infinite moving average (MA($\infty$)) representation:
+</p>
+<div class="eq"><div class="eq-title">MA($\infty$) Representation</div>
+$$y_t = \mu + \sum_{j=0}^{\infty} \psi_j \varepsilon_{t-j}, \qquad \Psi(L) = \Phi(L)^{-1}$$
+</div>
+<p>
+The coefficients $\psi_j$ are impulse response functions: $\psi_j = \partial y_{t+j}/\partial \varepsilon_t$. For AR(1), $\psi_j = \phi^j$.
+</p>
+
+<h2>5&nbsp;&nbsp;Estimation</h2>
+<p>
+Conditional on initial values, the AR($p$) is a linear regression with lagged dependent variables as regressors:
+</p>
+<div class="eq">
+$$\hat{\boldsymbol{\phi}}_{\text{OLS}} = \left(\sum_{t=p+1}^{T}\mathbf{y}_{t-1}\mathbf{y}_{t-1}'\right)^{-1}\sum_{t=p+1}^{T}\mathbf{y}_{t-1}y_t$$
+</div>
+<p>
+where $\mathbf{y}_{t-1} = (1, y_{t-1}, \ldots, y_{t-p})'$. Under stationarity, OLS is consistent and asymptotically normal, with $\sqrt{T}(\hat{\phi}_j - \phi_j) \xrightarrow{d} \mathcal{N}(0, v_j)$.
+</p>
+
+<h2>6&nbsp;&nbsp;Order Selection</h2>
+<p>
+The lag order $p$ is selected by minimising an information criterion:
+</p>
+<div class="eq">
+$$\text{AIC}(p) = \ln\hat{\sigma}^2_p + \frac{2p}{T}, \qquad \text{BIC}(p) = \ln\hat{\sigma}^2_p + \frac{p\ln T}{T}$$
+</div>
+<p>
+Alternatively, sequential testing starts from a large $p_{\max}$ and tests $H_0: \phi_{p_{\max}} = 0$. The general-to-specific approach reduces $p$ until the last lag is significant.
+</p>
+
+<h2>7&nbsp;&nbsp;Forecasting</h2>
+<p>
+The optimal $h$-step-ahead forecast (minimum MSE) is the conditional expectation:
+</p>
+<div class="eq"><div class="eq-title">Forecast</div>
+$$\hat{y}_{T+h|T} = \mathbb{E}[y_{T+h} \mid y_T, y_{T-1}, \ldots]$$
+</div>
+<p>
+Computed recursively: $\hat{y}_{T+1|T} = c + \phi_1 y_T + \cdots + \phi_p y_{T+1-p}$, then $\hat{y}_{T+2|T} = c + \phi_1 \hat{y}_{T+1|T} + \cdots$, replacing future unknowns with their forecasts. The $h$-step forecast error variance grows with the horizon, converging to the unconditional variance as $h \to \infty$.
+</p>
+
+</main>
+</body>
+</html>

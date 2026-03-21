@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Hodrick-Prescott Filter</title></head>
+<body>
+<main data-title="Hodrick-Prescott Filter">
+
+<h2>1&nbsp;&nbsp;Trend-Cycle Decomposition</h2>
+<p>
+The Hodrick-Prescott (1997) filter decomposes a time series $y_t$ into a trend $\tau_t$ and a cyclical component $c_t = y_t - \tau_t$ by solving the penalised least squares problem:
+</p>
+<div class="eq"><div class="eq-title">HP Objective</div>
+$$\min_{\{\tau_t\}_{t=1}^T} \left\{ \sum_{t=1}^{T}(y_t - \tau_t)^2 + \lambda \sum_{t=2}^{T-1}[(\tau_{t+1} - \tau_t) - (\tau_t - \tau_{t-1})]^2 \right\}$$
+</div>
+<p>
+The first term penalises deviations of the series from trend (poor fit); the second penalises changes in the trend's growth rate (curvature). The smoothing parameter $\lambda > 0$ governs the trade-off: $\lambda \to 0$ yields $\tau_t = y_t$; $\lambda \to \infty$ yields a linear trend.
+</p>
+
+<h2>2&nbsp;&nbsp;Matrix Formulation</h2>
+<p>
+In matrix form, defining $\boldsymbol{\tau} = (\tau_1, \ldots, \tau_T)'$ and the second-difference matrix $\mathbf{K}$:
+</p>
+<div class="eq"><div class="eq-title">Solution</div>
+$$\hat{\boldsymbol{\tau}} = (\mathbf{I}_T + \lambda\mathbf{K}'\mathbf{K})^{-1}\mathbf{y}$$
+</div>
+<p>
+The cycle is $\hat{\mathbf{c}} = \mathbf{y} - \hat{\boldsymbol{\tau}} = \lambda\mathbf{K}'\mathbf{K}(\mathbf{I}_T + \lambda\mathbf{K}'\mathbf{K})^{-1}\mathbf{y}$. This is a linear filter with time-varying weights near endpoints. The HP filter is a high-pass filter in the frequency domain.
+</p>
+
+<h2>3&nbsp;&nbsp;Choice of $\lambda$</h2>
+<p>
+The standard values are $\lambda = 1600$ (quarterly data, Hodrick and Prescott, 1997) and $\lambda = 129600$ (monthly). Ravn and Uhlig (2002) propose the rule $\lambda = 1600 \times (s/4)^4$ where $s$ is the data frequency. The choice implies a specific frequency cutoff: for $\lambda = 1600$ quarterly, fluctuations with period shorter than about 32 quarters (8 years) are classified as cyclical.
+</p>
+
+<h2>4&nbsp;&nbsp;Frequency Domain Interpretation</h2>
+<p>
+The HP filter's gain function at frequency $\omega$ is:
+</p>
+<div class="eq"><div class="eq-title">Transfer Function</div>
+$$|H(\omega)|^2 = \frac{4\lambda(1-\cos\omega)^2}{1 + 4\lambda(1-\cos\omega)^2}$$
+</div>
+<p>
+This is a high-pass filter: low frequencies (trend) are removed, high frequencies (cycle) are retained. The $-3$dB cutoff frequency depends on $\lambda$: for $\lambda=1600$, the cutoff is approximately at period 40 quarters.
+</p>
+
+<h2>5&nbsp;&nbsp;Hamilton's Critique</h2>
+<p>
+Hamilton (2018) demonstrated several serious problems: (i) the HP filter produces spurious cyclical dynamics even in pure random walks; (ii) endpoint bias distorts recent observations most, precisely where policymakers need accuracy; (iii) the filter's two-sided nature means future values affect the estimated current trend, violating real-time feasibility. He proposed the regression alternative $y_{t+h} = \beta_0 + \beta_1 y_t + \cdots + \beta_4 y_{t-3} + v_{t+h}$ with $h=8$, where the residual serves as the cycle.
+</p>
+
+<h2>6&nbsp;&nbsp;Boosted HP Filter</h2>
+<p>
+Phillips and Shi (2021) propose iterating the HP filter to improve trend estimation. The boosted HP (bHP) applies the HP filter repeatedly to the estimated trend, stopping based on an information criterion. This sharpens the frequency cutoff and reduces leakage of cyclical components into the trend.
+</p>
+
+</main>
+</body>
+</html>

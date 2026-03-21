@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Augmented Dickey-Fuller Test</title></head>
+<body>
+<main data-title="Augmented Dickey-Fuller Test">
+
+<h2>1&nbsp;&nbsp;The Unit Root Problem</h2>
+<p>
+Distinguishing between a unit root process ($I(1)$) and a stationary process ($I(0)$) is fundamental to time series econometrics. If $y_t$ has a unit root, standard inference breaks down: $t$-statistics do not follow $t$-distributions, and spurious regressions arise when regressing one $I(1)$ process on another.
+</p>
+
+<h2>2&nbsp;&nbsp;The Dickey-Fuller Test</h2>
+<p>
+Consider the AR(1): $y_t = \rho y_{t-1} + \varepsilon_t$. The null hypothesis $H_0: \rho = 1$ (unit root) against $H_1: |\rho| < 1$ (stationarity). Subtracting $y_{t-1}$:
+</p>
+<div class="eq"><div class="eq-title">DF Regression</div>
+$$\Delta y_t = \gamma y_{t-1} + \varepsilon_t, \qquad \gamma = \rho - 1$$
+</div>
+<p>
+Testing $H_0: \gamma = 0$ against $H_1: \gamma < 0$. Under $H_0$, the OLS $t$-statistic for $\hat{\gamma}$ does not follow a standard $t$-distribution. Instead, it converges to a functional of Brownian motion:
+</p>
+<div class="eq"><div class="eq-title">Dickey-Fuller Distribution</div>
+$$t_{\hat{\gamma}} \xrightarrow{d} \frac{\frac{1}{2}[W(1)^2 - 1]}{\left(\int_0^1 W(r)^2 \, dr\right)^{1/2}}$$
+</div>
+<p>
+where $W(\cdot)$ is a standard Wiener process. Critical values (Dickey and Fuller, 1979) are more negative than standard $t$-critical values.
+</p>
+
+<h2>3&nbsp;&nbsp;Augmentation</h2>
+<p>
+Said and Dickey (1984) generalise to AR($p$) errors by augmenting with lagged differences:
+</p>
+<div class="eq"><div class="eq-title">ADF Regression</div>
+$$\Delta y_t = \alpha + \beta t + \gamma y_{t-1} + \sum_{j=1}^{p}\delta_j \Delta y_{t-j} + \varepsilon_t$$
+</div>
+<p>
+The augmentation absorbs serial correlation in $\varepsilon_t$, ensuring the test statistic retains its limiting distribution. The lag length $p$ is selected by information criteria or sequential testing.
+</p>
+
+<h2>4&nbsp;&nbsp;Deterministic Components</h2>
+<p>
+Three specifications are standard: (i) no constant, no trend: $\Delta y_t = \gamma y_{t-1} + \ldots$ with $\tau$ critical values; (ii) constant only: includes $\alpha$, with $\tau_\mu$ critical values; (iii) constant and trend: includes both $\alpha$ and $\beta t$, with $\tau_\tau$ critical values. Each has distinct asymptotic distributions and critical values. The choice depends on the maintained hypothesis about the DGP under the alternative.
+</p>
+
+<h2>5&nbsp;&nbsp;Power and Size</h2>
+<p>
+The ADF test has notoriously low power against near-unit-root alternatives ($\rho$ close to but less than 1). Power depends on the span of the data rather than the number of observations. The DF-GLS test (Elliott, Rothenberg, Stock, 1996) improves power by GLS-detrending the data before running the ADF regression:
+</p>
+<div class="eq">
+$$\tilde{y}_t = y_t - \hat{\boldsymbol{\beta}}'\mathbf{z}_t, \quad \text{where } \hat{\boldsymbol{\beta}} \text{ from quasi-differenced regression}$$
+</div>
+<p>
+The quasi-differencing parameter $\bar{\alpha} = 1 - 7/T$ (no trend) or $\bar{\alpha} = 1 - 13.5/T$ (trend) is chosen to maximise asymptotic local power against the point alternative.
+</p>
+
+<h2>6&nbsp;&nbsp;Phillips-Perron Test</h2>
+<p>
+Phillips and Perron (1988) offer a nonparametric correction instead of augmentation. The PP test runs the basic DF regression without lags and applies a correction to the $t$-statistic using a HAC estimate of the long-run variance:
+</p>
+<div class="eq">
+$$Z_t = t_{\hat{\gamma}}\sqrt{\frac{\hat{\gamma}_0}{\hat{\lambda}^2}} - \frac{T(\hat{\lambda}^2 - \hat{\gamma}_0)}{2\hat{\lambda}\sqrt{T^2\hat{\sigma}^2/(\hat{\mathbf{y}}_{-1}'\hat{\mathbf{y}}_{-1})}}$$
+</div>
+<p>
+where $\hat{\lambda}^2$ is the Newey-West long-run variance estimate and $\hat{\gamma}_0$ the sample variance. The PP test has the same limiting distributions as ADF.
+</p>
+
+<h2>7&nbsp;&nbsp;KPSS: Reversing the Hypotheses</h2>
+<p>
+Kwiatkowski, Phillips, Schmidt and Shin (1992) reverse the null: $H_0$: stationarity against $H_1$: unit root. The KPSS statistic is based on partial sums of residuals from the regression of $y_t$ on deterministics:
+</p>
+<div class="eq"><div class="eq-title">KPSS Statistic</div>
+$$\text{KPSS} = \frac{T^{-2}\sum_{t=1}^T S_t^2}{\hat{\lambda}^2}, \quad S_t = \sum_{j=1}^{t}\hat{u}_j$$
+</div>
+<p>
+Using both ADF and KPSS provides a more robust classification: if ADF rejects and KPSS does not, the series is stationary. If ADF does not reject and KPSS does, the series has a unit root. Conflicting results indicate the series is in a "grey zone" and further analysis is needed.
+</p>
+
+</main>
+</body>
+</html>

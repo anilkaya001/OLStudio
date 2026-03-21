@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ordinary Least Squares</title></head>
+<body>
+<main data-title="Ordinary Least Squares">
+
+<h2>1&nbsp;&nbsp;The Linear Model</h2>
+<p>
+The classical linear regression model assumes a data-generating process of the form
+</p>
+<div class="eq"><div class="eq-title">The Population Model</div>
+$$y_t = \mathbf{x}_t' \boldsymbol{\beta} + u_t, \qquad t = 1, \ldots, T$$
+</div>
+<p>
+where $y_t$ is the dependent variable, $\mathbf{x}_t$ is a $k \times 1$ vector of regressors,
+$\boldsymbol{\beta}$ is the $k \times 1$ parameter vector, and $u_t$ is the error term. In matrix
+notation, stacking all $T$ observations yields
+</p>
+<div class="eq">
+$$\mathbf{y} = \mathbf{X}\boldsymbol{\beta} + \mathbf{u}$$
+</div>
+<p>
+where $\mathbf{y}$ is $T \times 1$, $\mathbf{X}$ is $T \times k$, and $\mathbf{u}$ is $T \times 1$.
+</p>
+
+<h2>2&nbsp;&nbsp;Derivation of the OLS Estimator</h2>
+<p>
+The OLS estimator minimises the sum of squared residuals:
+</p>
+<div class="eq"><div class="eq-title">Objective Function</div>
+$$S(\boldsymbol{\beta}) = (\mathbf{y} - \mathbf{X}\boldsymbol{\beta})'(\mathbf{y} - \mathbf{X}\boldsymbol{\beta}) = \mathbf{y}'\mathbf{y} - 2\boldsymbol{\beta}'\mathbf{X}'\mathbf{y} + \boldsymbol{\beta}'\mathbf{X}'\mathbf{X}\boldsymbol{\beta}$$
+</div>
+<p>
+Taking the gradient with respect to $\boldsymbol{\beta}$ and setting it to zero:
+</p>
+<div class="eq">
+$$\frac{\partial S}{\partial \boldsymbol{\beta}} = -2\mathbf{X}'\mathbf{y} + 2\mathbf{X}'\mathbf{X}\boldsymbol{\beta} = \mathbf{0}$$
+</div>
+<p>
+This yields the famous <em>normal equations</em>:
+</p>
+<div class="eq"><div class="eq-title">Normal Equations</div>
+$$\mathbf{X}'\mathbf{X}\hat{\boldsymbol{\beta}} = \mathbf{X}'\mathbf{y}$$
+</div>
+<p>
+Provided $\mathbf{X}'\mathbf{X}$ is nonsingular (full column rank), the unique solution is:
+</p>
+<div class="eq"><div class="eq-title">OLS Estimator</div>
+$$\hat{\boldsymbol{\beta}}_{\text{OLS}} = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}$$
+</div>
+<p>
+The second-order condition $\partial^2 S / \partial \boldsymbol{\beta} \partial \boldsymbol{\beta}' = 2\mathbf{X}'\mathbf{X}$ is positive definite when $\mathbf{X}$ has full rank, confirming a minimum.
+</p>
+
+<h2>3&nbsp;&nbsp;Gauss-Markov Assumptions</h2>
+<p>
+The classical assumptions are: (A1) linearity in parameters, (A2) full rank of $\mathbf{X}$, (A3) strict exogeneity $\mathbb{E}[\mathbf{u} \mid \mathbf{X}] = \mathbf{0}$, (A4) spherical disturbances $\mathbb{E}[\mathbf{u}\mathbf{u}' \mid \mathbf{X}] = \sigma^2 \mathbf{I}_T$, and (A5) optional normality $\mathbf{u} \mid \mathbf{X} \sim \mathcal{N}(\mathbf{0}, \sigma^2 \mathbf{I}_T)$.
+</p>
+
+<h2>4&nbsp;&nbsp;Properties</h2>
+<h3>4.1&nbsp;&nbsp;Unbiasedness</h3>
+<p>
+Substituting $\mathbf{y} = \mathbf{X}\boldsymbol{\beta} + \mathbf{u}$:
+</p>
+<div class="eq">
+$$\hat{\boldsymbol{\beta}} = \boldsymbol{\beta} + (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{u}$$
+</div>
+<p>
+Under (A3), $\mathbb{E}[\hat{\boldsymbol{\beta}} \mid \mathbf{X}] = \boldsymbol{\beta}$.
+</p>
+
+<h3>4.2&nbsp;&nbsp;Variance</h3>
+<div class="eq"><div class="eq-title">Conditional Variance</div>
+$$\text{Var}(\hat{\boldsymbol{\beta}} \mid \mathbf{X}) = \sigma^2 (\mathbf{X}'\mathbf{X})^{-1}$$
+</div>
+<p>
+The unbiased estimator for $\sigma^2$ is $\hat{\sigma}^2 = \hat{\mathbf{u}}'\hat{\mathbf{u}} / (T - k)$ where $\hat{\mathbf{u}} = \mathbf{y} - \mathbf{X}\hat{\boldsymbol{\beta}}$ are the residuals and $T - k$ are the degrees of freedom.
+</p>
+
+<h3>4.3&nbsp;&nbsp;Gauss-Markov Theorem</h3>
+<p>
+Under (A1)-(A4), $\hat{\boldsymbol{\beta}}_{\text{OLS}}$ is the Best Linear Unbiased Estimator (BLUE). For any other linear unbiased estimator $\tilde{\boldsymbol{\beta}} = \mathbf{C}\mathbf{y}$:
+</p>
+<div class="eq">
+$$\text{Var}(\tilde{\boldsymbol{\beta}}) - \text{Var}(\hat{\boldsymbol{\beta}}) \geq \mathbf{0} \quad \text{(positive semidefinite)}$$
+</div>
+
+<h2>5&nbsp;&nbsp;Projection Matrix and Residuals</h2>
+<p>
+The hat matrix $\mathbf{H} = \mathbf{X}(\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'$ projects onto the column space of $\mathbf{X}$. The residual maker $\mathbf{M} = \mathbf{I}_T - \mathbf{H}$ satisfies $\mathbf{M}\mathbf{X} = \mathbf{0}$, $\mathbf{M}^2 = \mathbf{M}$, $\mathbf{M}' = \mathbf{M}$, and $\text{tr}(\mathbf{M}) = T - k$.
+</p>
+<div class="eq">
+$$\hat{\mathbf{u}} = \mathbf{M}\mathbf{y} = \mathbf{M}\mathbf{u}$$
+</div>
+
+<h2>6&nbsp;&nbsp;Hypothesis Testing</h2>
+<p>
+Under normality (A5), $\hat{\boldsymbol{\beta}} \sim \mathcal{N}(\boldsymbol{\beta}, \sigma^2(\mathbf{X}'\mathbf{X})^{-1})$. For testing $H_0: \mathbf{R}\boldsymbol{\beta} = \mathbf{r}$ with $\mathbf{R}$ a $q \times k$ restriction matrix:
+</p>
+<div class="eq"><div class="eq-title">F-Test</div>
+$$F = \frac{(\mathbf{R}\hat{\boldsymbol{\beta}} - \mathbf{r})'[\mathbf{R}(\mathbf{X}'\mathbf{X})^{-1}\mathbf{R}']^{-1}(\mathbf{R}\hat{\boldsymbol{\beta}} - \mathbf{r}) / q}{\hat{\sigma}^2} \sim F_{q, T-k}$$
+</div>
+<p>
+For a single coefficient, the $t$-statistic is $t_j = \hat{\beta}_j / \text{se}(\hat{\beta}_j) \sim t_{T-k}$ where $\text{se}(\hat{\beta}_j) = \hat{\sigma} \sqrt{[(\mathbf{X}'\mathbf{X})^{-1}]_{jj}}$.
+</p>
+
+<h2>7&nbsp;&nbsp;Goodness of Fit</h2>
+<div class="eq">
+$$R^2 = 1 - \frac{\hat{\mathbf{u}}'\hat{\mathbf{u}}}{\tilde{\mathbf{y}}'\tilde{\mathbf{y}}}, \qquad \bar{R}^2 = 1 - \frac{T-1}{T-k}(1 - R^2)$$
+</div>
+<p>
+where $\tilde{\mathbf{y}} = \mathbf{y} - \bar{y}\mathbf{1}$ is the demeaned dependent variable. The adjusted $\bar{R}^2$ penalises model complexity and can be negative.
+</p>
+
+<h2>8&nbsp;&nbsp;Heteroskedasticity-Robust Inference</h2>
+<p>
+When (A4) fails, the White (1980) heteroskedasticity-consistent covariance matrix replaces $\sigma^2(\mathbf{X}'\mathbf{X})^{-1}$:
+</p>
+<div class="eq"><div class="eq-title">HC0 Estimator</div>
+$$\widehat{\text{Var}}_{\text{HC0}}(\hat{\boldsymbol{\beta}}) = (\mathbf{X}'\mathbf{X})^{-1} \left( \sum_{t=1}^{T} \hat{u}_t^2 \mathbf{x}_t \mathbf{x}_t' \right) (\mathbf{X}'\mathbf{X})^{-1}$$
+</div>
+<p>
+This sandwich form remains consistent under heteroskedasticity. The HC1 correction multiplies by $T/(T-k)$. For time series with autocorrelation, Newey-West (1987) HAC standard errors extend this to also account for serial correlation, with a bandwidth parameter $m$:
+</p>
+<div class="eq"><div class="eq-title">Newey-West HAC</div>
+$$\hat{\mathbf{S}} = \hat{\boldsymbol{\Gamma}}_0 + \sum_{j=1}^{m} w_j (\hat{\boldsymbol{\Gamma}}_j + \hat{\boldsymbol{\Gamma}}_j'), \quad w_j = 1 - \frac{j}{m+1}$$
+</div>
+<p>
+where $\hat{\boldsymbol{\Gamma}}_j = T^{-1}\sum_{t=j+1}^{T} \hat{u}_t \hat{u}_{t-j} \mathbf{x}_t \mathbf{x}_{t-j}'$ is the $j$-th autocovariance matrix of the score.
+</p>
+
+</main>
+</body>
+</html>

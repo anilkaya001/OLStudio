@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Kalman Filter</title></head>
+<body>
+<main data-title="Kalman Filter">
+
+<h2>1&nbsp;&nbsp;State-Space Models</h2>
+<p>
+The Kalman filter (1960) provides the optimal recursive solution for linear Gaussian state-space models. The system consists of:
+</p>
+<div class="eq"><div class="eq-title">State Equation</div>
+$$\boldsymbol{\xi}_{t+1} = \mathbf{F}\boldsymbol{\xi}_t + \mathbf{R}\boldsymbol{\eta}_t, \quad \boldsymbol{\eta}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{Q})$$
+</div>
+<div class="eq"><div class="eq-title">Observation Equation</div>
+$$\mathbf{y}_t = \mathbf{H}'\boldsymbol{\xi}_t + \boldsymbol{\varepsilon}_t, \quad \boldsymbol{\varepsilon}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{R}_\varepsilon)$$
+</div>
+<p>
+$\boldsymbol{\xi}_t$ is the unobserved state vector ($m \times 1$), $\mathbf{y}_t$ is the observed signal ($n \times 1$), $\mathbf{F}$ is the state transition matrix, and $\mathbf{H}$ maps states to observations.
+</p>
+
+<h2>2&nbsp;&nbsp;Prediction Step</h2>
+<p>
+Given the filtered estimate $\hat{\boldsymbol{\xi}}_{t|t}$ and covariance $\mathbf{P}_{t|t}$:
+</p>
+<div class="eq"><div class="eq-title">State Prediction</div>
+$$\hat{\boldsymbol{\xi}}_{t+1|t} = \mathbf{F}\hat{\boldsymbol{\xi}}_{t|t}$$
+</div>
+<div class="eq"><div class="eq-title">Covariance Prediction</div>
+$$\mathbf{P}_{t+1|t} = \mathbf{F}\mathbf{P}_{t|t}\mathbf{F}' + \mathbf{R}\mathbf{Q}\mathbf{R}'$$
+</div>
+
+<h2>3&nbsp;&nbsp;Update Step</h2>
+<p>
+When $\mathbf{y}_{t+1}$ is observed:
+</p>
+<div class="eq"><div class="eq-title">Innovation</div>
+$$\mathbf{v}_{t+1} = \mathbf{y}_{t+1} - \mathbf{H}'\hat{\boldsymbol{\xi}}_{t+1|t}$$
+</div>
+<div class="eq"><div class="eq-title">Kalman Gain</div>
+$$\mathbf{K}_{t+1} = \mathbf{P}_{t+1|t}\mathbf{H}(\mathbf{H}'\mathbf{P}_{t+1|t}\mathbf{H} + \mathbf{R}_\varepsilon)^{-1}$$
+</div>
+<div class="eq"><div class="eq-title">State Update</div>
+$$\hat{\boldsymbol{\xi}}_{t+1|t+1} = \hat{\boldsymbol{\xi}}_{t+1|t} + \mathbf{K}_{t+1}\mathbf{v}_{t+1}$$
+</div>
+<div class="eq"><div class="eq-title">Covariance Update</div>
+$$\mathbf{P}_{t+1|t+1} = (\mathbf{I} - \mathbf{K}_{t+1}\mathbf{H}')\mathbf{P}_{t+1|t}$$
+</div>
+
+<h2>4&nbsp;&nbsp;Prediction Error Decomposition</h2>
+<p>
+The log-likelihood is computed from the innovation sequence:
+</p>
+<div class="eq"><div class="eq-title">Log-Likelihood</div>
+$$\ell = -\frac{Tn}{2}\ln(2\pi) - \frac{1}{2}\sum_{t=1}^{T}\left[\ln|\mathbf{F}_{t|t-1}| + \mathbf{v}_t'\mathbf{F}_{t|t-1}^{-1}\mathbf{v}_t\right]$$
+</div>
+<p>
+where $\mathbf{F}_{t|t-1} = \mathbf{H}'\mathbf{P}_{t|t-1}\mathbf{H} + \mathbf{R}_\varepsilon$ is the innovation variance. This enables MLE of unknown system parameters.
+</p>
+
+<h2>5&nbsp;&nbsp;Kalman Smoother</h2>
+<p>
+The Rauch-Tung-Striebel smoother provides estimates using the full sample $\{y_1, \ldots, y_T\}$:
+</p>
+<div class="eq"><div class="eq-title">Backward Recursion</div>
+$$\hat{\boldsymbol{\xi}}_{t|T} = \hat{\boldsymbol{\xi}}_{t|t} + \mathbf{J}_t(\hat{\boldsymbol{\xi}}_{t+1|T} - \hat{\boldsymbol{\xi}}_{t+1|t})$$
+</div>
+<p>
+where $\mathbf{J}_t = \mathbf{P}_{t|t}\mathbf{F}'\mathbf{P}_{t+1|t}^{-1}$. The smoother gives lower variance than the filter: $\mathbf{P}_{t|T} \leq \mathbf{P}_{t|t}$ in the matrix sense.
+</p>
+
+<h2>6&nbsp;&nbsp;Applications in Econometrics</h2>
+<p>
+The Kalman filter enables estimation of unobserved components models (trend-cycle decomposition), time-varying parameter regressions ($\boldsymbol{\beta}_t$ evolving as a random walk), ARMA models via state-space representation, dynamic factor models, and the estimation of potential output and the output gap. It is the workhorse of modern macroeconometrics.
+</p>
+
+</main>
+</body>
+</html>

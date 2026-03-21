@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Maximum Likelihood Estimation</title></head>
+<body>
+<main data-title="Maximum Likelihood Estimation">
+
+<h2>1&nbsp;&nbsp;The Likelihood Principle</h2>
+<p>
+Maximum Likelihood Estimation (MLE) selects the parameter vector that makes the observed data most probable. Given a sample $\{y_1, \ldots, y_T\}$ with joint density $f(\mathbf{y}; \boldsymbol{\theta})$ where $\boldsymbol{\theta} \in \Theta \subseteq \mathbb{R}^p$, the likelihood function treats the density as a function of the parameters:
+</p>
+<div class="eq"><div class="eq-title">Likelihood Function</div>
+$$\mathcal{L}(\boldsymbol{\theta}; \mathbf{y}) = f(\mathbf{y}; \boldsymbol{\theta})$$
+</div>
+<p>
+The log-likelihood, $\ell(\boldsymbol{\theta}) = \ln \mathcal{L}(\boldsymbol{\theta})$, is preferred for computational convenience. Under independent observations:
+</p>
+<div class="eq">
+$$\ell(\boldsymbol{\theta}) = \sum_{t=1}^{T} \ln f(y_t; \boldsymbol{\theta})$$
+</div>
+
+<h2>2&nbsp;&nbsp;The MLE</h2>
+<div class="eq"><div class="eq-title">MLE Definition</div>
+$$\hat{\boldsymbol{\theta}}_{\text{ML}} = \arg\max_{\boldsymbol{\theta} \in \Theta} \ell(\boldsymbol{\theta})$$
+</div>
+<p>
+The first-order condition defines the score equations:
+</p>
+<div class="eq"><div class="eq-title">Score Equations</div>
+$$\mathbf{s}(\boldsymbol{\theta}) = \frac{\partial \ell(\boldsymbol{\theta})}{\partial \boldsymbol{\theta}} = \sum_{t=1}^{T} \frac{\partial \ln f(y_t; \boldsymbol{\theta})}{\partial \boldsymbol{\theta}} = \mathbf{0}$$
+</div>
+
+<h2>3&nbsp;&nbsp;Asymptotic Properties</h2>
+<p>
+Under standard regularity conditions (Cram&eacute;r, 1946), as $T \to \infty$:
+</p>
+<p>
+<strong>Consistency:</strong> $\hat{\boldsymbol{\theta}}_{\text{ML}} \xrightarrow{p} \boldsymbol{\theta}_0$. The information inequality ensures the true parameter uniquely maximises the expected log-likelihood.
+</p>
+<p>
+<strong>Asymptotic normality:</strong>
+</p>
+<div class="eq"><div class="eq-title">Asymptotic Distribution</div>
+$$\sqrt{T}(\hat{\boldsymbol{\theta}}_{\text{ML}} - \boldsymbol{\theta}_0) \xrightarrow{d} \mathcal{N}\left(\mathbf{0}, \mathcal{I}(\boldsymbol{\theta}_0)^{-1}\right)$$
+</div>
+<p>
+where $\mathcal{I}(\boldsymbol{\theta})$ is the Fisher information matrix:
+</p>
+<div class="eq"><div class="eq-title">Fisher Information</div>
+$$\mathcal{I}(\boldsymbol{\theta}) = -\mathbb{E}\left[\frac{\partial^2 \ell(\boldsymbol{\theta})}{\partial \boldsymbol{\theta} \partial \boldsymbol{\theta}'}\right] = \mathbb{E}\left[\mathbf{s}(\boldsymbol{\theta})\mathbf{s}(\boldsymbol{\theta})'\right]$$
+</div>
+<p>
+<strong>Efficiency:</strong> MLE achieves the Cram&eacute;r-Rao lower bound. No consistent estimator has smaller asymptotic variance.
+</p>
+
+<h2>4&nbsp;&nbsp;The Trinity of Tests</h2>
+<p>
+For testing $H_0: \mathbf{h}(\boldsymbol{\theta}) = \mathbf{0}$ (with $q$ restrictions):
+</p>
+<p>
+<strong>Likelihood Ratio (LR):</strong>
+</p>
+<div class="eq">
+$$\text{LR} = 2[\ell(\hat{\boldsymbol{\theta}}) - \ell(\tilde{\boldsymbol{\theta}})] \xrightarrow{d} \chi^2_q$$
+</div>
+<p>
+<strong>Wald:</strong>
+</p>
+<div class="eq">
+$$W = \mathbf{h}(\hat{\boldsymbol{\theta}})'[\mathbf{H}\hat{\mathcal{I}}^{-1}\mathbf{H}']^{-1}\mathbf{h}(\hat{\boldsymbol{\theta}}) \xrightarrow{d} \chi^2_q$$
+</div>
+<p>
+<strong>Lagrange Multiplier (Score):</strong>
+</p>
+<div class="eq">
+$$\text{LM} = \mathbf{s}(\tilde{\boldsymbol{\theta}})'\tilde{\mathcal{I}}^{-1}\mathbf{s}(\tilde{\boldsymbol{\theta}}) \xrightarrow{d} \chi^2_q$$
+</div>
+<p>
+where $\hat{\boldsymbol{\theta}}$ is the unrestricted MLE, $\tilde{\boldsymbol{\theta}}$ is the restricted MLE, and $\mathbf{H} = \partial \mathbf{h}/\partial \boldsymbol{\theta}'$.
+</p>
+
+<h2>5&nbsp;&nbsp;MLE for the Normal Linear Model</h2>
+<p>
+Under $\mathbf{u} \sim \mathcal{N}(\mathbf{0}, \sigma^2\mathbf{I}_T)$:
+</p>
+<div class="eq">
+$$\ell(\boldsymbol{\beta}, \sigma^2) = -\frac{T}{2}\ln(2\pi) - \frac{T}{2}\ln(\sigma^2) - \frac{1}{2\sigma^2}(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})'(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})$$
+</div>
+<p>
+Maximising over $\boldsymbol{\beta}$ yields $\hat{\boldsymbol{\beta}}_{\text{ML}} = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}$, identical to OLS. The ML variance estimator is $\hat{\sigma}^2_{\text{ML}} = \hat{\mathbf{u}}'\hat{\mathbf{u}}/T$ (biased, with divisor $T$ instead of $T-k$).
+</p>
+
+<h2>6&nbsp;&nbsp;Conditional MLE for Time Series</h2>
+<p>
+For dependent observations (e.g., AR, GARCH models), the joint density factorises via the chain rule of probability:
+</p>
+<div class="eq"><div class="eq-title">Conditional Decomposition</div>
+$$\ell(\boldsymbol{\theta}) = \ln f(y_1; \boldsymbol{\theta}) + \sum_{t=2}^{T} \ln f(y_t \mid y_{t-1}, \ldots, y_1; \boldsymbol{\theta})$$
+</div>
+<p>
+The conditional MLE drops the awkward first term and maximises $\sum_{t=p+1}^{T} \ln f(y_t \mid \mathcal{F}_{t-1}; \boldsymbol{\theta})$ where $p$ is the model order. Under stationarity and ergodicity, conditional MLE retains full asymptotic efficiency.
+</p>
+
+<h2>7&nbsp;&nbsp;Information Criteria</h2>
+<p>
+Model selection among non-nested specifications uses penalised likelihoods:
+</p>
+<div class="eq">
+$$\text{AIC} = -2\ell(\hat{\boldsymbol{\theta}}) + 2p, \qquad \text{BIC} = -2\ell(\hat{\boldsymbol{\theta}}) + p \ln T$$
+</div>
+<p>
+AIC is asymptotically efficient (minimises prediction error); BIC is consistent (selects the true model with probability approaching 1 as $T \to \infty$).
+</p>
+
+</main>
+</body>
+</html>

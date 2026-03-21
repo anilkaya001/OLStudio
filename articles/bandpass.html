@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Band-Pass Filters</title></head>
+<body>
+<main data-title="Band-Pass Filters">
+
+<h2>1&nbsp;&nbsp;Ideal Band-Pass Filter</h2>
+<p>
+The ideal band-pass filter extracts fluctuations in a specific frequency band $[\omega_L, \omega_H]$, corresponding to periods between $2\pi/\omega_H$ and $2\pi/\omega_L$. For business cycle analysis, the standard band is 6-32 quarters (Burns and Mitchell, 1946). The ideal filter weights are:
+</p>
+<div class="eq"><div class="eq-title">Ideal Filter Weights</div>
+$$b_j = \frac{\sin(j\omega_H) - \sin(j\omega_L)}{\pi j} \text{ for } j \neq 0, \quad b_0 = \frac{\omega_H - \omega_L}{\pi}$$
+</div>
+<p>
+This requires an infinite number of leads and lags, making it infeasible in finite samples.
+</p>
+
+<h2>2&nbsp;&nbsp;Baxter-King Filter</h2>
+<p>
+Baxter and King (1999) approximate the ideal filter with a symmetric moving average of order $K$:
+</p>
+<div class="eq"><div class="eq-title">BK Filter</div>
+$$c_t = \sum_{j=-K}^{K}\hat{b}_j y_{t-j}$$
+</div>
+<p>
+The weights $\hat{b}_j$ are the truncated ideal weights adjusted to sum to zero (ensuring no trend leakage): $\hat{b}_j = b_j - (2K+1)^{-1}\sum_{k=-K}^{K}b_k$. The recommended $K = 12$ for quarterly data sacrifices $2K = 24$ observations (12 at each end). This endpoint loss is the main drawback.
+</p>
+
+<h2>3&nbsp;&nbsp;Christiano-Fitzgerald Filter</h2>
+<p>
+Christiano and Fitzgerald (2003) use an asymmetric, time-varying approximation that avoids endpoint loss. The filter weights are derived by minimising the mean squared approximation error under the assumption that $y_t$ follows a random walk:
+</p>
+<div class="eq"><div class="eq-title">CF Filter</div>
+$$c_t = \sum_{j=-(t-1)}^{T-t}\hat{b}_{j,t} y_{t-j}$$
+</div>
+<p>
+where the weights $\hat{b}_{j,t}$ depend on $t$ (the position in the sample). Near endpoints, the filter uses asymmetric weights. Advantages over BK: no observation loss, better approximation at endpoints. The cost is optimality depending on the assumed spectral density.
+</p>
+
+<h2>4&nbsp;&nbsp;Comparison</h2>
+<p>
+In the frequency domain, both BK and CF approximate the ideal rectangular transfer function. BK achieves exact symmetry (zero phase shift) but loses endpoints. CF preserves the full sample but introduces slight phase shifts near boundaries. For business cycle extraction in the interior of the sample, both perform comparably. At endpoints, CF is preferred for real-time analysis.
+</p>
+
+<h2>5&nbsp;&nbsp;Relation to HP Filter</h2>
+<p>
+The HP filter is a high-pass filter, removing frequencies below the cutoff. Band-pass filters are more targeted: they also remove very high-frequency noise. The HP cycle includes measurement error and irregular fluctuations; band-pass extracts only the business-cycle frequencies. However, the band-pass approach requires specifying both $\omega_L$ and $\omega_H$, adding researcher discretion.
+</p>
+
+</main>
+</body>
+</html>

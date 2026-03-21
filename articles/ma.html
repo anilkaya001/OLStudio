@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Moving Average Models</title></head>
+<body>
+<main data-title="Moving Average Models">
+
+<h2>1&nbsp;&nbsp;The MA(q) Process</h2>
+<p>
+A moving average process of order $q$ represents the current value as a linear combination of current and past white noise shocks:
+</p>
+<div class="eq"><div class="eq-title">MA(q) Model</div>
+$$y_t = \mu + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \theta_2 \varepsilon_{t-2} + \cdots + \theta_q \varepsilon_{t-q}$$
+</div>
+<p>
+In lag polynomial form: $y_t = \mu + \Theta(L)\varepsilon_t$ where $\Theta(L) = 1 + \theta_1 L + \cdots + \theta_q L^q$ and $\varepsilon_t \sim \text{WN}(0, \sigma^2)$.
+</p>
+
+<h2>2&nbsp;&nbsp;Properties</h2>
+<p>
+The MA($q$) is always covariance stationary regardless of parameter values. Its moments are:
+</p>
+<div class="eq">
+$$\mathbb{E}[y_t] = \mu, \quad \gamma_0 = \sigma^2(1 + \theta_1^2 + \cdots + \theta_q^2)$$
+</div>
+<div class="eq">
+$$\gamma_k = \begin{cases} \sigma^2\sum_{j=0}^{q-k}\theta_j\theta_{j+k} & \text{for } k = 1, \ldots, q \\ 0 & \text{for } k > q \end{cases}$$
+</div>
+<p>
+where $\theta_0 = 1$. The ACF has exactly $q$ nonzero values, then cuts off. This is the key identifying feature: an MA($q$) has ACF that vanishes beyond lag $q$, while the PACF decays gradually.
+</p>
+
+<h2>3&nbsp;&nbsp;Invertibility</h2>
+<p>
+An MA($q$) is invertible if all roots of $\Theta(z) = 0$ lie outside the unit circle. Invertibility ensures a unique representation and enables expressing $y_t$ as an AR($\infty$):
+</p>
+<div class="eq">
+$$\varepsilon_t = \Theta(L)^{-1}(y_t - \mu) = \sum_{j=0}^{\infty}\pi_j(y_{t-j} - \mu)$$
+</div>
+<p>
+For MA(1) with $y_t = \mu + \varepsilon_t + \theta\varepsilon_{t-1}$, invertibility requires $|\theta| < 1$, yielding $\pi_j = (-\theta)^j$.
+</p>
+
+<h2>4&nbsp;&nbsp;MA(1) in Detail</h2>
+<div class="eq">
+$$\gamma_0 = (1 + \theta^2)\sigma^2, \quad \gamma_1 = \theta\sigma^2, \quad \gamma_k = 0 \text{ for } k \geq 2$$
+</div>
+<div class="eq">
+$$\rho_1 = \frac{\theta}{1+\theta^2}, \quad \rho_k = 0 \text{ for } k \geq 2$$
+</div>
+<p>
+Note the bounded autocorrelation: $|\rho_1| \leq 1/2$ for all $\theta$. The same $\rho_1$ can be produced by both $\theta$ and $1/\theta$, motivating the invertibility restriction as an identification condition.
+</p>
+
+<h2>5&nbsp;&nbsp;Estimation</h2>
+<p>
+Unlike AR models, MA parameters enter nonlinearly in the likelihood. For Gaussian MA($q$):
+</p>
+<div class="eq"><div class="eq-title">Conditional Log-Likelihood</div>
+$$\ell(\mu, \boldsymbol{\theta}, \sigma^2) = -\frac{T}{2}\ln(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{t=1}^{T}\varepsilon_t^2$$
+</div>
+<p>
+where $\varepsilon_t$ is computed recursively: $\varepsilon_t = y_t - \mu - \theta_1\varepsilon_{t-1} - \cdots - \theta_q\varepsilon_{t-q}$ with initial $\varepsilon_0 = \cdots = \varepsilon_{1-q} = 0$. Numerical optimisation (e.g., BFGS) is required. Alternatively, exact MLE treats the joint density of $\mathbf{y}$ as $\mathcal{N}(\mu\mathbf{1}, \sigma^2\boldsymbol{\Gamma})$ where $\boldsymbol{\Gamma}$ has Toeplitz structure from the autocovariances.
+</p>
+
+<h2>6&nbsp;&nbsp;Relationship to AR</h2>
+<p>
+By Wold's decomposition theorem, every covariance-stationary process with no deterministic component has an MA($\infty$) representation. A finite-order MA($q$) corresponds to an AR($\infty$) and vice versa: a finite AR($p$) corresponds to an MA($\infty$). The ARMA class unifies both.
+</p>
+
+<h2>7&nbsp;&nbsp;Diagnostic: Box-Pierce and Ljung-Box</h2>
+<p>
+After fitting an MA($q$), residual autocorrelations should be zero. The portmanteau test:
+</p>
+<div class="eq"><div class="eq-title">Ljung-Box Test</div>
+$$Q_{\text{LB}}(m) = T(T+2)\sum_{k=1}^{m}\frac{\hat{\rho}_k^2}{T-k} \xrightarrow{d} \chi^2_{m-q}$$
+</div>
+<p>
+tests whether the first $m$ residual autocorrelations are jointly zero. Rejection indicates model inadequacy.
+</p>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Generalized Method of Moments</title></head>
+<body>
+<main data-title="Generalized Method of Moments">
+
+<h2>1&nbsp;&nbsp;Moment Conditions</h2>
+<p>
+The Generalized Method of Moments (Hansen, 1982) builds on a set of population moment conditions. Given data $\{w_t\}_{t=1}^T$ and a parameter vector $\boldsymbol{\theta} \in \mathbb{R}^p$, suppose there exist $q \geq p$ moment conditions:
+</p>
+<div class="eq"><div class="eq-title">Population Moment Conditions</div>
+$$\mathbb{E}[\mathbf{g}(w_t, \boldsymbol{\theta}_0)] = \mathbf{0}$$
+</div>
+<p>
+where $\mathbf{g}: \mathbb{R}^d \times \mathbb{R}^p \to \mathbb{R}^q$ is a known function and $\boldsymbol{\theta}_0$ is the true parameter. The sample analogue is:
+</p>
+<div class="eq">
+$$\bar{\mathbf{g}}_T(\boldsymbol{\theta}) = \frac{1}{T}\sum_{t=1}^{T}\mathbf{g}(w_t, \boldsymbol{\theta})$$
+</div>
+
+<h2>2&nbsp;&nbsp;The GMM Estimator</h2>
+<p>
+When $q > p$ (overidentified), $\bar{\mathbf{g}}_T(\boldsymbol{\theta}) = \mathbf{0}$ cannot be solved exactly. GMM minimises a quadratic form:
+</p>
+<div class="eq"><div class="eq-title">GMM Objective</div>
+$$\hat{\boldsymbol{\theta}}_{\text{GMM}} = \arg\min_{\boldsymbol{\theta}} \, \bar{\mathbf{g}}_T(\boldsymbol{\theta})'\mathbf{W}_T\bar{\mathbf{g}}_T(\boldsymbol{\theta})$$
+</div>
+<p>
+where $\mathbf{W}_T$ is a $q \times q$ positive definite weighting matrix. The first-order conditions are:
+</p>
+<div class="eq">
+$$\left(\frac{\partial \bar{\mathbf{g}}_T}{\partial \boldsymbol{\theta}'}\right)'\mathbf{W}_T\bar{\mathbf{g}}_T(\hat{\boldsymbol{\theta}}) = \mathbf{0}$$
+</div>
+
+<h2>3&nbsp;&nbsp;Optimal Weighting</h2>
+<p>
+GMM is consistent for any positive definite $\mathbf{W}_T$, but efficiency depends on the choice. The asymptotically optimal weight is:
+</p>
+<div class="eq"><div class="eq-title">Efficient Weighting</div>
+$$\mathbf{W}^*_T = \hat{\mathbf{S}}^{-1}, \quad \mathbf{S} = \lim_{T\to\infty} \text{Var}\left(\sqrt{T}\bar{\mathbf{g}}_T(\boldsymbol{\theta}_0)\right)$$
+</div>
+<p>
+The efficient GMM (two-step or iterated) first estimates $\boldsymbol{\theta}$ with $\mathbf{W} = \mathbf{I}$, constructs $\hat{\mathbf{S}}$ from the residuals, then re-estimates with $\mathbf{W} = \hat{\mathbf{S}}^{-1}$. The asymptotic distribution is:
+</p>
+<div class="eq"><div class="eq-title">Asymptotic Distribution</div>
+$$\sqrt{T}(\hat{\boldsymbol{\theta}} - \boldsymbol{\theta}_0) \xrightarrow{d} \mathcal{N}\left(\mathbf{0}, (\mathbf{D}'\mathbf{S}^{-1}\mathbf{D})^{-1}\right)$$
+</div>
+<p>
+where $\mathbf{D} = \mathbb{E}[\partial \mathbf{g}/\partial \boldsymbol{\theta}']$ is the $q \times p$ Jacobian.
+</p>
+
+<h2>4&nbsp;&nbsp;Overidentification Test</h2>
+<p>
+Hansen's (1982) J-test evaluates whether the moment conditions are jointly satisfied:
+</p>
+<div class="eq"><div class="eq-title">J-Statistic</div>
+$$J_T = T\,\bar{\mathbf{g}}_T(\hat{\boldsymbol{\theta}})'\hat{\mathbf{S}}^{-1}\bar{\mathbf{g}}_T(\hat{\boldsymbol{\theta}}) \xrightarrow{d} \chi^2_{q-p}$$
+</div>
+<p>
+Rejection indicates misspecification: either the model is wrong or instruments are invalid.
+</p>
+
+<h2>5&nbsp;&nbsp;GMM as Unifying Framework</h2>
+<p>
+GMM nests many estimators as special cases. OLS corresponds to moments $\mathbb{E}[\mathbf{x}_t(y_t - \mathbf{x}_t'\boldsymbol{\beta})] = \mathbf{0}$. IV/2SLS uses instrument moments $\mathbb{E}[\mathbf{z}_t(y_t - \mathbf{x}_t'\boldsymbol{\beta})] = \mathbf{0}$. MLE solves score conditions $\mathbb{E}[\mathbf{s}(\boldsymbol{\theta})] = \mathbf{0}$. The Euler equation approach in asset pricing (Hansen and Singleton, 1982) uses $\mathbb{E}[\beta(C_{t+1}/C_t)^{-\gamma}R_{t+1} - 1] = 0$.
+</p>
+
+<h2>6&nbsp;&nbsp;Practical Implementation</h2>
+<p>
+The HAC estimator for $\mathbf{S}$ when moments exhibit serial correlation follows Newey-West:
+</p>
+<div class="eq">
+$$\hat{\mathbf{S}} = \hat{\boldsymbol{\Gamma}}_0 + \sum_{j=1}^{m}\left(1 - \frac{j}{m+1}\right)(\hat{\boldsymbol{\Gamma}}_j + \hat{\boldsymbol{\Gamma}}_j')$$
+</div>
+<p>
+where $\hat{\boldsymbol{\Gamma}}_j = T^{-1}\sum_{t=j+1}^T \mathbf{g}_t\mathbf{g}_{t-j}'$ with $\mathbf{g}_t = \mathbf{g}(w_t, \hat{\boldsymbol{\theta}})$.
+</p>
+
+<h2>7&nbsp;&nbsp;Weak Instruments</h2>
+<p>
+When instruments are weakly correlated with endogenous regressors, GMM can exhibit severe finite-sample bias and size distortion. Stock and Yogo (2005) provide critical values. The first-stage $F$-statistic is the standard diagnostic: $F < 10$ signals concern. Weak-instrument-robust tests (Anderson-Rubin, conditional likelihood ratio) maintain correct size regardless of instrument strength.
+</p>
+
+</main>
+</body>
+</html>

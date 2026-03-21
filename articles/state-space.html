@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>State-Space Models</title></head>
+<body>
+<main data-title="State-Space Models">
+
+<h2>1&nbsp;&nbsp;The General Framework</h2>
+<p>
+State-space models provide a unified framework for dynamic models with unobserved components. The system:
+</p>
+<div class="eq"><div class="eq-title">Transition</div>
+$$\boldsymbol{\alpha}_{t+1} = \mathbf{T}_t\boldsymbol{\alpha}_t + \mathbf{R}_t\boldsymbol{\eta}_t, \quad \boldsymbol{\eta}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{Q}_t)$$
+</div>
+<div class="eq"><div class="eq-title">Measurement</div>
+$$\mathbf{y}_t = \mathbf{Z}_t\boldsymbol{\alpha}_t + \boldsymbol{\varepsilon}_t, \quad \boldsymbol{\varepsilon}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{H}_t)$$
+</div>
+<p>
+System matrices $\mathbf{T}_t, \mathbf{R}_t, \mathbf{Z}_t$ can be time-varying. This nests ARIMA, regression with time-varying coefficients, unobserved components, dynamic factor models, and many more.
+</p>
+
+<h2>2&nbsp;&nbsp;Unobserved Components Model</h2>
+<p>
+The local linear trend model decomposes $y_t$ into trend $\mu_t$, slope $\beta_t$, and irregular $\varepsilon_t$:
+</p>
+<div class="eq">
+$$y_t = \mu_t + \varepsilon_t, \quad \mu_{t+1} = \mu_t + \beta_t + \eta_t, \quad \beta_{t+1} = \beta_t + \zeta_t$$
+</div>
+<p>
+State vector $\boldsymbol{\alpha}_t = (\mu_t, \beta_t)'$, transition $\mathbf{T} = \begin{pmatrix}1&1\\0&1\end{pmatrix}$, measurement $\mathbf{Z} = (1,0)$. Special cases: $\sigma_\zeta^2 = 0$ gives a local level with drift; $\sigma_\eta^2 = \sigma_\zeta^2 = 0$ gives a deterministic trend.
+</p>
+
+<h2>3&nbsp;&nbsp;Time-Varying Parameters</h2>
+<div class="eq"><div class="eq-title">TVP Regression</div>
+$$y_t = \mathbf{x}_t'\boldsymbol{\beta}_t + \varepsilon_t, \quad \boldsymbol{\beta}_{t+1} = \boldsymbol{\beta}_t + \boldsymbol{\eta}_t$$
+</div>
+<p>
+Parameters follow random walks, capturing gradual structural change. The Kalman filter estimates $\boldsymbol{\beta}_t$ at each point, with the innovation variance $\mathbf{Q}$ governing the speed of parameter drift. When $\mathbf{Q} = \mathbf{0}$, this collapses to constant-parameter OLS.
+</p>
+
+<h2>4&nbsp;&nbsp;Dynamic Factor Models</h2>
+<p>
+A large panel of $n$ variables is driven by $r \ll n$ common factors:
+</p>
+<div class="eq">
+$$\mathbf{y}_t = \boldsymbol{\Lambda}\mathbf{f}_t + \boldsymbol{\varepsilon}_t, \quad \mathbf{f}_t = \boldsymbol{\Phi}\mathbf{f}_{t-1} + \boldsymbol{\eta}_t$$
+</div>
+<p>
+$\boldsymbol{\Lambda}$ is the $n \times r$ loading matrix, $\mathbf{f}_t$ the $r \times 1$ factor vector. Estimation via Kalman filter MLE (small $n$) or principal components followed by Kalman smoothing (large $n$, Stock and Watson, 2002).
+</p>
+
+<h2>5&nbsp;&nbsp;Missing Data and Mixed Frequencies</h2>
+<p>
+State-space models handle missing observations naturally: simply skip the update step when $y_t$ is unobserved. This enables mixed-frequency estimation (e.g., combining monthly and quarterly data), nowcasting (estimating current-quarter GDP from partial monthly indicators), and interpolation of irregular data.
+</p>
+
+<h2>6&nbsp;&nbsp;Estimation of System Parameters</h2>
+<p>
+Unknown parameters in $\mathbf{T}, \mathbf{Z}, \mathbf{Q}, \mathbf{H}$ (collectively $\boldsymbol{\theta}$) are estimated by maximising the prediction error decomposition likelihood from the Kalman filter. The EM algorithm is an alternative: E-step runs the Kalman smoother; M-step updates $\boldsymbol{\theta}$ analytically. Bayesian estimation via MCMC (Gibbs sampling with data augmentation for the states) is increasingly standard.
+</p>
+
+</main>
+</body>
+</html>

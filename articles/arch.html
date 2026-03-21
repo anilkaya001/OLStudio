@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ARCH Models</title></head>
+<body>
+<main data-title="ARCH Models">
+
+<h2>1&nbsp;&nbsp;Volatility Clustering</h2>
+<p>
+Financial returns exhibit time-varying volatility: large shocks tend to be followed by large shocks (of either sign), and small by small. Engle (1982) formalised this as Autoregressive Conditional Heteroskedasticity (ARCH), where the conditional variance depends on past squared innovations.
+</p>
+
+<h2>2&nbsp;&nbsp;The ARCH(q) Model</h2>
+<div class="eq"><div class="eq-title">ARCH(q) Specification</div>
+$$y_t = \mu_t + \varepsilon_t, \quad \varepsilon_t = \sigma_t z_t, \quad z_t \sim \text{iid}(0,1)$$
+$$\sigma_t^2 = \omega + \alpha_1 \varepsilon_{t-1}^2 + \alpha_2 \varepsilon_{t-2}^2 + \cdots + \alpha_q \varepsilon_{t-q}^2$$
+</div>
+<p>
+with $\omega > 0$ and $\alpha_i \geq 0$ ensuring positivity. The process is covariance stationary if $\sum_{i=1}^q \alpha_i < 1$, in which case the unconditional variance is $\text{Var}(\varepsilon_t) = \omega/(1 - \sum \alpha_i)$.
+</p>
+
+<h2>3&nbsp;&nbsp;Properties</h2>
+<p>
+Despite zero conditional autocorrelation ($\text{Cov}(\varepsilon_t, \varepsilon_{t-k}) = 0$), the squared process $\varepsilon_t^2$ exhibits positive autocorrelation. In fact, $\varepsilon_t^2$ follows an AR($q$):
+</p>
+<div class="eq">
+$$\varepsilon_t^2 = \omega + \sum_{i=1}^q \alpha_i \varepsilon_{t-i}^2 + v_t, \quad v_t = \varepsilon_t^2 - \sigma_t^2$$
+</div>
+<p>
+where $v_t$ is a martingale difference. ARCH processes also exhibit excess kurtosis (fat tails):
+</p>
+<div class="eq">
+$$\kappa = \frac{\mathbb{E}[\varepsilon_t^4]}{(\mathbb{E}[\varepsilon_t^2])^2} > 3 \quad \text{(for Gaussian } z_t\text{)}$$
+</div>
+
+<h2>4&nbsp;&nbsp;MLE for ARCH</h2>
+<p>
+Under Gaussian $z_t$, the conditional log-likelihood is:
+</p>
+<div class="eq"><div class="eq-title">ARCH Log-Likelihood</div>
+$$\ell = -\frac{1}{2}\sum_{t=1}^{T}\left[\ln(2\pi) + \ln(\sigma_t^2) + \frac{\varepsilon_t^2}{\sigma_t^2}\right]$$
+</div>
+<p>
+Maximised numerically over $(\omega, \alpha_1, \ldots, \alpha_q)$. Quasi-MLE (QMLE) remains consistent under non-Gaussian $z_t$ with correct specification of the conditional mean and variance, though standard errors require the Bollerslev-Wooldridge sandwich correction.
+</p>
+
+<h2>5&nbsp;&nbsp;Testing for ARCH Effects</h2>
+<p>
+Engle's (1982) LM test regresses squared residuals $\hat{\varepsilon}_t^2$ on a constant and $q$ lags:
+</p>
+<div class="eq">
+$$\hat{\varepsilon}_t^2 = \beta_0 + \beta_1\hat{\varepsilon}_{t-1}^2 + \cdots + \beta_q\hat{\varepsilon}_{t-q}^2 + e_t$$
+</div>
+<p>
+Under $H_0: \alpha_1 = \cdots = \alpha_q = 0$, the test statistic $TR^2 \sim \chi^2_q$ where $R^2$ is from this auxiliary regression.
+</p>
+
+<h2>6&nbsp;&nbsp;Limitations</h2>
+<p>
+ARCH($q$) requires many parameters to capture persistent volatility. Financial volatility typically needs $q \geq 10$. The model treats positive and negative shocks symmetrically, ignoring the leverage effect (negative shocks tend to increase volatility more than positive shocks of the same magnitude). These limitations motivate GARCH.
+</p>
+
+</main>
+</body>
+</html>

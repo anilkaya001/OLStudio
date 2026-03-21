@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Local Projections</title></head>
+<body>
+<main data-title="Local Projections">
+
+<h2>1&nbsp;&nbsp;Direct Impulse Responses</h2>
+<p>
+Jord&agrave; (2005) proposed Local Projections (LP) as a robust alternative to VAR-based impulse response estimation. Instead of iterating a VAR forward, LP estimates the response at each horizon $h$ directly:
+</p>
+<div class="eq"><div class="eq-title">Local Projection</div>
+$$y_{t+h} = \alpha^h + \boldsymbol{\beta}^h x_t + \boldsymbol{\gamma}^h \mathbf{w}_t + u_{t+h}^h, \quad h = 0, 1, 2, \ldots, H$$
+</div>
+<p>
+where $x_t$ is the impulse variable, $\mathbf{w}_t$ contains controls (lags of $y$ and $x$), and $\boldsymbol{\beta}^h$ is the impulse response at horizon $h$. Each horizon requires a separate regression.
+</p>
+
+<h2>2&nbsp;&nbsp;Advantages over VAR</h2>
+<p>
+LP is robust to misspecification of the dynamic model. VAR impulse responses compound any specification error through iterated forecasting; LP errors at different horizons are independent conditional on controls. LP easily accommodates nonlinearities, state dependence, and asymmetries by interacting $x_t$ with state indicators. LP with instrumental variables (LP-IV) handles endogeneity directly at each horizon.
+</p>
+
+<h2>3&nbsp;&nbsp;Inference</h2>
+<p>
+The error $u_{t+h}^h$ is serially correlated (MA($h-1$) under correct specification) due to the overlapping structure. Newey-West HAC standard errors with bandwidth at least $h$ are required:
+</p>
+<div class="eq">
+$$\text{se}(\hat{\beta}^h) = \text{HAC with bandwidth} \geq h$$
+</div>
+
+<h2>4&nbsp;&nbsp;LP-IV: Instrumental Variables</h2>
+<p>
+For causal impulse responses, LP-IV (Stock and Watson, 2018; Ramey, 2016) uses external instruments $z_t$:
+</p>
+<div class="eq"><div class="eq-title">LP-IV</div>
+$$y_{t+h} = \alpha^h + \beta^h \hat{x}_t + \boldsymbol{\gamma}^h\mathbf{w}_t + u_{t+h}^h$$
+</div>
+<p>
+where $\hat{x}_t$ is the fitted value from $x_t = \pi_0 + \pi_1 z_t + \boldsymbol{\pi}_2'\mathbf{w}_t + v_t$. This directly parallels the proxy-SVAR approach but estimates each horizon independently.
+</p>
+
+<h2>5&nbsp;&nbsp;State-Dependent LP</h2>
+<p>
+Nonlinear effects are modelled by interacting the shock with a smooth transition function $F(z_t)$:
+</p>
+<div class="eq"><div class="eq-title">State-Dependent LP</div>
+$$y_{t+h} = [F(z_t)](\alpha_R^h + \beta_R^h x_t + \boldsymbol{\gamma}_R^h\mathbf{w}_t) + [1-F(z_t)](\alpha_E^h + \beta_E^h x_t + \boldsymbol{\gamma}_E^h\mathbf{w}_t) + u_{t+h}^h$$
+</div>
+<p>
+where $F(z_t) = \exp(-\gamma z_t)/(1+\exp(-\gamma z_t))$ and $z_t$ is a state variable (e.g., output gap, financial stress index). This nests Auerbach and Gorodnichenko (2012) fiscal multiplier estimation.
+</p>
+
+<h2>6&nbsp;&nbsp;LP vs. VAR: Bias-Variance Trade-off</h2>
+<p>
+LP trades higher variance for lower bias. At short horizons, VAR impulse responses are more precise if the VAR is correctly specified. At long horizons, VAR compounds specification errors while LP remains directly estimated. Li, Plagborg-M&oslash;ller and Wolf (2024) show that LP and VAR estimate the same estimand (the causal impulse response) when the lag structure is sufficiently flexible, but can diverge dramatically under misspecification.
+</p>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Generalized Least Squares</title></head>
+<body>
+<main data-title="Generalized Least Squares">
+
+<h2>1&nbsp;&nbsp;Motivation</h2>
+<p>
+When the spherical disturbances assumption fails and $\text{Var}(\mathbf{u} \mid \mathbf{X}) = \sigma^2 \boldsymbol{\Omega}$ for some known positive definite matrix $\boldsymbol{\Omega} \neq \mathbf{I}_T$, OLS remains unbiased but loses efficiency. The Gauss-Markov optimality no longer holds. Generalized Least Squares (GLS) restores BLUE by transforming the model to achieve spherical errors.
+</p>
+
+<h2>2&nbsp;&nbsp;Derivation</h2>
+<p>
+Since $\boldsymbol{\Omega}$ is positive definite, it admits a Cholesky decomposition $\boldsymbol{\Omega} = \mathbf{P}\mathbf{P}'$ where $\mathbf{P}$ is lower triangular with positive diagonal. Define the transformation matrix $\mathbf{P}^{-1}$ and premultiply the model:
+</p>
+<div class="eq">
+$$\mathbf{P}^{-1}\mathbf{y} = \mathbf{P}^{-1}\mathbf{X}\boldsymbol{\beta} + \mathbf{P}^{-1}\mathbf{u}$$
+</div>
+<p>
+Writing $\mathbf{y}^* = \mathbf{P}^{-1}\mathbf{y}$, $\mathbf{X}^* = \mathbf{P}^{-1}\mathbf{X}$, $\mathbf{u}^* = \mathbf{P}^{-1}\mathbf{u}$:
+</p>
+<div class="eq">
+$$\text{Var}(\mathbf{u}^*) = \sigma^2 \mathbf{P}^{-1}\boldsymbol{\Omega}(\mathbf{P}^{-1})' = \sigma^2 \mathbf{P}^{-1}\mathbf{P}\mathbf{P}'(\mathbf{P}')^{-1} = \sigma^2 \mathbf{I}_T$$
+</div>
+<p>
+Applying OLS to the transformed model yields the GLS estimator:
+</p>
+<div class="eq"><div class="eq-title">GLS Estimator</div>
+$$\hat{\boldsymbol{\beta}}_{\text{GLS}} = (\mathbf{X}'\boldsymbol{\Omega}^{-1}\mathbf{X})^{-1}\mathbf{X}'\boldsymbol{\Omega}^{-1}\mathbf{y}$$
+</div>
+<p>
+Its variance is:
+</p>
+<div class="eq">
+$$\text{Var}(\hat{\boldsymbol{\beta}}_{\text{GLS}}) = \sigma^2 (\mathbf{X}'\boldsymbol{\Omega}^{-1}\mathbf{X})^{-1}$$
+</div>
+
+<h2>3&nbsp;&nbsp;Aitken's Theorem</h2>
+<p>
+GLS is BLUE in the class of all linear unbiased estimators under the generalised regression assumptions. For any linear unbiased estimator $\tilde{\boldsymbol{\beta}}$:
+</p>
+<div class="eq">
+$$\text{Var}(\tilde{\boldsymbol{\beta}}) - \text{Var}(\hat{\boldsymbol{\beta}}_{\text{GLS}}) \geq \mathbf{0}$$
+</div>
+
+<h2>4&nbsp;&nbsp;Feasible GLS (FGLS)</h2>
+<p>
+In practice $\boldsymbol{\Omega}$ is rarely known. Feasible GLS replaces it with a consistent estimator $\hat{\boldsymbol{\Omega}}$, typically constructed from OLS residuals. The FGLS estimator is:
+</p>
+<div class="eq"><div class="eq-title">FGLS Estimator</div>
+$$\hat{\boldsymbol{\beta}}_{\text{FGLS}} = (\mathbf{X}'\hat{\boldsymbol{\Omega}}^{-1}\mathbf{X})^{-1}\mathbf{X}'\hat{\boldsymbol{\Omega}}^{-1}\mathbf{y}$$
+</div>
+<p>
+Under regularity conditions ensuring $\hat{\boldsymbol{\Omega}} \xrightarrow{p} \boldsymbol{\Omega}$, FGLS is asymptotically equivalent to GLS and achieves the same efficiency bound.
+</p>
+
+<h2>5&nbsp;&nbsp;Special Case: Weighted Least Squares</h2>
+<p>
+When $\boldsymbol{\Omega} = \text{diag}(\omega_1, \ldots, \omega_T)$, GLS reduces to Weighted Least Squares (WLS). Each observation receives weight $w_t = 1/\omega_t$:
+</p>
+<div class="eq">
+$$\hat{\boldsymbol{\beta}}_{\text{WLS}} = \left(\sum_{t=1}^{T} w_t \mathbf{x}_t\mathbf{x}_t'\right)^{-1} \left(\sum_{t=1}^{T} w_t \mathbf{x}_t y_t\right)$$
+</div>
+<p>
+This is equivalent to minimising $\sum_t w_t (y_t - \mathbf{x}_t'\boldsymbol{\beta})^2$, giving less weight to high-variance observations.
+</p>
+
+<h2>6&nbsp;&nbsp;Special Case: Autocorrelated Errors</h2>
+<p>
+If $u_t = \rho u_{t-1} + \varepsilon_t$ with $|\rho| < 1$ and $\varepsilon_t \sim \text{WN}(0, \sigma_\varepsilon^2)$, then:
+</p>
+<div class="eq">
+$$\boldsymbol{\Omega} = \frac{1}{1-\rho^2}\begin{pmatrix} 1 & \rho & \rho^2 & \cdots \\ \rho & 1 & \rho & \cdots \\ \vdots & & \ddots & \end{pmatrix}$$
+</div>
+<p>
+GLS with this structure is known as the Cochrane-Orcutt or Prais-Winsten estimator. The transformation effectively quasi-differences the data: $y_t^* = y_t - \rho y_{t-1}$ for $t \geq 2$.
+</p>
+
+<h2>7&nbsp;&nbsp;Efficiency Comparison</h2>
+<p>
+The efficiency loss from using OLS instead of GLS when $\boldsymbol{\Omega} \neq \mathbf{I}$ can be quantified. The true OLS variance is $\sigma^2 (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\boldsymbol{\Omega}\mathbf{X}(\mathbf{X}'\mathbf{X})^{-1}$, which exceeds $\sigma^2(\mathbf{X}'\boldsymbol{\Omega}^{-1}\mathbf{X})^{-1}$ in the matrix sense. The ratio of asymptotic variances measures the efficiency gain. In severe heteroskedasticity or autocorrelation, the gain can be substantial.
+</p>
+
+<h2>8&nbsp;&nbsp;Testing for the Need for GLS</h2>
+<p>
+The Breusch-Pagan test examines $H_0: \boldsymbol{\Omega} = \mathbf{I}$ against heteroskedastic alternatives. The Durbin-Watson statistic tests for AR(1) autocorrelation. The Breusch-Godfrey LM test generalises to AR($p$) serial correlation. Rejection of spherical errors motivates the use of GLS or robust standard errors.
+</p>
+
+</main>
+</body>
+</html>

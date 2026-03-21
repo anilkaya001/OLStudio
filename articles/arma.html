@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ARMA Models</title></head>
+<body>
+<main data-title="ARMA Models">
+
+<h2>1&nbsp;&nbsp;The ARMA(p,q) Process</h2>
+<p>
+The autoregressive moving average model combines AR and MA components for parsimonious representation of stationary time series:
+</p>
+<div class="eq"><div class="eq-title">ARMA(p,q)</div>
+$$\Phi(L)y_t = c + \Theta(L)\varepsilon_t$$
+</div>
+<p>
+Expanding: $y_t = c + \phi_1 y_{t-1} + \cdots + \phi_p y_{t-p} + \varepsilon_t + \theta_1\varepsilon_{t-1} + \cdots + \theta_q\varepsilon_{t-q}$ with $\varepsilon_t \sim \text{WN}(0,\sigma^2)$.
+</p>
+
+<h2>2&nbsp;&nbsp;Stationarity and Invertibility</h2>
+<p>
+Stationarity requires all roots of $\Phi(z) = 0$ outside the unit circle. Invertibility requires all roots of $\Theta(z) = 0$ outside the unit circle. Both conditions together ensure a unique causal and invertible representation. Common roots between $\Phi(z)$ and $\Theta(z)$ indicate an overparameterised model that can be reduced.
+</p>
+
+<h2>3&nbsp;&nbsp;Autocovariance Structure</h2>
+<p>
+For ARMA(1,1) with $y_t - \phi y_{t-1} = \varepsilon_t + \theta\varepsilon_{t-1}$:
+</p>
+<div class="eq">
+$$\gamma_0 = \frac{(1 + 2\phi\theta + \theta^2)\sigma^2}{1 - \phi^2}, \quad \gamma_1 = \frac{(1+\phi\theta)(\phi+\theta)\sigma^2}{1-\phi^2}$$
+</div>
+<div class="eq">
+$$\gamma_k = \phi\gamma_{k-1} \quad \text{for } k \geq 2$$
+</div>
+<p>
+The ACF is a mixture of exponential decays and/or damped oscillations (from AR roots) after an initial MA transient. Neither the ACF nor PACF cuts off cleanly, complicating identification.
+</p>
+
+<h2>4&nbsp;&nbsp;Identification</h2>
+<p>
+The Box-Jenkins methodology proceeds in three stages: (i) identification using ACF and PACF patterns, (ii) estimation, (iii) diagnostic checking. For ARMA, the extended autocorrelation function (EACF) or information criteria over a grid of $(p,q)$ values are more reliable than visual ACF/PACF inspection.
+</p>
+
+<h2>5&nbsp;&nbsp;Maximum Likelihood Estimation</h2>
+<p>
+The exact Gaussian log-likelihood for ARMA($p,q$) is:
+</p>
+<div class="eq"><div class="eq-title">Exact Log-Likelihood</div>
+$$\ell(\boldsymbol{\theta}) = -\frac{T}{2}\ln(2\pi) - \frac{1}{2}\ln|\boldsymbol{\Sigma}| - \frac{1}{2}(\mathbf{y}-\mu\mathbf{1})'\boldsymbol{\Sigma}^{-1}(\mathbf{y}-\mu\mathbf{1})$$
+</div>
+<p>
+where $\boldsymbol{\Sigma} = \sigma^2\boldsymbol{\Gamma}$ with $\boldsymbol{\Gamma}$ determined by the ARMA autocovariance function. Efficient computation uses the Kalman filter on the state-space representation or innovations algorithm.
+</p>
+
+<h2>6&nbsp;&nbsp;State-Space Representation</h2>
+<p>
+Any ARMA($p,q$) can be cast in state-space form. For $r = \max(p, q+1)$:
+</p>
+<div class="eq"><div class="eq-title">State Equation</div>
+$$\boldsymbol{\xi}_{t+1} = \mathbf{F}\boldsymbol{\xi}_t + \mathbf{K}\varepsilon_{t+1}$$
+</div>
+<div class="eq"><div class="eq-title">Observation Equation</div>
+$$y_t = \mathbf{H}'\boldsymbol{\xi}_t + c$$
+</div>
+<p>
+with $\mathbf{F}$ the companion matrix, $\mathbf{H}' = (1, 0, \ldots, 0)$, and $\mathbf{K}$ encoding the MA coefficients. The Kalman filter then provides the prediction error decomposition for the likelihood.
+</p>
+
+<h2>7&nbsp;&nbsp;Forecasting</h2>
+<p>
+The minimum MSE $h$-step forecast from an ARMA is:
+</p>
+<div class="eq">
+$$\hat{y}_{T+h|T} = c + \sum_{j=1}^{p}\phi_j\hat{y}_{T+h-j|T} + \sum_{j=h}^{q}\theta_j\hat{\varepsilon}_{T+h-j}$$
+</div>
+<p>
+where $\hat{y}_{T+s|T} = y_{T+s}$ for $s \leq 0$ and $\hat{\varepsilon}_{T+s} = 0$ for $s > 0$ (future innovations unknown), $\hat{\varepsilon}_{T+s} = \varepsilon_{T+s}$ for $s \leq 0$. The $h$-step forecast error variance is $\sigma^2\sum_{j=0}^{h-1}\psi_j^2$ where $\psi_j$ are MA($\infty$) coefficients.
+</p>
+
+</main>
+</body>
+</html>

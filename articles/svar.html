@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Structural VAR</title></head>
+<body>
+<main data-title="Structural VAR">
+
+<h2>1&nbsp;&nbsp;From Reduced Form to Structure</h2>
+<p>
+The reduced-form VAR captures dynamic correlations but cannot identify causal effects. A Structural VAR imposes economic restrictions to recover structural shocks $\boldsymbol{\varepsilon}_t$ from reduced-form innovations $\mathbf{u}_t$:
+</p>
+<div class="eq"><div class="eq-title">Structural Form</div>
+$$\mathbf{A}_0\mathbf{y}_t = \boldsymbol{\nu}^* + \mathbf{A}_1^*\mathbf{y}_{t-1} + \cdots + \mathbf{A}_p^*\mathbf{y}_{t-p} + \boldsymbol{\varepsilon}_t$$
+</div>
+<p>
+where $\mathbf{A}_0$ is the contemporaneous impact matrix and $\boldsymbol{\varepsilon}_t \sim (\mathbf{0}, \mathbf{D})$ with $\mathbf{D}$ diagonal. The reduced form is obtained by premultiplying by $\mathbf{A}_0^{-1}$: $\mathbf{u}_t = \mathbf{A}_0^{-1}\boldsymbol{\varepsilon}_t$.
+</p>
+
+<h2>2&nbsp;&nbsp;Identification Problem</h2>
+<p>
+The reduced form yields $\boldsymbol{\Sigma}_u = \mathbf{A}_0^{-1}\mathbf{D}(\mathbf{A}_0^{-1})'$, providing $n(n+1)/2$ unique equations for the $n^2 + n$ unknowns in $\mathbf{A}_0^{-1}$ and $\mathbf{D}$. Normalising the diagonal of $\mathbf{D}$ (or $\mathbf{A}_0$) provides $n$ restrictions, leaving $n(n-1)/2$ additional restrictions needed. This is the identification problem.
+</p>
+
+<h2>3&nbsp;&nbsp;Short-Run Restrictions</h2>
+<p>
+The Cholesky decomposition imposes a recursive structure (lower-triangular $\mathbf{A}_0^{-1}$), providing exactly $n(n-1)/2$ zero restrictions. More general short-run schemes set specific elements of $\mathbf{A}_0$ to zero based on economic theory. For example, money supply does not respond contemporaneously to output (information delay). Identification requires the order condition: at least $n(n-1)/2$ restrictions, and the rank condition for local identification.
+</p>
+
+<h2>4&nbsp;&nbsp;Long-Run Restrictions</h2>
+<p>
+Blanchard and Quah (1989) identify structural shocks by restricting their cumulative (long-run) effects. The long-run impact matrix is:
+</p>
+<div class="eq"><div class="eq-title">Long-Run Multiplier</div>
+$$\mathbf{C}(1) = (\mathbf{I}_n - \mathbf{A}_1 - \cdots - \mathbf{A}_p)^{-1}\mathbf{A}_0^{-1}$$
+</div>
+<p>
+Setting elements of $\mathbf{C}(1)$ to zero restricts long-run effects. The classic application: demand shocks have zero long-run effect on output (only supply shocks affect the long-run level), identifying supply vs. demand disturbances.
+</p>
+
+<h2>5&nbsp;&nbsp;Sign Restrictions</h2>
+<p>
+Uhlig (2005) and Faust (1998) impose inequality rather than equality restrictions. For instance, a contractionary monetary policy shock raises the interest rate and does not increase output or prices on impact. Sign restrictions generate a set of admissible impulse responses rather than a point-identified SVAR, providing bounds on the structural effects.
+</p>
+
+<h2>6&nbsp;&nbsp;External Instruments (Proxy SVAR)</h2>
+<p>
+Stock and Watson (2012) and Mertens and Ravn (2013) use external instruments (proxies) that are correlated with a specific structural shock but uncorrelated with all others. If $z_t$ is such a proxy for $\varepsilon_{1,t}$:
+</p>
+<div class="eq">
+$$\mathbb{E}[z_t \varepsilon_{1,t}] \neq 0, \quad \mathbb{E}[z_t \varepsilon_{j,t}] = 0 \text{ for } j \neq 1$$
+</div>
+<p>
+The first column of $\mathbf{A}_0^{-1}$ is identified via IV regression of reduced-form residuals on the proxy. This approach combines the VAR's dynamic structure with the credibility of external identification.
+</p>
+
+<h2>7&nbsp;&nbsp;Inference</h2>
+<p>
+Bootstrap methods are standard for confidence intervals on impulse responses. The residual bootstrap resamples from $\hat{\mathbf{u}}_t$ to construct pseudo-samples, re-estimates the VAR and structural parameters, and builds pointwise or joint confidence bands. Bias-corrected bootstraps (Kilian, 1998) adjust for the small-sample bias of the OLS estimator in autoregressions.
+</p>
+
+</main>
+</body>
+</html>
