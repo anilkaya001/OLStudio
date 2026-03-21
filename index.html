@@ -58,7 +58,7 @@ body.modal-open #nav,body.modal-open #copyright{opacity:0!important;pointer-even
   </div>
 </nav>
 <canvas id="gl" aria-hidden="true"></canvas>
-<div id="dragHint">Click &amp; drag to orbit the manifold</div>
+<div id="dragHint">Click & drag nodes or orbit the manifold</div>
 <div id="copyright" aria-hidden="true">&copy; 2026 Anıl Kaya</div>
 <div id="readProgress" aria-hidden="true"></div>
 <div id="modal" role="dialog" aria-modal="true" aria-label="Article Reader"><button id="closeBtn" aria-label="Close Article"><svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12"></path></svg></button><div class="article-wrapper" id="modalBody"><div class="article-content" id="articleContentArea"></div></div></div>
@@ -90,33 +90,71 @@ function makeCuboctahedron(s){const v=[[s,s,0],[-s,s,0],[-s,-s,0],[s,-s,0],[s,0,
 const polyVS=`varying vec3 vVP,vN;void main(){vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.);vVP=mv.xyz;gl_Position=projectionMatrix*mv;}`;
 const polyFS=`uniform vec3 cG,cBr,cBl;uniform float cD,rad;varying vec3 vVP,vN;void main(){float d=length(vVP),dp=clamp((d-(cD-rad))/(rad*2.),0.,1.);vec3 c=dp<.5?mix(cG,cBr,dp*2.):mix(cBr,cBl,(dp-.5)*2.);vec3 n=normalize(vN),vd=normalize(-vVP),ld=normalize(vec3(1,1,1));float diff=max(dot(n,ld),0.),fr=pow(1.-max(dot(n,vd),0.),3.);gl_FragColor=vec4(c*(diff*.8+.2)+cG*fr*.5,1.);}`;
 
+/* ═══════ HEX GRID GENERATOR ═══════ */
+function getHexCoords(total){
+  const coords=[[0,0]];let ring=1;
+  while(coords.length<total){
+    const dirs=[[-1,1],[-1,0],[0,-1],[1,-1],[1,0],[0,1]];
+    let q=ring,r=0;
+    for(let i=0;i<6;i++){
+      for(let j=0;j<ring;j++){
+        if(coords.length>=total) break;
+        coords.push([q+r*0.5,r]); 
+        q+=dirs[i][0]; r+=dirs[i][1];
+      }
+    }
+    ring++;
+  }
+  let sumX=0,sumY=0;
+  coords.forEach(c=>{sumX+=c[0];sumY+=c[1];});
+  const cx=sumX/total,cy=sumY/total;
+  return coords.map(c=>[c[0]-cx,c[1]-cy]);
+}
+
 /* ═══════ MAIN SCENE ═══════ */
 try{
 const canvas=$("gl"),W=()=>window.innerWidth||1,H=()=>window.innerHeight||1,dpr=()=>Math.min(devicePixelRatio||1,2.5);
 const ren=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:"high-performance"});
 ren.setPixelRatio(dpr());ren.setSize(W(),H(),false);ren.outputColorSpace=THREE.SRGBColorSpace;ren.toneMapping=THREE.ACESFilmicToneMapping;ren.toneMappingExposure=1.4;
 const scene=new THREE.Scene();scene.background=new THREE.Color("#010108");scene.fog=new THREE.FogExp2(0x010108,.00012);
-const cam=new THREE.PerspectiveCamera(48,W()/H(),.1,12000);cam.position.set(0,40,320);
+
+// Center everything to 0,0,0 coordinate origins for perfect symmetry
+const cam=new THREE.PerspectiveCamera(48,W()/H(),.1,12000);
+cam.position.set(0,0,480);
+scene.add(cam); // crucial for screen-locked objects
+
 scene.add(new THREE.AmbientLight(0x0a0a22,.8));
 const kL=new THREE.DirectionalLight(0xffeedd,2.5);kL.position.set(200,250,150);scene.add(kL);
 const fL=new THREE.DirectionalLight(0x2244aa,1.2);fL.position.set(-250,80,200);scene.add(fL);
 const rL=new THREE.PointLight(0xDAA520,4,2000,1.2);rL.position.set(0,-150,-400);scene.add(rL);
 const ptr=new THREE.Vector2();let ptrOn=false;const mob=W()<800;
 
-const NODE_Y=30, TITLE_Y=-55, MID_Y=(NODE_Y+TITLE_Y)/2;
-
-/* ─── TITLE ─── */
+/* ─── STATIC BACKGROUND TITLE ─── */
 let titleSpr;
 function makeTitle(){
-  const w=2560,h=256,c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");
-  g.font="300 110px 'Latin Modern Roman',serif";g.textAlign="center";g.textBaseline="middle";
-  g.fillStyle="#DAA520";g.fillText("In Econometrics, We Trust",w/2,h/2);
+  const w=2560,h=1024,c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");
+  g.font="300 140px 'Latin Modern Roman',serif";g.textAlign="center";g.textBaseline="middle";
+  g.fillStyle="#DAA520";
+  g.shadowColor="rgba(218,165,32,0.4)";
+  g.shadowBlur=30;
+  g.fillText("IN ECONOMETRICS",w/2,h/2 - 80);
+  g.fillText("WE TRUST",w/2,h/2 + 80);
   const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;
-  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,opacity:1}));
-  spr.position.set(0,TITLE_Y,-60);return spr;
+  // Attached to camera, so it acts like a giant, perfectly static backdrop
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,opacity:0.25}));
+  spr.position.set(0,0,-800); 
+  return spr;
 }
-titleSpr=makeTitle();scene.add(titleSpr);
-function resizeTitle(){if(!titleSpr)return;const dist=cam.position.z-titleSpr.position.z,visH=2*Math.tan(cam.fov*Math.PI/360)*dist,tw=Math.min(450,visH*cam.aspect*.85);titleSpr.scale.set(tw,tw/10,1)}
+titleSpr=makeTitle();cam.add(titleSpr);
+
+function resizeTitle(){
+  if(!titleSpr)return;
+  const dist=-titleSpr.position.z;
+  const visH=2*Math.tan(cam.fov*Math.PI/360)*dist;
+  const visW=visH*cam.aspect;
+  const tw=Math.min(visW*0.9, 1200);
+  titleSpr.scale.set(tw,tw*(1024/2560),1);
+}
 resizeTitle();
 
 /* ─── MANIFOLD STARS ─── */
@@ -161,12 +199,21 @@ FLOAT_DEFS.forEach(fd=>{
   floaters.push({grp,spd:fd.spd,base:fd.pos.slice()});
 });
 
-/* ─── ARTICLE NODES (smaller cuboctahedra) ─── */
-const gGrp=new THREE.Group();scene.add(gGrp);let nodeObjs=[];
+/* ─── ARTICLE NODES & INTERCONNECTIONS ─── */
+const gGrp=new THREE.Group();
+scene.add(gGrp);
+let nodeObjs=[];
+let edgesMesh=null, edgesList=[];
+
 function buildNodes(){
   nodeObjs.forEach(n=>gGrp.remove(n.group));nodeObjs=[];
+  if(edgesMesh) { gGrp.remove(edgesMesh); edgesMesh=null; }
+  
   const minDim=Math.min(W(),H()),sc=Math.max(.3,Math.min(minDim/900,1)),rad=7*sc;
-  const count=ARTICLE_REGISTRY.length,spread=count>1?48*sc:0;
+  const count=ARTICLE_REGISTRY.length;
+  const coords=getHexCoords(count);
+  const spacing=54*sc; // spacing tweaked for interconnections
+  
   ARTICLE_REGISTRY.forEach((art,idx)=>{
     const group=new THREE.Group(),cGeo=makeCuboctahedron(rad);
     group.add(new THREE.Mesh(cGeo,new THREE.MeshPhysicalMaterial({color:0x080818,metalness:.2,roughness:.05,transmission:.6,thickness:2,ior:1.8,clearcoat:1,clearcoatRoughness:.02,emissive:0x0a0a20,emissiveIntensity:1})));
@@ -181,22 +228,124 @@ function buildNodes(){
     /* title label */
     const lc=document.createElement("canvas");lc.width=1024;lc.height=128;const lg=lc.getContext("2d");lg.fillStyle="#fff";lg.textAlign="center";lg.textBaseline="middle";lg.font="800 56px 'Latin Modern Roman',serif";lg.fillText(art.title,512,64);
     const lbl=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(lc),transparent:true,depthWrite:false}));lbl.material.map.colorSpace=THREE.SRGBColorSpace;lbl.scale.set(90*sc,11*sc,1);lbl.position.y=-(rad+10*sc);group.add(lbl);
-    group.traverse(ch=>{ch.userData.article=art});
-    const xPos=count>1?(idx-(count-1)/2)*spread:0;
-    group.position.set(xPos,NODE_Y,0);gGrp.add(group);
-    nodeObjs.push({group,rad,rotVel:new THREE.Vector2(0,0),idx,baseX:xPos});
+    
+    group.traverse(ch=>{ch.userData.article=art; ch.userData.nodeIdx=idx}); // tag for raycasting
+    
+    const baseX=coords[idx][0]*spacing;
+    const baseY=coords[idx][1]*spacing*0.866; 
+    
+    group.position.set(baseX, baseY, 0);
+    gGrp.add(group);
+    
+    // Nodes hold their physical state for the drag-spring physics
+    nodeObjs.push({
+        group, rad, rotVel:new THREE.Vector2(0,0), idx,
+        baseX, baseY, baseZ: 0,
+        pos: new THREE.Vector3(baseX, baseY, 0),
+        vel: new THREE.Vector3(0,0,0),
+        isDragged: false
+    });
   });
+
+  // Calculate Neural Interconnections
+  edgesList=[];
+  for(let i=0; i<count; i++){
+      for(let j=i+1; j<count; j++){
+          const dist = Math.hypot(nodeObjs[i].baseX - nodeObjs[j].baseX, nodeObjs[i].baseY - nodeObjs[j].baseY);
+          if(dist < spacing * 1.2) edgesList.push([i, j]);
+      }
+  }
+  const lineGeo = new THREE.BufferGeometry();
+  lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(edgesList.length * 6), 3));
+  edgesMesh = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({color: 0xDAA520, transparent: true, opacity: 0.25}));
+  gGrp.add(edgesMesh);
 }
 buildNodes();
 
-/* ─── DRAG ─── */
-let isDragging=false,wasDragged=false,dragStart=new THREE.Vector2(),lastDrag=new THREE.Vector2();
-canvas.addEventListener("pointerdown",e=>{if(document.body.classList.contains("modal-open"))return;const r=canvas.getBoundingClientRect();dragStart.set(e.clientX-r.left,e.clientY-r.top);lastDrag.copy(dragStart);isDragging=true;wasDragged=false;canvas.setPointerCapture(e.pointerId)});
-canvas.addEventListener("pointermove",e=>{const r=canvas.getBoundingClientRect();ptr.x=((e.clientX-r.left)/Math.max(1,r.width))*2-1;ptr.y=-((e.clientY-r.top)/Math.max(1,r.height))*2+1;ptrOn=true;if(isDragging&&nodeObjs.length){const cx=e.clientX-r.left,cy=e.clientY-r.top;nodeObjs.forEach(n=>{n.rotVel.x+=(cy-lastDrag.y)*.008;n.rotVel.y+=(cx-lastDrag.x)*.008});lastDrag.set(cx,cy);if(Math.abs(cx-dragStart.x)+Math.abs(cy-dragStart.y)>5)wasDragged=true}},{passive:true});
-canvas.addEventListener("pointerup",e=>{isDragging=false;canvas.releasePointerCapture(e.pointerId)});
-canvas.addEventListener("click",e=>{if(document.body.classList.contains("modal-open")||wasDragged)return;const r=canvas.getBoundingClientRect();ptr.x=((e.clientX-r.left)/Math.max(1,r.width))*2-1;ptr.y=-((e.clientY-r.top)/Math.max(1,r.height))*2+1;ray.setFromCamera(ptr,cam);const h=ray.intersectObjects(gGrp.children,true).find(x=>x.object.userData.article);if(h)openArticle(h.object.userData.article)});
+/* ─── INTERACTION PHYSICS (DRAG, ORBIT & SPRINGS) ─── */
+let isOrbitDragging=false, draggedNode=null, wasDragged=false;
+let dragStart=new THREE.Vector2(), lastDrag=new THREE.Vector2();
+let targetGrpRotX=0, targetGrpRotY=0; 
 
-const ray=new THREE.Raycaster();let hovN=false;
+const planeNormal=new THREE.Vector3(0,0,1);
+const dragPlane=new THREE.Plane(planeNormal,0);
+const dragOffset=new THREE.Vector3();
+
+canvas.addEventListener("pointerdown",e=>{
+  if(document.body.classList.contains("modal-open"))return;
+  const r=canvas.getBoundingClientRect();
+  dragStart.set(e.clientX, e.clientY);
+  lastDrag.copy(dragStart);
+  wasDragged=false;
+  canvas.setPointerCapture(e.pointerId);
+
+  ptr.x=((e.clientX-r.left)/Math.max(1,r.width))*2-1;
+  ptr.y=-((e.clientY-r.top)/Math.max(1,r.height))*2+1;
+  ray.setFromCamera(ptr,cam);
+  
+  const h=ray.intersectObjects(gGrp.children,true).find(x=>x.object.userData.article);
+  if(h){
+      let p=h.object;
+      while(p && p.userData.nodeIdx === undefined && p.parent) p=p.parent;
+      if(p && p.userData.nodeIdx !== undefined){
+          draggedNode = nodeObjs[p.userData.nodeIdx];
+          draggedNode.isDragged = true;
+          // Calibrate math plane perfectly to node's position relative to camera direction
+          const camDir = new THREE.Vector3();
+          cam.getWorldDirection(camDir);
+          dragPlane.setFromNormalAndCoplanarPoint(camDir.negate(), h.point);
+          const localHit = gGrp.worldToLocal(h.point.clone());
+          dragOffset.copy(localHit).sub(draggedNode.pos);
+      }
+  }else{
+      isOrbitDragging=true;
+  }
+});
+
+canvas.addEventListener("pointermove",e=>{
+  const r=canvas.getBoundingClientRect();
+  ptr.x=((e.clientX-r.left)/Math.max(1,r.width))*2-1;
+  ptr.y=-((e.clientY-r.top)/Math.max(1,r.height))*2+1;
+  ptrOn=true;
+  
+  if(draggedNode){
+      ray.setFromCamera(ptr,cam);
+      const target=new THREE.Vector3();
+      if(ray.intersectPlane(dragPlane, target)){
+          const localTarget = gGrp.worldToLocal(target);
+          draggedNode.pos.copy(localTarget).sub(dragOffset);
+          // Spin geometry while dragging
+          draggedNode.rotVel.x += (e.clientY-lastDrag.y)*0.01;
+          draggedNode.rotVel.y += (e.clientX-lastDrag.x)*0.01;
+          if(dragStart.distanceTo(new THREE.Vector2(e.clientX,e.clientY))>5) wasDragged=true;
+      }
+      lastDrag.set(e.clientX,e.clientY);
+  } else if(isOrbitDragging && nodeObjs.length){
+      const cx=e.clientX, cy=e.clientY;
+      targetGrpRotY+=(cx-lastDrag.x)*0.003;
+      targetGrpRotX+=(cy-lastDrag.y)*0.003;
+      targetGrpRotX=Math.max(-0.25,Math.min(0.25,targetGrpRotX));
+      targetGrpRotY=Math.max(-0.4,Math.min(0.4,targetGrpRotY));
+      lastDrag.set(cx,cy);
+      if(Math.abs(cx-dragStart.x)+Math.abs(cy-dragStart.y)>5) wasDragged=true;
+  }
+},{passive:true});
+
+canvas.addEventListener("pointerup",e=>{
+  if(draggedNode) draggedNode.isDragged=false;
+  isOrbitDragging=false;
+  draggedNode=null;
+  canvas.releasePointerCapture(e.pointerId);
+});
+
+canvas.addEventListener("click",e=>{
+  if(document.body.classList.contains("modal-open")||wasDragged)return;
+  ray.setFromCamera(ptr,cam);
+  const h=ray.intersectObjects(gGrp.children,true).find(x=>x.object.userData.article);
+  if(h)openArticle(h.object.userData.article);
+});
+
+const ray=new THREE.Raycaster();let hovIdx=-1;
 const clk=new THREE.Clock();let raf=0,gt=0;
 window._pause=()=>{if(raf){cancelAnimationFrame(raf);raf=0}};
 window._resume=()=>{if(!raf){clk.getDelta();raf=requestAnimationFrame(frame)}};
@@ -205,29 +354,95 @@ function frame(){
   raf=requestAnimationFrame(frame);if(document.body.classList.contains("modal-open"))return;
   const dt=Math.min(.033,clk.getDelta());gt+=dt;
   const nx=ptrOn?ptr.x:0,ny=ptrOn?-ptr.y:0,orbA=gt*.015;
-  cam.position.x+=(nx*80+Math.sin(orbA)*15-cam.position.x)*.03;
-  cam.position.y+=(MID_Y+20-ny*50+Math.cos(orbA*.7)*8-cam.position.y)*.03;
-  cam.lookAt(0,MID_Y,0);
-  /* hover */
-  if(ptrOn&&!isDragging){ray.setFromCamera(ptr,cam);hovN=!!ray.intersectObjects(gGrp.children,true).find(x=>x.object.userData.article);document.body.style.cursor=hovN?"pointer":"grab"}
-  if(isDragging)document.body.style.cursor="grabbing";
-  /* stars */
+  
+  // Camera subtly follows mouse around 0,0,0
+  cam.position.x += (nx * 30 - cam.position.x) * 0.05;
+  cam.position.y += (-ny * 25 - cam.position.y) * 0.05;
+  cam.lookAt(0,0,0);
+  
+  /* Raycast Hover */
+  hovIdx=-1;
+  if(ptrOn && !isOrbitDragging && !draggedNode){
+      ray.setFromCamera(ptr,cam);
+      const h=ray.intersectObjects(gGrp.children,true).find(x=>x.object.userData.article);
+      if(h){
+          let p=h.object;
+          while(p && p.userData.nodeIdx === undefined && p.parent) p=p.parent;
+          if(p && p.userData.nodeIdx !== undefined) hovIdx=p.userData.nodeIdx;
+      }
+  }
+  document.body.style.cursor=(hovIdx!==-1 || draggedNode) ? (draggedNode ? "grabbing" : "pointer") : (isOrbitDragging ? "grabbing" : "grab");
+  
+  /* Background Elements */
   S1.mat.uniforms.uTime.value=S2.mat.uniforms.uTime.value=gt;
   starGrp.children[0].rotation.y=gt*.01;starGrp.children[1].rotation.y=gt*.006;
   gridU.uTime.value=gt;
-  /* floating polyhedra */
+  
   floaters.forEach((f,i)=>{
     f.grp.rotation.x+=f.spd[0]*dt;f.grp.rotation.y+=f.spd[1]*dt;f.grp.rotation.z+=f.spd[2]*dt;
     f.grp.position.y=f.base[1]+Math.sin(gt*.4+i*2.1)*12;
     f.grp.position.x=f.base[0]+Math.sin(gt*.15+i*1.3)*8;
   });
-  /* article nodes */
-  nodeObjs.forEach(n=>{if(!isDragging)n.rotVel.multiplyScalar(.96);n.group.rotation.x+=n.rotVel.x*dt*2;n.group.rotation.y+=n.rotVel.y*dt*2;if(Math.abs(n.rotVel.x)<.01&&Math.abs(n.rotVel.y)<.01){n.group.rotation.x+=dt*.15;n.group.rotation.y+=dt*.25}const ts=hovN?1.12:1;n.group.scale.lerp(new THREE.Vector3(ts,ts,ts),.06);n.group.position.y=NODE_Y+Math.sin(gt*1.2+n.idx*1.7)*2.5+Math.cos(gt*.7+n.idx*2.3)*1.5});
+  
+  /* Orbital Rotation Physics */
+  if(!isOrbitDragging){
+    targetGrpRotX*=0.95; 
+    targetGrpRotY*=0.95;
+  }
+  gGrp.rotation.x+=(targetGrpRotX-gGrp.rotation.x)*0.08;
+  gGrp.rotation.y+=(targetGrpRotY-gGrp.rotation.y)*0.08;
+
+  /* Individual Node Physics & Springs */
+  nodeObjs.forEach(n=>{
+    if(!n.isDragged){
+        // Calculate elastic return vector based on spring tension
+        n.vel.x += (n.baseX - n.pos.x) * 0.06;
+        n.vel.y += (n.baseY - n.pos.y) * 0.06;
+        n.vel.z += (n.baseZ - n.pos.z) * 0.06;
+        n.vel.multiplyScalar(0.78); // Apply friction/damping
+        n.pos.add(n.vel);
+    }
+    
+    // Add subtle ambient floating wave over the calculated physical anchor
+    const bx = Math.sin(gt*0.8+n.idx*2.9)*1.5;
+    const by = Math.sin(gt*1.2+n.idx*1.7)*2.5;
+    n.group.position.set(n.pos.x + bx, n.pos.y + by, n.pos.z);
+    
+    // Aesthetic rotations
+    n.rotVel.multiplyScalar(0.96);
+    n.group.rotation.x += n.rotVel.x * dt * 2;
+    n.group.rotation.y += n.rotVel.y * dt * 2;
+    if(Math.abs(n.rotVel.x)<.01 && Math.abs(n.rotVel.y)<.01){
+        n.group.rotation.x+=dt*.15; n.group.rotation.y+=dt*.25;
+    }
+    
+    // Scale pump logic
+    const ts=(hovIdx===n.idx || n.isDragged) ? 1.15 : 1;
+    n.group.scale.lerp(new THREE.Vector3(ts,ts,ts), 0.1);
+  });
+  
+  /* Update Neural Interconnections Geometry */
+  if(edgesMesh){
+      const posAttr=edgesMesh.geometry.attributes.position;
+      let i=0;
+      edgesList.forEach(e=>{
+          const p1 = nodeObjs[e[0]].group.position;
+          const p2 = nodeObjs[e[1]].group.position;
+          posAttr.setXYZ(i++, p1.x, p1.y, p1.z);
+          posAttr.setXYZ(i++, p2.x, p2.y, p2.z);
+      });
+      posAttr.needsUpdate=true;
+  }
+
   ren.render(scene,cam);
 }
 
 window.addEventListener("resize",()=>{cam.aspect=W()/H();cam.updateProjectionMatrix();ren.setPixelRatio(dpr());ren.setSize(W(),H(),false);buildNodes();resizeTitle()},{passive:true});
-$("brand").addEventListener("click",()=>{cam.position.set(0,40,320);nodeObjs.forEach(n=>{n.rotVel.set(0,0);n.group.rotation.set(0,0,0)})});
+$("brand").addEventListener("click",()=>{
+  cam.position.set(0,0,480);
+  targetGrpRotX=0;targetGrpRotY=0;
+  nodeObjs.forEach(n=>{n.rotVel.set(0,0);n.group.rotation.set(0,0,0)})
+});
 canvas.classList.add("ready");window._resume();
 }catch(e){showErr(e)}
 </script>
